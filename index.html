@@ -34,20 +34,10 @@
     }
   </script>
   <style>
-    /* Personalización de barra de desplazamiento en gris oscuro */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #121212;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #374151;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #4b5563;
-    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #121212; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex flex-col">
@@ -55,7 +45,6 @@
   <!-- Header / Navbar Superior -->
   <header class="bg-obsidian border-b border-gray-800 text-white sticky top-0 z-40 shadow-xl">
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-      <!-- Isotipo F + Marca -->
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-full border-2 border-silverAccent flex items-center justify-center bg-gray-900 shadow-md">
           <span class="font-serif font-black text-xl text-gray-200">F</span>
@@ -66,7 +55,6 @@
         </div>
       </div>
 
-      <!-- Botón Modo Admin -->
       <div>
         <button id="adminAuthBtn" onclick="toggleAdminModal()" class="px-3.5 py-1.5 rounded-lg border border-silverAccent/60 text-gray-300 hover:text-white hover:bg-gray-800 text-xs font-semibold transition flex items-center gap-2 shadow-sm">
           <i id="adminIcon" class="fa-solid fa-lock text-silverAccent"></i>
@@ -97,13 +85,11 @@
     <!-- Buscador y Filtros -->
     <div class="bg-white rounded-2xl p-6 shadow-md border border-gray-200 mb-8">
       <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
-        <!-- Buscador en tiempo real -->
         <div class="relative w-full md:w-96">
           <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-          <input type="text" id="searchInput" oninput="renderCatalog()" placeholder="Buscar fragancia, marca..." class="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-400 focus:outline-none text-sm">
+          <input type="text" id="searchInput" oninput="renderCatalog()" placeholder="Buscar fragancia, casa, notas..." class="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-400 focus:outline-none text-sm">
         </div>
 
-        <!-- Botón Añadir Producto (Solo visible en modo Admin) -->
         <div id="adminActionGroup" class="hidden w-full md:w-auto">
           <button onclick="openProductModal()" class="w-full md:w-auto px-5 py-2.5 bg-silverAccent hover:bg-gray-400 text-obsidian font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-lg text-sm">
             <i class="fa-solid fa-plus"></i> Añadir Perfume
@@ -111,9 +97,8 @@
         </div>
       </div>
 
-      <!-- Filtros de Género y Categoría -->
+      <!-- Filtros -->
       <div class="space-y-4">
-        <!-- Filtro Género -->
         <div class="flex flex-wrap gap-2 items-center">
           <span class="text-xs font-bold text-gray-500 uppercase mr-2">Género:</span>
           <button onclick="setFilter('gender', 'All')" class="filter-gender-btn px-3 py-1 text-xs rounded-lg border border-gray-300 font-semibold bg-obsidian text-white" data-value="All">Todos</button>
@@ -122,7 +107,6 @@
           <button onclick="setFilter('gender', 'Unisex')" class="filter-gender-btn px-3 py-1 text-xs rounded-lg border border-gray-300 font-semibold text-gray-600 hover:bg-gray-100" data-value="Unisex">Unisex</button>
         </div>
 
-        <!-- Filtro Categoría -->
         <div class="flex flex-wrap gap-2 items-center pt-2 border-t border-gray-100">
           <span class="text-xs font-bold text-gray-500 uppercase mr-2">Categoría:</span>
           <button onclick="setFilter('category', 'All')" class="filter-cat-btn px-3 py-1 text-xs rounded-lg border border-gray-300 font-semibold bg-gray-800 text-white" data-value="All">Todas</button>
@@ -138,22 +122,20 @@
     </div>
 
     <!-- Rejilla de Productos -->
-    <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <!-- Se genera mediante JavaScript -->
-    </div>
+    <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
   </main>
 
-  <!-- Pie de Página (Footer) -->
+  <!-- Footer -->
   <footer class="bg-obsidian text-gray-400 py-6 border-t border-gray-800 text-center text-xs space-y-2">
     <p class="font-serif tracking-widest text-gray-300">FRAGATTA PARFUMS LUXURY | PERFUMERÍA 1.1 MAYORISTA Y DETAL</p>
     <p class="text-gray-500">© 2026 Fragatta Parfums - Todos los derechos reservados</p>
   </footer>
 
-  <!-- MODAL: Inicio de Sesión Admin -->
+  <!-- MODAL: Admin Login -->
   <div id="adminModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="bg-obsidian border border-gray-700 text-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
       <h3 class="text-lg font-serif text-gray-200 mb-2">Acceso Administrativo</h3>
-      <p class="text-xs text-gray-400 mb-4">Ingresa la clave para gestionar productos y precios.</p>
+      <p class="text-xs text-gray-400 mb-4">Ingresa la clave para gestionar productos.</p>
       
       <input type="password" id="adminPasswordInput" placeholder="Contraseña Admin" class="w-full px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-xl mb-4 text-sm text-white focus:outline-none focus:border-silverAccent">
       
@@ -164,7 +146,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Agregar / Editar Producto -->
+  <!-- MODAL: Agregar / Editar Producto con Nuevos Campos -->
   <div id="productModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
     <div class="bg-obsidian border border-gray-700 text-white rounded-2xl max-w-lg w-full p-6 shadow-2xl my-8">
       <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-3">
@@ -175,9 +157,15 @@
       <form id="productForm" onsubmit="saveProduct(event)" class="space-y-4">
         <input type="hidden" id="prodId">
 
-        <div>
-          <label class="block text-xs font-semibold text-gray-300 mb-1">Nombre del Producto</label>
-          <input type="text" id="prodName" required placeholder="Ej: Club De Nuit Intense" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Nombre del Perfume</label>
+            <input type="text" id="prodName" required placeholder="Ej: Noble Blush" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Casa / Marca</label>
+            <input type="text" id="prodBrand" placeholder="Ej: LATTAFA, ARMAF, etc." class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none">
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -203,43 +191,62 @@
           </div>
         </div>
 
+        <!-- Ocasión y Clima -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Uso / Momento</label>
+            <select id="prodOccasion" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none">
+              <option value="Día">☀️ Día</option>
+              <option value="Noche">🌙 Noche</option>
+              <option value="Todo el día">☀️🌙 Todo el día</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Clima Recomendado</label>
+            <select id="prodClimate" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none">
+              <option value="Todo clima">🌐 Todo clima</option>
+              <option value="Cálido">🔥 Cálido</option>
+              <option value="Frío">❄️ Frío</option>
+            </select>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-gray-300 mb-1">Precio Promocional ($)</label>
-            <input type="number" id="prodPrice" required placeholder="120000" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none">
+            <input type="number" id="prodPrice" required placeholder="200000" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none">
           </div>
           <div>
             <label class="block text-xs font-semibold text-gray-300 mb-1">Precio Original ($)</label>
-            <input type="number" id="prodOriginalPrice" placeholder="160000" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none">
+            <input type="number" id="prodOriginalPrice" placeholder="250000" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none">
           </div>
+        </div>
+
+        <!-- Composición / Notas Olfativas -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1">Composición / Notas Olfativas (Separadas por comas)</label>
+          <input type="text" id="prodNotes" placeholder="Ej: Leche de rosas, Merengue, Vainilla" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none">
         </div>
 
         <!-- Carga de Imagen -->
         <div class="border border-gray-800 p-3 rounded-lg bg-gray-900/50 space-y-3">
           <label class="block text-xs font-bold text-gray-300">Imagen del Producto</label>
-          
-          <!-- Opción A: Archivo local -->
           <div>
             <span class="text-[11px] text-gray-400 block mb-1">Opción A: Subir desde tu computador</span>
             <input type="file" id="prodFile" accept="image/*" onchange="handleFileSelect(event)" class="text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600">
           </div>
-
-          <!-- Opción B: URL -->
           <div>
             <span class="text-[11px] text-gray-400 block mb-1">Opción B: Pegar enlace URL de internet</span>
             <input type="url" id="prodImageUrl" placeholder="https://ejemplo.com/imagen.jpg" oninput="handleUrlSelect()" class="w-full px-3 py-1.5 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white focus:border-silverAccent focus:outline-none">
           </div>
-
-          <!-- Vista Previa -->
           <div id="imagePreviewContainer" class="hidden text-center pt-2">
-            <span class="text-[10px] text-gray-400 block mb-1">Vista Previa:</span>
             <img id="imagePreview" src="" class="h-24 w-24 object-cover rounded-lg mx-auto border border-gray-700">
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-gray-300 mb-1">Descripción Breve</label>
-          <textarea id="prodDesc" rows="2" placeholder="Fragancia amaderada, notas de piña y abedul..." class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none"></textarea>
+          <label class="block text-xs font-semibold text-gray-300 mb-1">Descripción Breve / Sensación</label>
+          <textarea id="prodDesc" rows="2" placeholder="Ej: Dulce y empolvado, muy femenino." class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-silverAccent focus:outline-none"></textarea>
         </div>
 
         <div class="flex justify-end gap-3 pt-3">
@@ -250,29 +257,21 @@
     </div>
   </div>
 
-  <!-- LÓGICA Y FUNCIONALIDAD JAVASCRIPT -->
   <script>
-    // Datos y estado inicial
     let products = JSON.parse(localStorage.getItem('fragatta_products')) || [
       {
         id: 1,
-        name: "Club De Nuit Intense Man",
+        name: "Noble Blush",
+        brand: "LATTAFA",
         category: "Árabes",
-        gender: "Hombre",
-        price: 180000,
-        originalPrice: 240000,
+        gender: "Mujer",
+        price: 200000,
+        originalPrice: 250000,
+        occasion: "Día",
+        climate: "Todo clima",
+        notes: "Leche de rosas, Merengue, Vainilla",
         image: "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=400",
-        description: "Perfume icónico árabe con acordes amaderados, piña y abedul."
-      },
-      {
-        id: 2,
-        name: "Kit Emprendedor Mayorista (10 Fragancias)",
-        category: "Emprendedor",
-        gender: "Unisex",
-        price: 450000,
-        originalPrice: 600000,
-        image: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=400",
-        description: "Kit ideal para iniciar tu negocio. Calidad 1.1 garantizada."
+        description: "Dulce y empolvado, muy femenino."
       }
     ];
 
@@ -281,11 +280,8 @@
     let selectedCategory = 'All';
     let currentImageBase64 = '';
 
-    window.onload = () => {
-      renderCatalog();
-    };
+    window.onload = () => { renderCatalog(); };
 
-    // Autenticación Admin
     function toggleAdminModal() {
       if (isAdmin) {
         isAdmin = false;
@@ -313,37 +309,33 @@
       }
     }
 
-    // Manejador de Filtros
     function setFilter(type, value) {
       if (type === 'gender') {
         selectedGender = value;
         document.querySelectorAll('.filter-gender-btn').forEach(btn => {
-          if (btn.dataset.value === value) {
-            btn.className = 'filter-gender-btn px-3 py-1 text-xs rounded-lg border border-gray-300 font-semibold bg-obsidian text-white';
-          } else {
-            btn.className = 'filter-gender-btn px-3 py-1 text-xs rounded-lg border border-gray-300 font-semibold text-gray-600 hover:bg-gray-100';
-          }
+          btn.className = btn.dataset.value === value 
+            ? 'filter-gender-btn px-3 py-1 text-xs rounded-lg border border-gray-300 font-semibold bg-obsidian text-white'
+            : 'filter-gender-btn px-3 py-1 text-xs rounded-lg border border-gray-300 font-semibold text-gray-600 hover:bg-gray-100';
         });
       } else if (type === 'category') {
         selectedCategory = value;
         document.querySelectorAll('.filter-cat-btn').forEach(btn => {
-          if (btn.dataset.value === value) {
-            btn.className = 'filter-cat-btn px-3 py-1 text-xs rounded-lg border border-gray-300 font-semibold bg-gray-800 text-white';
-          } else {
-            btn.className = 'filter-cat-btn px-3 py-1 text-xs rounded-lg border border-gray-300 font-semibold text-gray-600 hover:bg-gray-100';
-          }
+          btn.className = btn.dataset.value === value 
+            ? 'filter-cat-btn px-3 py-1 text-xs rounded-lg border border-gray-300 font-semibold bg-gray-800 text-white'
+            : 'filter-cat-btn px-3 py-1 text-xs rounded-lg border border-gray-300 font-semibold text-gray-600 hover:bg-gray-100';
         });
       }
       renderCatalog();
     }
 
-    // Renderizar catálogo
     function renderCatalog() {
       const grid = document.getElementById('productGrid');
       const search = document.getElementById('searchInput').value.toLowerCase();
 
       const filtered = products.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(search) || p.description.toLowerCase().includes(search);
+        const matchesSearch = p.name.toLowerCase().includes(search) || 
+                              (p.brand && p.brand.toLowerCase().includes(search)) || 
+                              (p.notes && p.notes.toLowerCase().includes(search));
         const matchesGender = selectedGender === 'All' || p.gender === selectedGender;
         const matchesCat = selectedCategory === 'All' || p.category === selectedCategory;
         return matchesSearch && matchesGender && matchesCat;
@@ -370,6 +362,25 @@
           </div>
         ` : '';
 
+        // Renderizado de notas olfativas con ícono
+        let notesHTML = '';
+        if (p.notes) {
+          const notesArray = p.notes.split(',');
+          notesHTML = `<div class="flex flex-wrap gap-x-3 gap-y-1 my-2 text-[11px] text-gray-300">` +
+            notesArray.map(n => `<span class="flex items-center gap-1"><i class="fa-solid fa-seedling text-silverAccent text-[9px]"></i> ${n.trim()}</span>`).join('') +
+            `</div>`;
+        }
+
+        // Icono de ocasión
+        let occIcon = '☀️';
+        if (p.occasion === 'Noche') occIcon = '🌙';
+        if (p.occasion === 'Todo el día') occIcon = '☀️🌙';
+
+        // Icono de clima
+        let climIcon = '🌐';
+        if (p.climate === 'Cálido') climIcon = '🔥';
+        if (p.climate === 'Frío') climIcon = '❄️';
+
         const waMsg = encodeURIComponent(`Hola Fragatta Parfums, me interesa pedir: ${p.name} ($${Number(p.price).toLocaleString()})`);
 
         return `
@@ -378,27 +389,36 @@
               <div class="relative h-56 w-full overflow-hidden bg-black">
                 <img src="${p.image || 'https://via.placeholder.com/300x300?text=Fragatta+Parfums'}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                 ${discountBadge}
-                <!-- Etiqueta de Categoría en gris con texto blanco -->
                 <span class="absolute bottom-3 right-3 bg-gray-800/90 text-white border border-gray-600 text-[10px] font-bold px-2 py-0.5 rounded">
                   ${p.category}
                 </span>
               </div>
               <div class="p-5">
-                <div class="text-[10px] uppercase font-bold tracking-wider text-gray-400 mb-1">${p.gender}</div>
-                <!-- Nombre del producto en Blanco Puro -->
+                <!-- Marca / Casa -->
+                <div class="text-[10px] uppercase font-bold tracking-widest text-gold-400 mb-0.5">${p.brand || 'FRAGATTA'}</div>
+                
+                <!-- Nombre del producto -->
                 <h3 class="font-serif text-base font-bold text-white mb-2 leading-snug">${p.name}</h3>
-                <p class="text-xs text-gray-400 line-clamp-2 mb-4">${p.description || ''}</p>
+                
+                <!-- Ocasión y Clima -->
+                <div class="flex flex-wrap gap-2 mb-2">
+                  ${p.occasion ? `<span class="bg-gray-800/80 text-gray-300 border border-gray-700 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1"><span>${occIcon}</span>${p.occasion}</span>` : ''}
+                  ${p.climate ? `<span class="bg-gray-800/80 text-gray-300 border border-gray-700 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1"><span>${climIcon}</span>${p.climate}</span>` : ''}
+                </div>
+
+                <!-- Composición / Notas -->
+                ${notesHTML}
+
+                <p class="text-xs text-gray-400 line-clamp-2 mt-2 font-light">${p.description || ''}</p>
               </div>
             </div>
 
             <div class="px-5 pb-5 pt-0">
               <div class="flex items-baseline mb-4">
                 ${originalPriceHTML}
-                <!-- Precio actual en Amarillo -->
                 <span class="text-lg font-extrabold text-gold-400">$${Number(p.price).toLocaleString()}</span>
               </div>
 
-              <!-- Botón WhatsApp en Gris Oscuro -->
               <a href="https://wa.me/573105390115?text=${waMsg}" target="_blank" class="w-full py-2.5 bg-darkGrey hover:bg-gray-700 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-md border border-gray-600">
                 <i class="fa-brands fa-whatsapp text-sm"></i> Pedir por WhatsApp
               </a>
@@ -410,7 +430,6 @@
       }).join('');
     }
 
-    // Funciones del Modal
     function openProductModal(isEdit = false) {
       if (!isEdit) {
         document.getElementById('productForm').reset();
@@ -426,7 +445,6 @@
       document.getElementById('productModal').classList.add('hidden');
     }
 
-    // Procesamiento de imágenes
     function handleFileSelect(e) {
       const file = e.target.files[0];
       if (file) {
@@ -451,24 +469,31 @@
       }
     }
 
-    // Guardar Producto
     function saveProduct(e) {
       e.preventDefault();
       const id = document.getElementById('prodId').value;
       const name = document.getElementById('prodName').value;
+      const brand = document.getElementById('prodBrand').value;
       const category = document.getElementById('prodCategory').value;
       const gender = document.getElementById('prodGender').value;
+      const occasion = document.getElementById('prodOccasion').value;
+      const climate = document.getElementById('prodClimate').value;
       const price = parseFloat(document.getElementById('prodPrice').value);
       const originalPrice = parseFloat(document.getElementById('prodOriginalPrice').value) || null;
+      const notes = document.getElementById('prodNotes').value;
       const description = document.getElementById('prodDesc').value;
 
       const productData = {
         id: id ? parseInt(id) : Date.now(),
         name,
+        brand,
         category,
         gender,
+        occasion,
+        climate,
         price,
         originalPrice,
+        notes,
         image: currentImageBase64 || 'https://via.placeholder.com/300x300?text=Fragatta+Parfums',
         description
       };
@@ -485,17 +510,20 @@
       renderCatalog();
     }
 
-    // Editar Producto
     function editProduct(id) {
       const p = products.find(prod => prod.id === id);
       if (!p) return;
 
       document.getElementById('prodId').value = p.id;
       document.getElementById('prodName').value = p.name;
+      document.getElementById('prodBrand').value = p.brand || '';
       document.getElementById('prodCategory').value = p.category;
       document.getElementById('prodGender').value = p.gender;
+      document.getElementById('prodOccasion').value = p.occasion || 'Día';
+      document.getElementById('prodClimate').value = p.climate || 'Todo clima';
       document.getElementById('prodPrice').value = p.price;
       document.getElementById('prodOriginalPrice').value = p.originalPrice || '';
+      document.getElementById('prodNotes').value = p.notes || '';
       document.getElementById('prodDesc').value = p.description || '';
 
       currentImageBase64 = p.image;
@@ -508,7 +536,6 @@
       openProductModal(true);
     }
 
-    // Eliminar Producto
     function deleteProduct(id) {
       if (confirm('¿Estás seguro de eliminar este producto del catálogo?')) {
         products = products.filter(p => p.id !== id);
