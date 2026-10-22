@@ -110,15 +110,24 @@
                 <i id="admin-lock-icon" class="fas fa-lock"></i>
             </button>
 
-            <!-- Branding Central: Logo Uploader sobre PARFUMS LUXURY -->
+            <!-- Branding Central: Logo Protegido (SÓLO editable en Modo Admin) -->
             <div class="flex flex-col items-center">
-                <div id="logo-image-box" class="w-12 h-12 border border-dashed border-amber-300 rounded-full flex flex-col items-center justify-center bg-amber-50/50 overflow-hidden relative group cursor-pointer mb-1 shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para subir o cambiar el logo">
-                    <img id="custom-logo-img" src="" alt="Logo" class="w-full h-full object-contain hidden">
-                    <div id="logo-placeholder" class="text-center p-1">
-                        <span class="text-[9px] text-amber-800 leading-none font-medium block">Subir<br>Logo</span>
+                <div id="logo-container" class="mb-1">
+                    <!-- Vista por defecto / Comprador (No clickeable) -->
+                    <div id="buyer-logo-box" class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border border-amber-200 shadow-sm bg-amber-50">
+                        <img id="buyer-logo-img" src="" alt="Parfums Luxury Logo" class="w-full h-full object-contain hidden">
+                        <span id="buyer-logo-fallback" class="font-cinzel text-amber-800 text-xs font-bold">PL</span>
                     </div>
-                    <div class="absolute inset-0 bg-black/60 text-luxury-gold text-[8px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                        Cambiar
+
+                    <!-- Vista Admin (Clickeable con uploader) -->
+                    <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para subir o cambiar el logo">
+                        <img id="admin-logo-img" src="" alt="Logo Admin" class="w-full h-full object-contain hidden">
+                        <div id="admin-logo-placeholder" class="text-center p-1">
+                            <span class="text-[8px] text-amber-900 leading-none font-bold block">Subir<br>Logo</span>
+                        </div>
+                        <div class="absolute inset-0 bg-black/60 text-luxury-gold text-[8px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            Cambiar
+                        </div>
                     </div>
                 </div>
                 <input type="file" id="logo-file-input" accept="image/*" onchange="handleLogoUpload(event)" class="hidden">
@@ -152,7 +161,7 @@
                     Distribución exclusiva de perfumería fina 1.1 y body spray. Explora nuestras ofertas, precios competitivos y realiza tus pedidos directamente por WhatsApp.
                 </p>
 
-                <!-- Control Admin para cambiar imagen de fondo del banner -->
+                <!-- Control Admin para cambiar imagen de fondo del banner (SOLO VISIBLE EN MODO ADMIN) -->
                 <div id="admin-banner-controls" class="hidden mt-5 pt-4 border-t border-amber-200/50 flex justify-center">
                     <label class="cursor-pointer bg-white border border-gray-300 hover:border-luxury-gold text-gray-700 text-xs font-semibold px-3.5 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1.5">
                         <i class="fas fa-image text-amber-600"></i> Cambiar Imagen de Fondo Difuminada
@@ -560,12 +569,18 @@
             localStorage.setItem('parfums_luxury_cart', JSON.stringify(cart));
         }
 
-        // ACCESO ADMINISTRADOR
+        // ACCESO ADMINISTRADOR PROTEGIDO
         function handleAdminToggle() {
             if (isAdmin) {
                 isAdmin = false;
                 document.getElementById('admin-toolbar').classList.add('hidden');
                 document.getElementById('admin-banner-controls').classList.add('hidden');
+                
+                // Cambiar vista del logo a Comprador (No editable)
+                document.getElementById('buyer-logo-box').classList.remove('hidden');
+                document.getElementById('admin-logo-box').classList.add('hidden');
+                document.getElementById('admin-logo-box').classList.remove('flex');
+
                 document.getElementById('admin-lock-icon').className = "fas fa-lock";
                 showToast("Sesión de administrador cerrada", "info");
             } else {
@@ -574,6 +589,12 @@
                     isAdmin = true;
                     document.getElementById('admin-toolbar').classList.remove('hidden');
                     document.getElementById('admin-banner-controls').classList.remove('hidden');
+                    
+                    // Activar uploader de logo en MODO ADMIN
+                    document.getElementById('buyer-logo-box').classList.add('hidden');
+                    document.getElementById('admin-logo-box').classList.remove('hidden');
+                    document.getElementById('admin-logo-box').classList.add('flex');
+
                     document.getElementById('admin-lock-icon').className = "fas fa-lock-open text-amber-500";
                     showToast("¡Modo Administrador Activo!", "success");
                 } else if (pass !== null) {
@@ -1004,10 +1025,14 @@
             }
         }
 
-        // LOGO & BANNER UPLOAD
-        function triggerLogoSelect() { document.getElementById('logo-file-input').click(); }
+        // LOGO & BANNER UPLOAD (SÓLO EJECUTABLE SI IS_ADMIN ES TRUE)
+        function triggerLogoSelect() { 
+            if (!isAdmin) return;
+            document.getElementById('logo-file-input').click(); 
+        }
 
         function handleLogoUpload(e) {
+            if (!isAdmin) return;
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -1023,14 +1048,23 @@
 
         function applyCustomLogo(url) {
             if (!url) return;
-            const imgEl = document.getElementById('custom-logo-img');
-            const placeholder = document.getElementById('logo-placeholder');
-            imgEl.src = url;
-            imgEl.classList.remove('hidden');
-            placeholder.classList.add('hidden');
+            // Aplicar imagen tanto en la vista de comprador como de admin
+            const buyerImg = document.getElementById('buyer-logo-img');
+            const buyerFallback = document.getElementById('buyer-logo-fallback');
+            const adminImg = document.getElementById('admin-logo-img');
+            const adminPlaceholder = document.getElementById('admin-logo-placeholder');
+
+            buyerImg.src = url;
+            buyerImg.classList.remove('hidden');
+            if (buyerFallback) buyerFallback.classList.add('hidden');
+
+            adminImg.src = url;
+            adminImg.classList.remove('hidden');
+            if (adminPlaceholder) adminPlaceholder.classList.add('hidden');
         }
 
         function handleBannerUpload(e) {
+            if (!isAdmin) return;
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
