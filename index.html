@@ -16,7 +16,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0",
@@ -38,6 +38,8 @@
         window.doc = doc;
         window.updateDoc = updateDoc;
         window.deleteDoc = deleteDoc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
     </script>
 
     <script>
@@ -104,13 +106,13 @@
             <div class="flex flex-col items-center">
                 <div id="logo-container" class="mb-1">
                     <div id="buyer-logo-box" class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border border-amber-200 shadow-sm bg-amber-50">
-                        <img id="buyer-logo-img" src="https://i.ibb.co/L5Qy8V3/logo-parfums.png" alt="Parfums Luxury Logo" class="w-full h-full object-contain" onerror="this.classList.add('hidden'); document.getElementById('buyer-logo-fallback').classList.remove('hidden');">
-                        <span id="buyer-logo-fallback" class="font-cinzel text-amber-800 text-xs font-bold hidden">PL</span>
+                        <img id="buyer-logo-img" src="" alt="Parfums Luxury Logo" class="w-full h-full object-contain hidden" onerror="handleLogoError(this)">
+                        <span id="buyer-logo-fallback" class="font-cinzel text-amber-800 text-xs font-bold">PL</span>
                     </div>
 
-                    <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para subir o cambiar el logo">
-                        <img id="admin-logo-img" src="https://i.ibb.co/L5Qy8V3/logo-parfums.png" alt="Logo Admin" class="w-full h-full object-contain">
-                        <div id="admin-logo-placeholder" class="text-center p-1 hidden">
+                    <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para cambiar el logo">
+                        <img id="admin-logo-img" src="" alt="Logo Admin" class="w-full h-full object-contain hidden" onerror="this.classList.add('hidden'); document.getElementById('admin-logo-placeholder').classList.remove('hidden');">
+                        <div id="admin-logo-placeholder" class="text-center p-1">
                             <span class="text-[8px] text-amber-900 leading-none font-bold block">Subir<br>Logo</span>
                         </div>
                         <div class="absolute inset-0 bg-black/60 text-luxury-gold text-[8px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition">Cambiar</div>
@@ -417,13 +419,14 @@
                 if (window.db) {
                     clearInterval(checkFirebase);
                     initFirebaseListener();
+                    initAppConfigListener();
                 }
             }, 200);
 
             updateCartUI();
-            loadCustomMedia();
         });
 
+        // Escucha en tiempo real de productos desde Firebase
         function initFirebaseListener() {
             const productsRef = window.collection(window.db, "products");
             window.onSnapshot(productsRef, (snapshot) => {
@@ -448,6 +451,27 @@
                 console.error("Error al conectar con Firebase:", error);
                 showToast("Error de conexión", "error");
             });
+        }
+
+        // Escucha en tiempo real de la configuración global (Logo y Banner) desde Firebase
+        function initAppConfigListener() {
+            const configRef = window.doc(window.db, "settings", "app_config");
+            window.onSnapshot(configRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.logoUrl) applyCustomLogo(data.logoUrl);
+                    if (data.bannerUrl) applyCustomBannerBlur(data.bannerUrl);
+                }
+            });
+        }
+
+        async function saveConfigToFirebase(key, value) {
+            try {
+                const configRef = window.doc(window.db, "settings", "app_config");
+                await window.setDoc(configRef, { [key]: value }, { merge: true });
+            } catch (err) {
+                console.error("Error al guardar configuración global:", err);
+            }
         }
 
         async function uploadImageToImgBB(event) {
@@ -809,15 +833,15 @@
 
         function triggerLogoSelect() { 
             if (!isAdmin) return;
-            const choice = confirm("¿Quieres subir un archivo de tu GALERÍA para el logo?\n\n- Haz clic en 'Aceptar' para subir archivo.\n- Haz clic en 'Cancelar' para ingresar una URL.");
+            const choice = confirm("¿Quieres subir un archivo de tu GALERÍA para el logo?\n\n- Haz clic en 'Aceptar' para subir archivo de galería.\n- Haz clic en 'Cancelar' para ingresar una URL.");
             if (choice) {
                 document.getElementById('logo-file-input').click();
             } else {
                 const url = prompt("Pega aquí la URL de la imagen para el logo:");
                 if (url) {
-                    localStorage.setItem('parfums_luxury_logo', url);
                     applyCustomLogo(url);
-                    showToast("Logo actualizado por URL", "success");
+                    saveConfigToFirebase("logoUrl", url);
+                    showToast("Logo actualizado en Firebase", "success");
                 }
             }
         }
@@ -834,9 +858,9 @@
                     const data = await res.json();
                     if (data.success) {
                         const url = data.data.url;
-                        localStorage.setItem('parfums_luxury_logo', url);
                         applyCustomLogo(url);
-                        showToast("¡Logo actualizado!", "success");
+                        saveConfigToFirebase("logoUrl", url);
+                        showToast("¡Logo actualizado en todos los dispositivos!", "success");
                     }
                 } catch (err) {
                     showToast("Error al subir el logo", "error");
@@ -846,12 +870,23 @@
 
         function applyCustomLogo(url) {
             if (!url) return;
-            document.getElementById('buyer-logo-img').src = url;
-            document.getElementById('buyer-logo-img').classList.remove('hidden');
-            document.getElementById('buyer-logo-fallback').classList.add('hidden');
-            document.getElementById('admin-logo-img').src = url;
-            document.getElementById('admin-logo-img').classList.remove('hidden');
-            document.getElementById('admin-logo-placeholder').classList.add('hidden');
+            const buyerImg = document.getElementById('buyer-logo-img');
+            const adminImg = document.getElementById('admin-logo-img');
+            const fallback = document.getElementById('buyer-logo-fallback');
+            const placeholder = document.getElementById('admin-logo-placeholder');
+
+            buyerImg.src = url;
+            buyerImg.classList.remove('hidden');
+            fallback.classList.add('hidden');
+
+            adminImg.src = url;
+            adminImg.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        }
+
+        function handleLogoError(imgEl) {
+            imgEl.classList.add('hidden');
+            document.getElementById('buyer-logo-fallback').classList.remove('hidden');
         }
 
         async function handleBannerUpload(e) {
@@ -866,9 +901,9 @@
                     const data = await res.json();
                     if (data.success) {
                         const url = data.data.url;
-                        localStorage.setItem('parfums_luxury_banner_blur', url);
                         applyCustomBannerBlur(url);
-                        showToast("Banner actualizado", "success");
+                        saveConfigToFirebase("bannerUrl", url);
+                        showToast("Banner actualizado en Firebase", "success");
                     }
                 } catch (err) {
                     showToast("Error al subir el banner", "error");
@@ -880,21 +915,14 @@
             if (!isAdmin) return;
             const url = prompt("Pega aquí la URL de la imagen para el Banner:");
             if (url) {
-                localStorage.setItem('parfums_luxury_banner_blur', url);
                 applyCustomBannerBlur(url);
-                showToast("Banner actualizado por URL", "success");
+                saveConfigToFirebase("bannerUrl", url);
+                showToast("Banner actualizado en Firebase", "success");
             }
         }
 
         function applyCustomBannerBlur(url) {
             if (url) document.getElementById('banner-bg-blur').style.backgroundImage = `url('${url}')`;
-        }
-
-        function loadCustomMedia() {
-            const logo = localStorage.getItem('parfums_luxury_logo');
-            if (logo) applyCustomLogo(logo);
-            const banner = localStorage.getItem('parfums_luxury_banner_blur');
-            if (banner) applyCustomBannerBlur(banner);
         }
 
         function formatPrice(amt) { return '$' + amt.toLocaleString('es-CO'); }
