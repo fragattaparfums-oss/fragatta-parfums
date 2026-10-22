@@ -144,11 +144,14 @@
                     Distribución exclusiva de perfumería fina 1.1 y body spray. Explora nuestras ofertas, precios competitivos y realiza tus pedidos directamente por WhatsApp.
                 </p>
 
-                <div id="admin-banner-controls" class="hidden mt-5 pt-4 border-t border-amber-200/50 flex justify-center">
+                <div id="admin-banner-controls" class="hidden mt-5 pt-4 border-t border-amber-200/50 flex flex-wrap justify-center gap-2">
                     <label class="cursor-pointer bg-white border border-gray-300 hover:border-luxury-gold text-gray-700 text-xs font-semibold px-3.5 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1.5">
-                        <i class="fas fa-image text-amber-600"></i> Cambiar Imagen de Fondo
+                        <i class="fas fa-upload text-amber-600"></i> Subir Banner desde Archivo
                         <input type="file" id="banner-file-input" accept="image/*" onchange="handleBannerUpload(event)" class="hidden">
                     </label>
+                    <button onclick="promptBannerUrl()" class="bg-white border border-gray-300 hover:border-luxury-gold text-gray-700 text-xs font-semibold px-3.5 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1.5">
+                        <i class="fas fa-link text-amber-600"></i> Pegar URL de Banner
+                    </button>
                 </div>
             </div>
         </section>
@@ -367,12 +370,14 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block font-semibold mb-1">Imagen del Producto</label>
-                        <label class="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-2 rounded-lg text-center block transition">
-                            <i class="fas fa-upload mr-1"></i> Subir Foto de Galería
-                            <input type="file" id="prod-image-file" accept="image/*" onchange="uploadImageToImgBB(event)" class="hidden">
-                        </label>
-                        <input type="hidden" id="prod-image">
+                        <label class="block font-semibold mb-1">Imagen del Producto (2 Opciones)</label>
+                        <div class="space-y-1.5">
+                            <label class="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-1.5 rounded-lg text-center block transition">
+                                <i class="fas fa-upload mr-1"></i> Opción 1: Subir de Galería
+                                <input type="file" id="prod-image-file" accept="image/*" onchange="uploadImageToImgBB(event)" class="hidden">
+                            </label>
+                            <input type="text" id="prod-image" placeholder="Opción 2: O pega aquí la URL de la foto" class="w-full p-2 border rounded-lg text-[11px]">
+                        </div>
                         <span id="upload-status" class="text-[10px] text-gray-500 block mt-1"></span>
                     </div>
                 </div>
@@ -452,7 +457,7 @@
             const statusEl = document.getElementById('upload-status');
             const saveBtn = document.getElementById('btn-save-prod');
             
-            statusEl.innerText = "⏳ Subiendo imagen...";
+            statusEl.innerText = "⏳ Subiendo foto de la galería...";
             statusEl.className = "text-[10px] text-amber-600 font-bold block mt-1";
             saveBtn.disabled = true;
 
@@ -468,14 +473,14 @@
 
                 if (data.success) {
                     document.getElementById('prod-image').value = data.data.url;
-                    statusEl.innerText = "✔️ ¡Imagen lista!";
+                    statusEl.innerText = "✔️ ¡Imagen de galería subida!";
                     statusEl.className = "text-[10px] text-emerald-600 font-bold block mt-1";
                     showToast("Foto cargada con éxito", "success");
                 } else {
                     throw new Error("Falló la subida");
                 }
             } catch (err) {
-                statusEl.innerText = "❌ Error al subir imagen. Reintenta.";
+                statusEl.innerText = "❌ Error al subir. Puedes pegar la URL abajo.";
                 statusEl.className = "text-[10px] text-rose-600 font-bold block mt-1";
             } finally {
                 saveBtn.disabled = false;
@@ -802,7 +807,20 @@
             document.getElementById('upload-status').innerText = '';
         }
 
-        function triggerLogoSelect() { if (isAdmin) document.getElementById('logo-file-input').click(); }
+        function triggerLogoSelect() { 
+            if (!isAdmin) return;
+            const choice = confirm("¿Quieres subir un archivo de tu GALERÍA para el logo?\n\n- Haz clic en 'Aceptar' para subir archivo.\n- Haz clic en 'Cancelar' para ingresar una URL.");
+            if (choice) {
+                document.getElementById('logo-file-input').click();
+            } else {
+                const url = prompt("Pega aquí la URL de la imagen para el logo:");
+                if (url) {
+                    localStorage.setItem('parfums_luxury_logo', url);
+                    applyCustomLogo(url);
+                    showToast("Logo actualizado por URL", "success");
+                }
+            }
+        }
         
         async function handleLogoUpload(e) {
             if (!isAdmin) return;
@@ -855,6 +873,16 @@
                 } catch (err) {
                     showToast("Error al subir el banner", "error");
                 }
+            }
+        }
+
+        function promptBannerUrl() {
+            if (!isAdmin) return;
+            const url = prompt("Pega aquí la URL de la imagen para el Banner:");
+            if (url) {
+                localStorage.setItem('parfums_luxury_banner_blur', url);
+                applyCustomBannerBlur(url);
+                showToast("Banner actualizado por URL", "success");
             }
         }
 
