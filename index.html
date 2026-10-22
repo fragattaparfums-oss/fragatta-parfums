@@ -16,7 +16,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0",
@@ -39,7 +39,6 @@
         window.updateDoc = updateDoc;
         window.deleteDoc = deleteDoc;
         window.setDoc = setDoc;
-        window.getDoc = getDoc;
     </script>
 
     <script>
@@ -106,13 +105,13 @@
             <div class="flex flex-col items-center">
                 <div id="logo-container" class="mb-1">
                     <div id="buyer-logo-box" class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border border-amber-200 shadow-sm bg-amber-50">
-                        <img id="buyer-logo-img" src="" alt="Parfums Luxury Logo" class="w-full h-full object-contain hidden" onerror="handleLogoError(this)">
-                        <span id="buyer-logo-fallback" class="font-cinzel text-amber-800 text-xs font-bold">PL</span>
+                        <img id="buyer-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Parfums Luxury Logo" class="w-full h-full object-contain" onerror="handleLogoError(this)">
+                        <span id="buyer-logo-fallback" class="font-cinzel text-amber-800 text-xs font-bold hidden">PL</span>
                     </div>
 
                     <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para cambiar el logo">
-                        <img id="admin-logo-img" src="" alt="Logo Admin" class="w-full h-full object-contain hidden" onerror="this.classList.add('hidden'); document.getElementById('admin-logo-placeholder').classList.remove('hidden');">
-                        <div id="admin-logo-placeholder" class="text-center p-1">
+                        <img id="admin-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Logo Admin" class="w-full h-full object-contain">
+                        <div id="admin-logo-placeholder" class="text-center p-1 hidden">
                             <span class="text-[8px] text-amber-900 leading-none font-bold block">Subir<br>Logo</span>
                         </div>
                         <div class="absolute inset-0 bg-black/60 text-luxury-gold text-[8px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition">Cambiar</div>
@@ -148,7 +147,7 @@
 
                 <div id="admin-banner-controls" class="hidden mt-5 pt-4 border-t border-amber-200/50 flex flex-wrap justify-center gap-2">
                     <label class="cursor-pointer bg-white border border-gray-300 hover:border-luxury-gold text-gray-700 text-xs font-semibold px-3.5 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1.5">
-                        <i class="fas fa-upload text-amber-600"></i> Subir Banner desde Archivo
+                        <i class="fas fa-upload text-amber-600"></i> Subir Banner desde Galería
                         <input type="file" id="banner-file-input" accept="image/*" onchange="handleBannerUpload(event)" class="hidden">
                     </label>
                     <button onclick="promptBannerUrl()" class="bg-white border border-gray-300 hover:border-luxury-gold text-gray-700 text-xs font-semibold px-3.5 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1.5">
@@ -376,7 +375,7 @@
                         <div class="space-y-1.5">
                             <label class="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-1.5 rounded-lg text-center block transition">
                                 <i class="fas fa-upload mr-1"></i> Opción 1: Subir de Galería
-                                <input type="file" id="prod-image-file" accept="image/*" onchange="uploadImageToImgBB(event)" class="hidden">
+                                <input type="file" id="prod-image-file" accept="image/*" onchange="uploadImageBase64(event)" class="hidden">
                             </label>
                             <input type="text" id="prod-image" placeholder="Opción 2: O pega aquí la URL de la foto" class="w-full p-2 border rounded-lg text-[11px]">
                         </div>
@@ -412,7 +411,6 @@
         let currentGender = 'Todos';
 
         const ADMIN_PASSWORD = "J.p12022013";
-        const IMGBB_API_KEY = "6b6e4e580a3c200dd0c86ffb603fefd0";
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
@@ -426,7 +424,6 @@
             updateCartUI();
         });
 
-        // Escucha en tiempo real de productos desde Firebase
         function initFirebaseListener() {
             const productsRef = window.collection(window.db, "products");
             window.onSnapshot(productsRef, (snapshot) => {
@@ -453,7 +450,6 @@
             });
         }
 
-        // Escucha en tiempo real de la configuración global (Logo y Banner) desde Firebase
         function initAppConfigListener() {
             const configRef = window.doc(window.db, "settings", "app_config");
             window.onSnapshot(configRef, (docSnap) => {
@@ -467,48 +463,51 @@
 
         async function saveConfigToFirebase(key, value) {
             try {
-                const configRef = window.doc(window.db, "settings", "app_config");
+                const configRef = window.doc(window.doc(window.db, "settings", "app_config"));
                 await window.setDoc(configRef, { [key]: value }, { merge: true });
             } catch (err) {
                 console.error("Error al guardar configuración global:", err);
             }
         }
 
-        async function uploadImageToImgBB(event) {
+        // Subida local optimizada directa sin servidores externos
+        function uploadImageBase64(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const statusEl = document.getElementById('upload-status');
-            const saveBtn = document.getElementById('btn-save-prod');
-            
-            statusEl.innerText = "⏳ Subiendo foto de la galería...";
+            statusEl.innerText = "⏳ Procesando foto...";
             statusEl.className = "text-[10px] text-amber-600 font-bold block mt-1";
-            saveBtn.disabled = true;
 
-            const formData = new FormData();
-            formData.append("image", file);
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const max = 600; // Redimensionado optimizado para carga ultrarrápida
 
-            try {
-                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                    method: "POST",
-                    body: formData
-                });
-                const data = await res.json();
+                    if (width > height) {
+                        if (width > max) { height *= max / width; width = max; }
+                    } else {
+                        if (height > max) { width *= max / height; height = max; }
+                    }
 
-                if (data.success) {
-                    document.getElementById('prod-image').value = data.data.url;
-                    statusEl.innerText = "✔️ ¡Imagen de galería subida!";
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                    document.getElementById('prod-image').value = compressedBase64;
+                    statusEl.innerText = "✔️ ¡Imagen lista para guardar!";
                     statusEl.className = "text-[10px] text-emerald-600 font-bold block mt-1";
-                    showToast("Foto cargada con éxito", "success");
-                } else {
-                    throw new Error("Falló la subida");
-                }
-            } catch (err) {
-                statusEl.innerText = "❌ Error al subir. Puedes pegar la URL abajo.";
-                statusEl.className = "text-[10px] text-rose-600 font-bold block mt-1";
-            } finally {
-                saveBtn.disabled = false;
-            }
+                    showToast("Foto procesada con éxito", "success");
+                };
+            };
+            reader.readAsDataURL(file);
         }
 
         function handleAdminToggle() {
@@ -846,25 +845,19 @@
             }
         }
         
-        async function handleLogoUpload(e) {
+        function handleLogoUpload(e) {
             if (!isAdmin) return;
             const file = e.target.files[0];
             if (file) {
-                showToast("Subiendo logo...", "info");
-                const formData = new FormData();
-                formData.append("image", file);
-                try {
-                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
-                    const data = await res.json();
-                    if (data.success) {
-                        const url = data.data.url;
-                        applyCustomLogo(url);
-                        saveConfigToFirebase("logoUrl", url);
-                        showToast("¡Logo actualizado en todos los dispositivos!", "success");
-                    }
-                } catch (err) {
-                    showToast("Error al subir el logo", "error");
-                }
+                showToast("Procesando logo...", "info");
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    const url = evt.target.result;
+                    applyCustomLogo(url);
+                    saveConfigToFirebase("logoUrl", url);
+                    showToast("¡Logo actualizado en todos los dispositivos!", "success");
+                };
+                reader.readAsDataURL(file);
             }
         }
 
@@ -889,25 +882,19 @@
             document.getElementById('buyer-logo-fallback').classList.remove('hidden');
         }
 
-        async function handleBannerUpload(e) {
+        function handleBannerUpload(e) {
             if (!isAdmin) return;
             const file = e.target.files[0];
             if (file) {
-                showToast("Subiendo banner...", "info");
-                const formData = new FormData();
-                formData.append("image", file);
-                try {
-                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
-                    const data = await res.json();
-                    if (data.success) {
-                        const url = data.data.url;
-                        applyCustomBannerBlur(url);
-                        saveConfigToFirebase("bannerUrl", url);
-                        showToast("Banner actualizado en Firebase", "success");
-                    }
-                } catch (err) {
-                    showToast("Error al subir el banner", "error");
-                }
+                showToast("Procesando banner...", "info");
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    const url = evt.target.result;
+                    applyCustomBannerBlur(url);
+                    saveConfigToFirebase("bannerUrl", url);
+                    showToast("Banner actualizado en Firebase", "success");
+                };
+                reader.readAsDataURL(file);
             }
         }
 
