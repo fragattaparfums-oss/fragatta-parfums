@@ -12,6 +12,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS (XLSX) para lectura de archivos Excel y CSV -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -168,6 +170,11 @@
                     <button onclick="openAdminModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
                         <i class="fas fa-plus-circle"></i> + Agregar Producto
                     </button>
+                    <!-- NUEVO BOTÓN EXCEL MASIVO -->
+                    <label class="cursor-pointer bg-amber-500 hover:bg-amber-600 text-black text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
+                        <i class="fas fa-file-excel"></i> 📄 Cargar desde Excel
+                        <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" onchange="handleExcelImport(event)" class="hidden">
+                    </label>
                 </div>
             </div>
         </section>
@@ -475,6 +482,64 @@
             } catch (err) {
                 console.error("Error al guardar configuración global:", err);
             }
+        }
+
+        // LÓGICA DE IMPORTACIÓN MASIVA DESDE EXCEL
+        function handleExcelImport(event) {
+            if (!isAdmin) return;
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showToast("Leyendo archivo Excel...", "info");
+
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                    if (!rows || rows.length === 0) {
+                        return alert("El archivo Excel está vacío.");
+                    }
+
+                    let addedCount = 0;
+                    for (const row of rows) {
+                        // Mapeo flexible de nombres de columnas
+                        const brand = row.MARCA || row.marca || row.BRAND || row.brand || 'LUXURY';
+                        const name = row.NOMBRE || row.nombre || row.TITLE || row.title || row.FRAGANCIA || row.fragancia;
+                        const price = Number(row.PRECIO || row.precio || row.PRICE || row.price || 0);
+
+                        if (!name || price <= 0) continue; // Salta filas sin nombre o precio válido
+
+                        const payload = {
+                            brand: String(brand).toUpperCase(),
+                            name: String(name).toUpperCase(),
+                            price: price,
+                            originalPrice: Number(row.PRECIO_ANTERIOR || row.precio_anterior || row.OLDPRICE || row.oldPrice) || null,
+                            category: row.CATEGORIA || row.categoria || row.CATEGORY || row.category || 'Árabe',
+                            gender: row.GENERO || row.genero || row.GENDER || row.gender || 'Unisex',
+                            priority: row.PRIORIDAD || row.prioridad || row.PRIORITY || row.priority || 'NINGUNA',
+                            featured: (row.PRIORIDAD || row.prioridad) === 'TOP VIRAL',
+                            image: row.IMAGEN || row.imagen || row.IMAGE || row.image || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
+                            notes: row.NOTAS || row.notas || row.NOTES || row.notes || '',
+                            description: row.DESCRIPCION || row.descripcion || row.DESCRIPTION || row.description || ''
+                        };
+
+                        await window.addDoc(window.collection(window.db, "products"), payload);
+                        addedCount++;
+                    }
+
+                    showToast(`¡Se cargaron ${addedCount} productos a Firebase!`, "success");
+                    event.target.value = ''; // Limpia el input
+                } catch (err) {
+                    console.error("Error al procesar Excel:", err);
+                    alert("Error al leer el archivo Excel. Revisa el formato de las columnas.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         function uploadImageBase64(event) {
