@@ -411,6 +411,7 @@
         let currentGender = 'Todos';
 
         const ADMIN_PASSWORD = "J.p12022013";
+        const DEFAULT_LOGO_URL = "https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg";
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
@@ -455,22 +456,27 @@
             window.onSnapshot(configRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (data.logoUrl) applyCustomLogo(data.logoUrl);
+                    if (data.logoUrl && data.logoUrl.trim() !== '') {
+                        applyCustomLogo(data.logoUrl);
+                    } else {
+                        applyCustomLogo(DEFAULT_LOGO_URL);
+                    }
                     if (data.bannerUrl) applyCustomBannerBlur(data.bannerUrl);
+                } else {
+                    applyCustomLogo(DEFAULT_LOGO_URL);
                 }
             });
         }
 
         async function saveConfigToFirebase(key, value) {
             try {
-                const configRef = window.doc(window.doc(window.db, "settings", "app_config"));
+                const configRef = window.doc(window.db, "settings", "app_config");
                 await window.setDoc(configRef, { [key]: value }, { merge: true });
             } catch (err) {
                 console.error("Error al guardar configuración global:", err);
             }
         }
 
-        // Subida local optimizada directa sin servidores externos
         function uploadImageBase64(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -487,7 +493,7 @@
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
-                    const max = 600; // Redimensionado optimizado para carga ultrarrápida
+                    const max = 600;
 
                     if (width > height) {
                         if (width > max) { height *= max / width; width = max; }
@@ -836,7 +842,7 @@
             if (choice) {
                 document.getElementById('logo-file-input').click();
             } else {
-                const url = prompt("Pega aquí la URL de la imagen para el logo:");
+                const url = prompt("Pega aquí la URL de la imagen para el logo:", DEFAULT_LOGO_URL);
                 if (url) {
                     applyCustomLogo(url);
                     saveConfigToFirebase("logoUrl", url);
