@@ -184,7 +184,7 @@
             <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="relative w-full sm:w-72 flex-shrink-0">
                     <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                    <input type="text" id="search-input" oninput="applyFilters()" placeholder="Buscar fragancia, marca..." class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white transition">
+                    <input type="text" id="search-input" oninput="applyFilters()" placeholder="Buscar fragancia, marca, notas..." class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white transition">
                 </div>
 
                 <div class="flex items-center gap-1.5 text-xs font-bold ml-auto sm:ml-0 flex-shrink-0">
@@ -222,7 +222,7 @@
                 <div class="flex items-center gap-2 ml-auto">
                     <label for="sort-select" class="text-xs text-gray-500 font-medium">Ordenar por:</label>
                     <select id="sort-select" onchange="applyFilters()" class="bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-amber-400">
-                        <option value="featured">🔥 Relevancia</option>
+                        <option value="featured">🔥 Prioridad (Lo Nuevo/Viral primero)</option>
                         <option value="price-asc">Precio: Menor a Mayor</option>
                         <option value="price-desc">Precio: Mayor a Menor</option>
                         <option value="name">Nombre (A-Z)</option>
@@ -231,7 +231,7 @@
             </div>
         </section>
 
-        <!-- Rejilla de Productos (2 Columnas en Celular - grid-cols-2, 4 en Computadora - md:grid-cols-4) -->
+        <!-- Rejilla de Productos -->
         <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             <div class="col-span-full text-center py-12 text-gray-500 text-sm">
                 <i class="fas fa-spinner fa-spin text-amber-500 text-2xl mb-2"></i>
@@ -242,6 +242,7 @@
         <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-gray-300">
             <i class="fas fa-search-minus text-4xl text-gray-300 mb-3"></i>
             <h3 class="font-cinzel text-lg font-bold text-gray-700">No se encontraron fragancias</h3>
+            <p class="text-xs text-gray-400 mt-1">Prueba escribiendo palabras parecidas o buscando en otras categorías.</p>
             <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Restablecer Filtros</button>
         </div>
 
@@ -266,7 +267,7 @@
         </div>
     </div>
 
-    <!-- MODAL CARRITO -->
+    <!-- MODAL CARRITO CON IMÁGENES Y DESCUENTOS -->
     <div id="cart-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-end hidden">
         <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl relative">
             <div class="p-4 bg-luxury-dark text-white flex items-center justify-between border-b border-luxury-gold/40">
@@ -275,7 +276,7 @@
             </div>
             <div class="flex-grow overflow-y-auto p-4 space-y-6 divide-y divide-gray-100">
                 <div>
-                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">1. Productos</h4>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">1. Productos seleccionados</h4>
                     <div id="cart-items" class="space-y-3"></div>
                 </div>
                 <div class="pt-4 space-y-3">
@@ -304,7 +305,7 @@
             </div>
             <div class="p-4 bg-gray-50 border-t border-gray-200 space-y-3">
                 <div class="flex items-center justify-between font-bold text-gray-900 text-sm">
-                    <span>Total Productos:</span>
+                    <span>Total Pedido:</span>
                     <span id="cart-total" class="text-lg text-rose-600 font-extrabold">$0</span>
                 </div>
                 <button onclick="checkoutWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 text-sm shadow-lg">
@@ -408,7 +409,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL LÓGICA & FIREBASE -->
+    <!-- SCRIPT PRINCIPAL LÓGICA, BÚSQUEDA DIFUSA & FIREBASE -->
     <script>
         let products = [];
         let cart = JSON.parse(localStorage.getItem('parfums_luxury_cart')) || [];
@@ -482,6 +483,63 @@
             } catch (err) {
                 console.error("Error al guardar configuración global:", err);
             }
+        }
+
+        // =========================================================================
+        // 🔍 ALGORITMO DE BÚSQUEDA DIFUSA / APROXIMADA (FUZZY SEARCH / LEVENSHTEIN)
+        // =========================================================================
+        function levenshteinDistance(str1, str2) {
+            const track = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+            for (let i = 0; i <= str1.length; i += 1) track[0][i] = i;
+            for (let j = 0; j <= str2.length; j += 1) track[j][0] = j;
+
+            for (let j = 1; j <= str2.length; j += 1) {
+                for (let i = 1; i <= str1.length; i += 1) {
+                    const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+                    track[j][i] = Math.min(
+                        track[j][i - 1] + 1,
+                        track[j - 1][i] + 1,
+                        track[j - 1][i - 1] + indicator
+                    );
+                }
+            }
+            return track[str2.length][str1.length];
+        }
+
+        function fuzzyMatchScore(text, search) {
+            if (!text || !search) return 0;
+            const cleanText = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const cleanSearch = search.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            // Coincidencia exacta o subcadena
+            if (cleanText.includes(cleanSearch)) return 100;
+
+            const textWords = cleanText.split(/\s+/);
+            const searchWords = cleanSearch.split(/\s+/);
+
+            let totalScore = 0;
+
+            for (const sWord of searchWords) {
+                if (sWord.length < 2) continue;
+                let bestWordScore = 0;
+
+                for (const tWord of textWords) {
+                    if (tWord.includes(sWord)) {
+                        bestWordScore = Math.max(bestWordScore, 85);
+                        continue;
+                    }
+                    const dist = levenshteinDistance(sWord, tWord);
+                    const maxLen = Math.max(sWord.length, tWord.length);
+                    const similarity = (1 - dist / maxLen) * 100;
+
+                    if (similarity > bestWordScore) {
+                        bestWordScore = similarity;
+                    }
+                }
+                totalScore += bestWordScore;
+            }
+
+            return totalScore / searchWords.length;
         }
 
         // IMPORTACIÓN MASIVA DESDE EXCEL
@@ -607,29 +665,64 @@
             renderProducts();
         }
 
+        // RENDERIZADO CON ORDEN DE PRIORIDAD & BÚSQUEDA DIDÁCTICA
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             const emptyState = document.getElementById('empty-state');
-            const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+            const searchVal = document.getElementById('search-input').value.trim();
             const sortVal = document.getElementById('sort-select').value;
 
-            let filtered = products.filter(p => {
+            // 1. Filtrado general
+            let filtered = products.map(p => {
+                let matchScore = 100;
+                if (searchVal) {
+                    const scoreTitle = fuzzyMatchScore(p.title, searchVal);
+                    const scoreBrand = fuzzyMatchScore(p.brand, searchVal);
+                    const scoreNotes = fuzzyMatchScore(p.notes, searchVal);
+                    const scoreCategory = fuzzyMatchScore(p.category, searchVal);
+
+                    matchScore = Math.max(scoreTitle, scoreBrand, scoreNotes, scoreCategory);
+                }
+
+                return { ...p, matchScore };
+            }).filter(p => {
                 const matchesCat = (currentCategory === 'Todas') || p.category.toLowerCase() === currentCategory.toLowerCase();
                 const matchesPrio = (currentPriority === 'Todas') || p.priority === currentPriority;
                 const matchesGender = (currentGender === 'Todos') || p.gender === currentGender;
-                const matchesSearch = !searchVal || 
-                    p.title.toLowerCase().includes(searchVal) ||
-                    p.brand.toLowerCase().includes(searchVal) ||
-                    (p.notes && p.notes.toLowerCase().includes(searchVal));
+                const matchesSearch = !searchVal || p.matchScore >= 55; // Umbral de tolerancia
 
                 return matchesCat && matchesPrio && matchesGender && matchesSearch;
             });
 
+            // 2. Sistema de Ordenamiento con Prioridad para LO NUEVO y TOP VIRAL
             filtered.sort((a, b) => {
+                // Si el usuario está buscando, priorizar la mayor similitud
+                if (searchVal && Math.abs(a.matchScore - b.matchScore) > 10) {
+                    return b.matchScore - a.matchScore;
+                }
+
+                // Criterios de prioridad (1 = LO NUEVO, 2 = TOP VIRAL, 3 = Normales)
+                const getPriorityRank = (item) => {
+                    if (item.priority === 'LO NUEVO') return 1;
+                    if (item.priority === 'TOP VIRAL') return 2;
+                    return 3;
+                };
+
+                const rankA = getPriorityRank(a);
+                const rankB = getPriorityRank(b);
+
+                // Si se selecciona "Prioridad (Lo nuevo/viral primero)" o "Relevancia"
+                if (sortVal === 'featured' || !sortVal) {
+                    if (rankA !== rankB) return rankA - rankB;
+                }
+
+                // Otros criterios elegidos por el usuario
                 if (sortVal === 'price-asc') return a.price - b.price;
                 if (sortVal === 'price-desc') return b.price - a.price;
                 if (sortVal === 'name') return a.title.localeCompare(b.title);
-                return 0;
+
+                // Por defecto, mantener prioridad arriba e intercalar el resto
+                return rankA - rankB;
             });
 
             if (filtered.length === 0) {
@@ -798,7 +891,10 @@
                             <p>${p.description || 'Fragancia exclusiva.'}</p>
                         </div>
                         <div class="pt-3 border-t flex items-center justify-between">
-                            <span class="text-2xl font-extrabold text-rose-600">${formatPrice(p.price)}</span>
+                            <div class="flex items-baseline gap-2">
+                                ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through">${formatPrice(p.oldPrice)}</span>` : ''}
+                                <span class="text-2xl font-extrabold text-rose-600">${formatPrice(p.price)}</span>
+                            </div>
                             <button onclick="quickOrderWhatsApp('${p.id}'); closeDetailModal();" class="bg-slate-900 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2">
                                 <i class="fab fa-whatsapp text-emerald-400"></i> Pedir Ya
                             </button>
@@ -825,6 +921,9 @@
 
         function saveCart() { localStorage.setItem('parfums_luxury_cart', JSON.stringify(cart)); }
 
+        // =========================================================================
+        // 🛒 CARRITO CON FOTOS DE PRODUCTO Y MOSTRANDO PRECIO NORMAL VS OFERTA
+        // =========================================================================
         function updateCartUI() {
             document.getElementById('cart-badge').innerText = cart.reduce((s, i) => s + i.quantity, 0);
             const container = document.getElementById('cart-items');
@@ -839,16 +938,23 @@
             container.innerHTML = cart.map(item => {
                 const subtotal = item.price * item.quantity;
                 total += subtotal;
+
                 return `
-                    <div class="flex items-center justify-between text-xs py-2 border-b">
-                        <div>
-                            <div class="font-bold uppercase">${item.title}</div>
-                            <div class="text-rose-600">${formatPrice(item.price)}</div>
+                    <div class="flex items-center gap-3 text-xs py-2.5 border-b border-gray-100">
+                        <img src="${item.image}" alt="${item.title}" onerror="this.src='https://placehold.co/100x100/111315/d4af37?text=PARFUMS'" class="w-12 h-12 object-cover rounded-lg border border-gray-200 flex-shrink-0">
+                        
+                        <div class="flex-grow">
+                            <div class="font-bold text-gray-800 uppercase line-clamp-1">${item.title}</div>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                ${item.oldPrice ? `<span class="text-[10px] text-gray-400 line-through">${formatPrice(item.oldPrice)}</span>` : ''}
+                                <span class="font-extrabold text-rose-600">${formatPrice(item.price)}</span>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="updateCartQuantity('${item.id}', -1)" class="w-6 h-6 rounded bg-gray-100 font-bold">-</button>
-                            <span class="font-bold">${item.quantity}</span>
-                            <button onclick="updateCartQuantity('${item.id}', 1)" class="w-6 h-6 rounded bg-gray-100 font-bold">+</button>
+
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <button onclick="updateCartQuantity('${item.id}', -1)" class="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition flex items-center justify-center">-</button>
+                            <span class="font-bold px-1 text-gray-800">${item.quantity}</span>
+                            <button onclick="updateCartQuantity('${item.id}', 1)" class="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition flex items-center justify-center">+</button>
                         </div>
                     </div>
                 `;
