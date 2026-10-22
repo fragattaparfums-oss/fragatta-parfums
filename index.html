@@ -13,12 +13,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK (v10 Modular via CDN) -->
+    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Configuración oficial obtenida de tu consola Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0",
             authDomain: "fragattaparfums-29064.firebaseapp.com",
@@ -29,11 +28,9 @@
             measurementId: "G-973P7Z8SN3"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Hacer funciones accesibles globalmente
         window.db = db;
         window.collection = collection;
         window.onSnapshot = onSnapshot;
@@ -64,11 +61,7 @@
         }
     </script>
     <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #f6f7f9;
-            color: #1f2937;
-        }
+        body { font-family: 'Montserrat', sans-serif; background-color: #f6f7f9; color: #1f2937; }
         .font-cinzel { font-family: 'Cinzel', serif; }
         ::-webkit-scrollbar { height: 4px; width: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
@@ -87,7 +80,7 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- Top Bar: Redes Sociales -->
+    <!-- Top Bar -->
     <div class="bg-luxury-dark border-b border-gray-800 text-gray-400 py-1.5 px-4 text-xs">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
@@ -168,7 +161,7 @@
                     <span class="text-xs text-emerald-400 font-bold"><i class="fas fa-database"></i> Firebase Conectado</span>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <button onclick="openAdminModal('manual')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
+                    <button onclick="openAdminModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
                         <i class="fas fa-plus-circle"></i> + Agregar Producto
                     </button>
                 </div>
@@ -227,7 +220,7 @@
             </div>
         </section>
 
-        <!-- Rejilla de Productos con Spinner de Carga -->
+        <!-- Rejilla de Productos -->
         <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             <div class="col-span-full text-center py-12 text-gray-500 text-sm">
                 <i class="fas fa-spinner fa-spin text-amber-500 text-2xl mb-2"></i>
@@ -330,10 +323,11 @@
                         <input type="text" id="prod-title" required placeholder="YARA 100ML" class="w-full p-2 border rounded-lg">
                     </div>
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-semibold mb-1">Género</label>
-                        <select id="prod-gender" class="w-full p-2 border rounded-lg">
+                        <select id="prod-gender" class="w-full p-2 border rounded-lg bg-white">
                             <option value="Hombre">Hombre</option>
                             <option value="Mujer">Mujer</option>
                             <option value="Unisex">Unisex</option>
@@ -341,7 +335,7 @@
                     </div>
                     <div>
                         <label class="block font-semibold mb-1">Categoría</label>
-                        <select id="prod-category" class="w-full p-2 border rounded-lg">
+                        <select id="prod-category" class="w-full p-2 border rounded-lg bg-white">
                             <option value="Árabe">Árabe</option>
                             <option value="Diseñador">Diseñador</option>
                             <option value="Nicho">Nicho</option>
@@ -351,6 +345,7 @@
                         </select>
                     </div>
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-semibold mb-1">Precio Normal ($)</label>
@@ -361,31 +356,40 @@
                         <input type="number" id="prod-price" required placeholder="175000" class="w-full p-2 border rounded-lg">
                     </div>
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-semibold mb-1">Etiqueta Prioridad</label>
-                        <select id="prod-priority" class="w-full p-2 border rounded-lg">
+                        <select id="prod-priority" class="w-full p-2 border rounded-lg bg-white">
                             <option value="LO NUEVO">🔥 LO NUEVO</option>
                             <option value="TOP VIRAL">⚡ TOP VIRAL</option>
                             <option value="NINGUNA">Sin Etiqueta</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block font-semibold mb-1">URL Imagen</label>
-                        <input type="text" id="prod-image" placeholder="https://..." class="w-full p-2 border rounded-lg">
+                        <label class="block font-semibold mb-1">Imagen del Producto</label>
+                        <label class="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-2 rounded-lg text-center block transition">
+                            <i class="fas fa-upload mr-1"></i> Subir Foto de Galería
+                            <input type="file" id="prod-image-file" accept="image/*" onchange="uploadImageToImgBB(event)" class="hidden">
+                        </label>
+                        <input type="hidden" id="prod-image">
+                        <span id="upload-status" class="text-[10px] text-gray-500 block mt-1"></span>
                     </div>
                 </div>
+
                 <div>
                     <label class="block font-semibold mb-1">Notas Olfativas</label>
                     <input type="text" id="prod-notes" placeholder="Vainilla, Caramelo, Fresa" class="w-full p-2 border rounded-lg">
                 </div>
+
                 <div>
                     <label class="block font-semibold mb-1">Descripción Breve</label>
                     <textarea id="prod-desc" rows="2" placeholder="Set gourmand dulce y cremoso." class="w-full p-2 border rounded-lg"></textarea>
                 </div>
+
                 <div class="pt-3 flex justify-end gap-2">
                     <button type="button" onclick="closeAdminModal()" class="px-4 py-2 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
-                    <button type="submit" class="px-5 py-2 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar en Firebase</button>
+                    <button type="submit" id="btn-save-prod" class="px-5 py-2 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar en Firebase</button>
                 </div>
             </form>
         </div>
@@ -401,8 +405,8 @@
         let currentGender = 'Todos';
 
         const ADMIN_PASSWORD = "J.p12022013";
+        const IMGBB_API_KEY = "6b6e4e580a3c200dd0c86ffb603fefd0"; // API pública de subida rápida
 
-        // Escuchar datos en Tiempo Real desde Firebase Firestore
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
                 if (window.db) {
@@ -429,7 +433,7 @@
                         price: Number(data.price) || 0,
                         oldPrice: data.originalPrice ? Number(data.originalPrice) : (data.oldPrice ? Number(data.oldPrice) : null),
                         priority: data.featured ? 'TOP VIRAL' : (data.priority || 'NINGUNA'),
-                        image: data.image || '',
+                        image: data.image || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
                         notes: data.notes || '',
                         description: data.description || ''
                     };
@@ -437,8 +441,46 @@
                 renderProducts();
             }, (error) => {
                 console.error("Error al conectar con Firebase:", error);
-                showToast("Error de conexión con la base de datos", "error");
+                showToast("Error de conexión", "error");
             });
+        }
+
+        // Subida automática de imágenes sin pagar ni configurar nada
+        async function uploadImageToImgBB(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const statusEl = document.getElementById('upload-status');
+            const saveBtn = document.getElementById('btn-save-prod');
+            
+            statusEl.innerText = "⏳ Subiendo imagen...";
+            statusEl.className = "text-[10px] text-amber-600 font-bold block mt-1";
+            saveBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append("image", file);
+
+            try {
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById('prod-image').value = data.data.url;
+                    statusEl.innerText = "✔️ ¡Imagen lista!";
+                    statusEl.className = "text-[10px] text-emerald-600 font-bold block mt-1";
+                    showToast("Foto cargada con éxito", "success");
+                } else {
+                    throw new Error("Falló la subida");
+                }
+            } catch (err) {
+                statusEl.innerText = "❌ Error al subir imagen. Reintenta.";
+                statusEl.className = "text-[10px] text-rose-600 font-bold block mt-1";
+            } finally {
+                saveBtn.disabled = false;
+            }
         }
 
         function handleAdminToggle() {
@@ -574,12 +616,12 @@
                     showToast("Producto actualizado en Firebase", "success");
                 } else {
                     await window.addDoc(window.collection(window.db, "products"), payload);
-                    showToast("Producto agregado a Firebase", "success");
+                    showToast("Producto guardado en Firebase", "success");
                 }
                 closeAdminModal();
             } catch (err) {
                 console.error(err);
-                alert("Error al guardar en Firebase. Revisa tus reglas de Firestore.");
+                alert("Error al guardar en Firebase.");
             }
         }
 
@@ -754,19 +796,34 @@
         }
 
         function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); }
-        function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); document.getElementById('product-form').reset(); document.getElementById('prod-id').value = ''; }
+        function closeAdminModal() { 
+            document.getElementById('admin-modal').classList.add('hidden'); 
+            document.getElementById('product-form').reset(); 
+            document.getElementById('prod-id').value = '';
+            document.getElementById('upload-status').innerText = '';
+        }
 
         function triggerLogoSelect() { if (isAdmin) document.getElementById('logo-file-input').click(); }
-        function handleLogoUpload(e) {
+        
+        async function handleLogoUpload(e) {
             if (!isAdmin) return;
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    localStorage.setItem('parfums_luxury_logo', evt.target.result);
-                    applyCustomLogo(evt.target.result);
-                };
-                reader.readAsDataURL(file);
+                showToast("Subiendo logo...", "info");
+                const formData = new FormData();
+                formData.append("image", file);
+                try {
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
+                    const data = await res.json();
+                    if (data.success) {
+                        const url = data.data.url;
+                        localStorage.setItem('parfums_luxury_logo', url);
+                        applyCustomLogo(url);
+                        showToast("¡Logo actualizado en todos los dispositivos!", "success");
+                    }
+                } catch (err) {
+                    showToast("Error al subir el logo", "error");
+                }
             }
         }
 
@@ -780,16 +837,25 @@
             document.getElementById('admin-logo-placeholder').classList.add('hidden');
         }
 
-        function handleBannerUpload(e) {
+        async function handleBannerUpload(e) {
             if (!isAdmin) return;
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    localStorage.setItem('parfums_luxury_banner_blur', evt.target.result);
-                    applyCustomBannerBlur(evt.target.result);
-                };
-                reader.readAsDataURL(file);
+                showToast("Subiendo banner...", "info");
+                const formData = new FormData();
+                formData.append("image", file);
+                try {
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
+                    const data = await res.json();
+                    if (data.success) {
+                        const url = data.data.url;
+                        localStorage.setItem('parfums_luxury_banner_blur', url);
+                        applyCustomBannerBlur(url);
+                        showToast("Banner actualizado en todos los dispositivos", "success");
+                    }
+                } catch (err) {
+                    showToast("Error al subir el banner", "error");
+                }
             }
         }
 
