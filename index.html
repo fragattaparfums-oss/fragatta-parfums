@@ -170,7 +170,7 @@
                     <button onclick="openAdminModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
                         <i class="fas fa-plus-circle"></i> + Agregar Producto
                     </button>
-                    <!-- NUEVO BOTÓN EXCEL MASIVO -->
+                    <!-- BOTÓN EXCEL MASIVO -->
                     <label class="cursor-pointer bg-amber-500 hover:bg-amber-600 text-black text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
                         <i class="fas fa-file-excel"></i> 📄 Cargar desde Excel
                         <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" onchange="handleExcelImport(event)" class="hidden">
@@ -231,8 +231,8 @@
             </div>
         </section>
 
-        <!-- Rejilla de Productos -->
-        <div id="product-grid" class="grid grid-cols-3 md:grid-cols-4 gap-2 sm:gap-6">
+        <!-- Rejilla de Productos (2 Columnas en Celular - grid-cols-2, 4 en Computadora - md:grid-cols-4) -->
+        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             <div class="col-span-full text-center py-12 text-gray-500 text-sm">
                 <i class="fas fa-spinner fa-spin text-amber-500 text-2xl mb-2"></i>
                 <p>Cargando productos directamente desde Firebase...</p>
@@ -484,7 +484,7 @@
             }
         }
 
-        // LÓGICA DE IMPORTACIÓN MASIVA DESDE EXCEL
+        // IMPORTACIÓN MASIVA DESDE EXCEL
         function handleExcelImport(event) {
             if (!isAdmin) return;
             const file = event.target.files[0];
@@ -507,12 +507,11 @@
 
                     let addedCount = 0;
                     for (const row of rows) {
-                        // Mapeo flexible de nombres de columnas
                         const brand = row.MARCA || row.marca || row.BRAND || row.brand || 'LUXURY';
                         const name = row.NOMBRE || row.nombre || row.TITLE || row.title || row.FRAGANCIA || row.fragancia;
                         const price = Number(row.PRECIO || row.precio || row.PRICE || row.price || 0);
 
-                        if (!name || price <= 0) continue; // Salta filas sin nombre o precio válido
+                        if (!name || price <= 0) continue;
 
                         const payload = {
                             brand: String(brand).toUpperCase(),
@@ -533,7 +532,7 @@
                     }
 
                     showToast(`¡Se cargaron ${addedCount} productos a Firebase!`, "success");
-                    event.target.value = ''; // Limpia el input
+                    event.target.value = '';
                 } catch (err) {
                     console.error("Error al procesar Excel:", err);
                     alert("Error al leer el archivo Excel. Revisa el formato de las columnas.");
@@ -644,43 +643,43 @@
             grid.innerHTML = filtered.map(p => {
                 let priorityBadge = '';
                 if (p.priority === 'LO NUEVO') {
-                    priorityBadge = `<span class="bg-amber-400 text-black font-extrabold text-[9px] px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm"><i class="fas fa-fire mr-1"></i>LO NUEVO</span>`;
+                    priorityBadge = `<span class="bg-amber-400 text-black font-extrabold text-[9px] sm:text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm"><i class="fas fa-fire mr-0.5"></i>NUEVO</span>`;
                 } else if (p.priority === 'TOP VIRAL') {
-                    priorityBadge = `<span class="bg-yellow-400 text-black font-extrabold text-[9px] px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm"><i class="fas fa-bolt mr-1"></i>TOP VIRAL</span>`;
+                    priorityBadge = `<span class="bg-yellow-400 text-black font-extrabold text-[9px] sm:text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm"><i class="fas fa-bolt mr-0.5"></i>VIRAL</span>`;
                 }
 
-                const notesList = p.notes ? p.notes.split(',').slice(0, 4).map(n => `<span class="inline-flex items-center gap-1 text-[11px] text-gray-500 mr-2"><i class="fas fa-glass-martini-alt text-[9px] text-gray-400"></i>${n.trim()}</span>`).join('') : '';
+                const notesList = p.notes ? p.notes.split(',').slice(0, 3).map(n => `<span class="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-gray-500 mr-1.5"><i class="fas fa-glass-martini-alt text-[8px] text-gray-400"></i>${n.trim()}</span>`).join('') : '';
 
                 return `
-                <div class="bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group p-1.5 sm:p-4">
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group p-2.5 sm:p-4">
                     <div class="cursor-pointer" onclick="openDetailModal('${p.id}')">
-                        <div class="relative w-full h-28 sm:h-56 overflow-hidden rounded-lg sm:rounded-xl bg-gray-50 flex items-center justify-center mb-1.5 sm:mb-3">
-                            ${p.oldPrice ? `<div class="absolute top-2 left-2 z-10"><span class="bg-rose-600 text-white font-extrabold text-[9px] px-2.5 py-0.5 rounded-full uppercase shadow">OFERTA</span></div>` : ''}
+                        <div class="relative w-full h-36 sm:h-56 overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center mb-2 sm:mb-3">
+                            ${p.oldPrice ? `<div class="absolute top-2 left-2 z-10"><span class="bg-rose-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">OFERTA</span></div>` : ''}
                             <div class="absolute top-2 right-2 z-10">${priorityBadge}</div>
-                            <div class="absolute bottom-2 right-2 z-10"><span class="bg-gray-900/90 text-white font-bold text-[9px] px-2 py-0.5 rounded uppercase backdrop-blur-sm">${p.category}</span></div>
+                            <div class="absolute bottom-2 right-2 z-10"><span class="bg-gray-900/90 text-white font-bold text-[8px] sm:text-[9px] px-2 py-0.5 rounded uppercase backdrop-blur-sm">${p.category}</span></div>
                             <img src="${p.image}" alt="${p.title}" onerror="this.src='https://placehold.co/400x400/111315/d4af37?text=${encodeURIComponent(p.title)}'" class="object-cover h-full w-full group-hover:scale-105 transition duration-500">
                         </div>
 
                         <div class="text-[10px] font-bold text-amber-600 tracking-widest uppercase mb-0.5">${p.brand}</div>
-                        <h3 class="font-cinzel font-bold text-gray-900 text-[10px] sm:text-base tracking-tight uppercase group-hover:text-amber-600 transition leading-tight sm:leading-snug mb-1 sm:mb-2 line-clamp-1">${p.title}</h3>
+                        <h3 class="font-cinzel font-bold text-gray-900 text-xs sm:text-base tracking-tight uppercase group-hover:text-amber-600 transition leading-tight mb-1 sm:mb-2 line-clamp-1">${p.title}</h3>
 
-                        <div class="flex flex-wrap items-center mb-2 min-h-[28px]">${notesList}</div>
-                        <p class="text-[11px] text-gray-400 line-clamp-1 mb-3 font-normal">${p.description || 'Fragancia exclusiva.'}</p>
+                        <div class="flex flex-wrap items-center mb-1.5 min-h-[24px] sm:min-h-[28px]">${notesList}</div>
+                        <p class="text-[10px] sm:text-[11px] text-gray-400 line-clamp-1 mb-2 font-normal">${p.description || 'Fragancia exclusiva.'}</p>
 
-                        <div class="flex items-baseline gap-2 mb-3">
-                            ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through font-normal">${formatPrice(p.oldPrice)}</span>` : ''}
-                            <span class="text-base font-extrabold text-rose-600">${formatPrice(p.price)}</span>
+                        <div class="flex items-baseline gap-1.5 sm:gap-2 mb-2.5">
+                            ${p.oldPrice ? `<span class="text-[10px] sm:text-xs text-gray-400 line-through font-normal">${formatPrice(p.oldPrice)}</span>` : ''}
+                            <span class="text-sm sm:text-base font-extrabold text-rose-600">${formatPrice(p.price)}</span>
                         </div>
                     </div>
 
-                    <div class="space-y-2 pt-2 border-t border-gray-100">
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="addToCart('${p.id}')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold py-2 rounded-lg transition border border-gray-200">+ Carrito</button>
-                            <button onclick="quickOrderWhatsApp('${p.id}')" class="w-full bg-[#1e293b] hover:bg-slate-900 text-white text-xs font-bold py-2 rounded-lg transition shadow flex items-center justify-center gap-1"><i class="fab fa-whatsapp text-emerald-400"></i> Pedir Ya</button>
+                    <div class="space-y-1.5 pt-2 border-t border-gray-100">
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <button onclick="addToCart('${p.id}')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-[11px] sm:text-xs font-semibold py-1.5 sm:py-2 rounded-lg transition border border-gray-200">+ Carrito</button>
+                            <button onclick="quickOrderWhatsApp('${p.id}')" class="w-full bg-[#1e293b] hover:bg-slate-900 text-white text-[11px] sm:text-xs font-bold py-1.5 sm:py-2 rounded-lg transition shadow flex items-center justify-center gap-1"><i class="fab fa-whatsapp text-emerald-400"></i> Pedir</button>
                         </div>
 
                         ${isAdmin ? `
-                        <div class="grid grid-cols-2 gap-2 pt-1 border-t border-gray-100">
+                        <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-gray-100">
                             <button onclick="openEditModal('${p.id}')" class="text-[10px] bg-blue-50 text-blue-600 font-semibold py-1 rounded">Editar</button>
                             <button onclick="deleteProductFromFirebase('${p.id}')" class="text-[10px] bg-rose-50 text-rose-600 font-semibold py-1 rounded">Eliminar</button>
                         </div>
