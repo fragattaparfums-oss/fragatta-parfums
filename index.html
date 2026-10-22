@@ -104,13 +104,13 @@
             <div class="flex flex-col items-center">
                 <div id="logo-container" class="mb-1">
                     <div id="buyer-logo-box" class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border border-amber-200 shadow-sm bg-amber-50">
-                        <img id="buyer-logo-img" src="" alt="Parfums Luxury Logo" class="w-full h-full object-contain hidden">
-                        <span id="buyer-logo-fallback" class="font-cinzel text-amber-800 text-xs font-bold">PL</span>
+                        <img id="buyer-logo-img" src="https://i.ibb.co/L5Qy8V3/logo-parfums.png" alt="Parfums Luxury Logo" class="w-full h-full object-contain" onerror="this.classList.add('hidden'); document.getElementById('buyer-logo-fallback').classList.remove('hidden');">
+                        <span id="buyer-logo-fallback" class="font-cinzel text-amber-800 text-xs font-bold hidden">PL</span>
                     </div>
 
                     <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para subir o cambiar el logo">
-                        <img id="admin-logo-img" src="" alt="Logo Admin" class="w-full h-full object-contain hidden">
-                        <div id="admin-logo-placeholder" class="text-center p-1">
+                        <img id="admin-logo-img" src="https://i.ibb.co/L5Qy8V3/logo-parfums.png" alt="Logo Admin" class="w-full h-full object-contain">
+                        <div id="admin-logo-placeholder" class="text-center p-1 hidden">
                             <span class="text-[8px] text-amber-900 leading-none font-bold block">Subir<br>Logo</span>
                         </div>
                         <div class="absolute inset-0 bg-black/60 text-luxury-gold text-[8px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition">Cambiar</div>
@@ -405,7 +405,7 @@
         let currentGender = 'Todos';
 
         const ADMIN_PASSWORD = "J.p12022013";
-        const IMGBB_API_KEY = "6b6e4e580a3c200dd0c86ffb603fefd0"; // API pública de subida rápida
+        const IMGBB_API_KEY = "6b6e4e580a3c200dd0c86ffb603fefd0";
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
@@ -445,7 +445,6 @@
             });
         }
 
-        // Subida automática de imágenes sin pagar ni configurar nada
         async function uploadImageToImgBB(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -819,7 +818,7 @@
                         const url = data.data.url;
                         localStorage.setItem('parfums_luxury_logo', url);
                         applyCustomLogo(url);
-                        showToast("¡Logo actualizado en todos los dispositivos!", "success");
+                        showToast("¡Logo actualizado!", "success");
                     }
                 } catch (err) {
                     showToast("Error al subir el logo", "error");
@@ -851,7 +850,7 @@
                         const url = data.data.url;
                         localStorage.setItem('parfums_luxury_banner_blur', url);
                         applyCustomBannerBlur(url);
-                        showToast("Banner actualizado en todos los dispositivos", "success");
+                        showToast("Banner actualizado", "success");
                     }
                 } catch (err) {
                     showToast("Error al subir el banner", "error");
