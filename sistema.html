@@ -277,7 +277,7 @@
                             </div>
                         </div>
 
-                        <!-- RECUADRO ADICIONAL: CAJA / BASE DE BANCO Y CONTROL DE CONSUMO -->
+                        <!-- RECUADRO ADICIONAL: CAJA / BASE DE BANCO -->
                         <div class="bg-slate-800/90 border border-amber-500/30 rounded-2xl p-4 mt-3">
                             <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                                 <i class="fa-solid fa-vault"></i> Control de Fondo Base en Banco
@@ -600,7 +600,7 @@
                     </div>
                 </section>
 
-                <!-- 8. FACTURAS POR PAGAR (PROVEEDORES) CON EDICIÓN ADMIN -->
+                <!-- 8. FACTURAS POR PAGAR -->
                 <section id="tab-payables" class="tab-content hidden space-y-6">
                     <div class="flex justify-between items-center bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
                         <div>
@@ -665,7 +665,7 @@
 
     <!-- MODALES DE CONTROL -->
 
-    <!-- MODAL PRODUCTO (CREAR Y EDITAR COMPLETO) -->
+    <!-- MODAL PRODUCTO -->
     <div id="product-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
             <h3 id="product-modal-title" class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3">Nuevo Perfume</h3>
@@ -935,7 +935,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CON LÓGICA COMPLETA -->
+    <!-- JAVASCRIPT CORREGIDO -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -1437,7 +1437,7 @@
             showToast('Venta eliminada por el Administrador');
         }
 
-        // --- INVENTARIO CON EDICIÓN COMPLETA Y CONTROL DE STOCK ---
+        // --- INVENTARIO ---
         function generateAutoSKU() {
             const nextNum = products.length + 1001;
             return `FRAG-${nextNum}`;
@@ -1494,7 +1494,7 @@
             document.getElementById('prod-sku').value = generateAutoSKU();
             document.getElementById('prod-name').value = '';
             document.getElementById('prod-category').value = 'Dama';
-            document.getElementById('prod-stock').value = '10';
+            document.getElementById('prod-stock').value = '0';
             document.getElementById('prod-cost').value = '45000';
             document.getElementById('prod-price').value = '115000';
             document.getElementById('product-modal-title').innerText = "Nuevo Perfume";
@@ -1529,7 +1529,7 @@
 
             const name = document.getElementById('prod-name').value;
             const category = document.getElementById('prod-category').value;
-            const stock = parseInt(document.getElementById('prod-stock').value) || 0;
+            const stock = parseInt(document.getElementById('prod-stock').value) ?? 0;
             const cost = parseFloat(document.getElementById('prod-cost').value) || 0;
             const price = parseFloat(document.getElementById('prod-price').value) || 0;
 
@@ -1570,6 +1570,7 @@
             document.getElementById('excel-file-input').click();
         }
 
+        /* IMPORTACIÓN CORREGIDA: HACE DISTINCIÓN EXACTA DE STOCK EN 0 */
         function importExcelCatalog(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1582,15 +1583,25 @@
                 const worksheet = workbook.Sheets[firstSheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet);
 
+                // Limpiamos la lista previa para evitar mezclar datos con stock 10
+                products = [];
+
                 let importedCount = 0;
                 json.forEach(row => {
                     const name = row.Nombre || row.PERFUME || row.Producto;
                     if (name) {
                         const sku = row.SKU || generateAutoSKU();
-                        const category = row.Categoria || row.Categoría || 'Unisex';
-                        const stock = parseInt(row.Stock || row.Cantidad || 10) || 0;
-                        const cost = parseFloat(row.Costo || row.PrecioCompra || 45000) || 0;
-                        const price = parseFloat(row.Precio || row.PrecioVenta || 115000) || 0;
+                        const category = row.Categoria || row.CATEGORIA || row.Categoría || 'Unisex';
+                        
+                        // CORRECCIÓN CLAVE: Si row.STOCK es 0, no usar || que lo evalúa como falso
+                        let rawStock = row.STOCK !== undefined ? row.STOCK : (row.Stock !== undefined ? row.Stock : row.Cantidad);
+                        const stock = rawStock !== undefined ? parseInt(rawStock) : 0;
+                        
+                        let rawCost = row.COSTO !== undefined ? row.COSTO : (row.Costo !== undefined ? row.Costo : row.PrecioCompra);
+                        const cost = rawCost !== undefined ? parseFloat(rawCost) : 0;
+
+                        let rawPrice = row.PRECIO !== undefined ? row.PRECIO : (row.Precio !== undefined ? row.Precio : row.PrecioVenta);
+                        const price = rawPrice !== undefined ? parseFloat(rawPrice) : 0;
 
                         products.push({ id: Date.now() + Math.random(), sku, name, category, stock, cost, price });
                         importedCount++;
@@ -1601,7 +1612,7 @@
                 renderInventoryTable();
                 renderPosProducts();
                 updateDashboard();
-                showToast(`¡Se importaron ${importedCount} perfumes desde Excel!`);
+                showToast(`¡Se importaron ${importedCount} perfumes con Stock en 0!`);
             };
             reader.readAsArrayBuffer(file);
         }
