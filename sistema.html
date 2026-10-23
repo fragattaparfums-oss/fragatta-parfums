@@ -240,7 +240,7 @@
                         </div>
                     </div>
 
-                    <!-- MÓDULO MODO ADMIN: ARQUEO Y RESET DE MEMORIA -->
+                    <!-- MÓDULO MODO ADMIN: ARQUEO Y FONDO BASE BANCARIO -->
                     <div class="admin-only hidden bg-gradient-to-r from-slate-900 to-purple-950 text-white rounded-3xl p-6 shadow-xl space-y-4">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                             <div class="flex items-center gap-3">
@@ -248,8 +248,8 @@
                                     <i class="fa-solid fa-building-columns text-xl"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-base text-white">Panel de Arqueo Bancario (Administrador)</h3>
-                                    <p class="text-xs text-slate-400">Arqueo real de cuenta bancaria y reinicio de pruebas.</p>
+                                    <h3 class="font-bold text-base text-white">Panel de Arqueo Bancario y Control de Base (Administrador)</h3>
+                                    <p class="text-xs text-slate-400">Control de cuenta de ahorros y seguimiento de dinero base gastado.</p>
                                 </div>
                             </div>
                             <button onclick="resetSystemMemory()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl transition shadow-md flex items-center gap-1.5">
@@ -264,7 +264,7 @@
                             </div>
 
                             <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
-                                <p class="text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-1">Saldo en Cuenta de Ahorros</p>
+                                <p class="text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-1">Saldo Real en Cuenta de Ahorros</p>
                                 <div class="flex items-center gap-2">
                                     <span class="text-xl font-bold text-purple-400">$</span>
                                     <input type="number" id="admin-bank-savings" value="0" onchange="updateBankSavings()" class="w-full bg-slate-900 border border-purple-500/50 rounded-xl px-3 py-1.5 text-xl font-black text-white focus:outline-none focus:border-purple-400">
@@ -274,6 +274,27 @@
                             <div class="bg-purple-900/40 p-4 rounded-2xl border border-purple-500/50">
                                 <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Total Esperado (Cuenta + Ganancias)</p>
                                 <h4 id="admin-total-expected-money" class="text-2xl font-black text-amber-400 mt-1">$0</h4>
+                            </div>
+                        </div>
+
+                        <!-- RECUADRO ADICIONAL: CAJA / BASE DE BANCO Y CONTROL DE CONSUMO -->
+                        <div class="bg-slate-800/90 border border-amber-500/30 rounded-2xl p-4 mt-3">
+                            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-vault"></i> Control de Fondo Base en Banco
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fondo Base Objetivo ($):</label>
+                                    <input type="number" id="admin-base-target" value="0" min="0" onchange="updateBaseCalculations()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm font-bold text-white focus:outline-none focus:border-amber-400">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fondo Base Actual ($):</label>
+                                    <input type="number" id="admin-base-current" value="0" min="0" onchange="updateBaseCalculations()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm font-bold text-white focus:outline-none focus:border-amber-400">
+                                </div>
+                                <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700/80 flex flex-col justify-center">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase">Faltante para Meta Base:</span>
+                                    <span id="admin-base-missing" class="text-lg font-black text-emerald-400">$0</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -357,7 +378,7 @@
                     </div>
                 </section>
 
-                <!-- 2. POS / FACTURACIÓN CON ENVÍO DINÁMICO -->
+                <!-- 2. POS / FACTURACIÓN -->
                 <section id="tab-pos" class="tab-content hidden space-y-6">
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                         <div class="lg:col-span-7 space-y-4">
@@ -506,7 +527,7 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Catálogo de Perfumes & Existencias</h2>
-                            <p class="text-xs text-slate-500">Gestión de stock e importación Excel</p>
+                            <p class="text-xs text-slate-500">Gestión de stock e importación Excel (Modo Admin permite modificar precios y unidades subidas)</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <button onclick="triggerExcelImport()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-emerald-600/20">
@@ -644,7 +665,7 @@
 
     <!-- MODALES DE CONTROL -->
 
-    <!-- MODAL PRODUCTO -->
+    <!-- MODAL PRODUCTO (CREAR Y EDITAR COMPLETO) -->
     <div id="product-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
             <h3 id="product-modal-title" class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3">Nuevo Perfume</h3>
@@ -653,7 +674,7 @@
                 <div>
                     <div class="flex justify-between items-center mb-1">
                         <label class="font-bold text-slate-600">SKU:</label>
-                        <span class="text-[10px] text-purple-600 font-semibold">(Automático)</span>
+                        <span class="text-[10px] text-purple-600 font-semibold">(Automático o Modificable)</span>
                     </div>
                     <input type="text" id="prod-sku" placeholder="Ej: FRAG-1001" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                 </div>
@@ -671,7 +692,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-600 mb-1">Stock Inicial:</label>
+                        <label class="block font-bold text-slate-600 mb-1">Unidades en Stock:</label>
                         <input type="number" id="prod-stock" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                     </div>
                 </div>
@@ -914,7 +935,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CON LÓGICA CORREGIDA -->
+    <!-- JAVASCRIPT CON LÓGICA COMPLETA -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -935,6 +956,8 @@
         let payables = JSON.parse(localStorage.getItem('fragatta_payables')) || [];
         let withdrawals = JSON.parse(localStorage.getItem('fragatta_withdrawals')) || [];
         let bankSavings = parseFloat(localStorage.getItem('fragatta_bank_savings')) || 0;
+        let baseTarget = parseFloat(localStorage.getItem('fragatta_base_target')) || 0;
+        let baseCurrent = parseFloat(localStorage.getItem('fragatta_base_current')) || 0;
 
         let cart = [];
         let financeChart = null;
@@ -991,6 +1014,9 @@
             document.getElementById('lock-btn-text').innerText = isAdmin ? 'Bloquear Admin' : 'Desbloquear Modo Admin';
             
             document.getElementById('admin-bank-savings').value = bankSavings;
+            document.getElementById('admin-base-target').value = baseTarget;
+            document.getElementById('admin-base-current').value = baseCurrent;
+            updateBaseCalculations();
             
             renderInventoryTable();
             renderTablesViews();
@@ -1012,6 +1038,8 @@
 
             document.getElementById('pos-sale-date').valueAsDate = new Date();
             document.getElementById('admin-bank-savings').value = bankSavings;
+            document.getElementById('admin-base-target').value = baseTarget;
+            document.getElementById('admin-base-current').value = baseCurrent;
 
             renderPosProducts();
             renderCart();
@@ -1033,6 +1061,8 @@
             localStorage.setItem('fragatta_payables', JSON.stringify(payables));
             localStorage.setItem('fragatta_withdrawals', JSON.stringify(withdrawals));
             localStorage.setItem('fragatta_bank_savings', bankSavings.toString());
+            localStorage.setItem('fragatta_base_target', baseTarget.toString());
+            localStorage.setItem('fragatta_base_current', baseCurrent.toString());
         }
 
         function resetSystemMemory() {
@@ -1049,6 +1079,19 @@
             saveData();
             updateDashboard();
             showToast('Saldo en cuenta de ahorros actualizado');
+        }
+
+        function updateBaseCalculations() {
+            baseTarget = parseFloat(document.getElementById('admin-base-target').value) || 0;
+            baseCurrent = parseFloat(document.getElementById('admin-base-current').value) || 0;
+            const missing = Math.max(0, baseTarget - baseCurrent);
+            
+            const missingEl = document.getElementById('admin-base-missing');
+            if (missingEl) {
+                missingEl.innerText = `$${missing.toLocaleString('es-CO')}`;
+                missingEl.className = missing > 0 ? "text-lg font-black text-rose-400" : "text-lg font-black text-emerald-400";
+            }
+            saveData();
         }
 
         function switchTab(tabId) {
@@ -1394,7 +1437,7 @@
             showToast('Venta eliminada por el Administrador');
         }
 
-        // --- INVENTARIO ---
+        // --- INVENTARIO CON EDICIÓN COMPLETA Y CONTROL DE STOCK ---
         function generateAutoSKU() {
             const nextNum = products.length + 1001;
             return `FRAG-${nextNum}`;
@@ -1418,19 +1461,27 @@
                         <td class="p-4"><span class="bg-purple-50 text-purple-700 font-bold px-2.5 py-1 rounded-full text-[10px]">${p.category}</span></td>
                         <td class="p-4 admin-only-cell text-amber-600 font-bold" style="${isAdmin ? '' : 'display:none;'}">$${costVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 font-bold text-emerald-600">$${priceVal.toLocaleString('es-CO')}</td>
-                        <td class="p-4 font-bold">${p.stock}</td>
-                        <td class="p-4 text-center">
-                            <button onclick="quickAddStock(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition">+1 Stock</button>
+                        <td class="p-4 font-bold">
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="adjustStock(${p.id}, -1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">-</button>
+                                <span class="px-1.5">${p.stock}</span>
+                                <button onclick="adjustStock(${p.id}, 1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">+</button>
+                            </div>
+                        </td>
+                        <td class="p-4 text-center space-x-1">
+                            ${isAdmin ? `<button onclick="editProduct(${p.id})" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar Producto (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
+                            ${isAdmin ? `<button onclick="deleteProduct(${p.id})" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Producto (Admin)"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </td>
                     </tr>
                 `;
             });
         }
 
-        function quickAddStock(id) {
+        function adjustStock(id, delta) {
             const p = products.find(prod => prod.id === id);
             if (p) {
-                p.stock++;
+                if (p.stock + delta < 0) return showToast('El stock no puede ser menor a cero', 'error');
+                p.stock += delta;
                 saveData();
                 renderInventoryTable();
                 renderPosProducts();
@@ -1439,8 +1490,31 @@
         }
 
         function openProductModal() {
+            document.getElementById('prod-id').value = '';
             document.getElementById('prod-sku').value = generateAutoSKU();
+            document.getElementById('prod-name').value = '';
+            document.getElementById('prod-category').value = 'Dama';
+            document.getElementById('prod-stock').value = '10';
+            document.getElementById('prod-cost').value = '45000';
+            document.getElementById('prod-price').value = '115000';
+            document.getElementById('product-modal-title').innerText = "Nuevo Perfume";
             document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function editProduct(id) {
+            if (!isAdmin) return;
+            const p = products.find(item => item.id === id);
+            if (p) {
+                document.getElementById('prod-id').value = p.id;
+                document.getElementById('prod-sku').value = p.sku;
+                document.getElementById('prod-name').value = p.name;
+                document.getElementById('prod-category').value = p.category;
+                document.getElementById('prod-stock').value = p.stock;
+                document.getElementById('prod-cost').value = p.cost;
+                document.getElementById('prod-price').value = p.price;
+                document.getElementById('product-modal-title').innerText = "Editar Perfume (Admin)";
+                document.getElementById('product-modal').classList.remove('hidden');
+            }
         }
 
         function closeProductModal() {
@@ -1449,6 +1523,7 @@
 
         function saveProduct(e) {
             e.preventDefault();
+            const editId = document.getElementById('prod-id').value;
             let sku = document.getElementById('prod-sku').value.trim();
             if (!sku) sku = generateAutoSKU();
 
@@ -1458,13 +1533,37 @@
             const cost = parseFloat(document.getElementById('prod-cost').value) || 0;
             const price = parseFloat(document.getElementById('prod-price').value) || 0;
 
-            products.push({ id: Date.now(), sku, name, category, stock, cost, price });
+            if (editId) {
+                const p = products.find(item => item.id == editId);
+                if (p) {
+                    p.sku = sku;
+                    p.name = name;
+                    p.category = category;
+                    p.stock = stock;
+                    p.cost = cost;
+                    p.price = price;
+                }
+            } else {
+                products.push({ id: Date.now(), sku, name, category, stock, cost, price });
+            }
+
             saveData();
             closeProductModal();
             renderInventoryTable();
             renderPosProducts();
             updateDashboard();
-            showToast('Perfume agregado al catálogo');
+            showToast('Catálogo actualizado correctamente');
+        }
+
+        function deleteProduct(id) {
+            if (!isAdmin) return alert("Solo el Administrador puede eliminar perfumes.");
+            if (!confirm("¿Desea eliminar este producto del catálogo?")) return;
+            products = products.filter(p => p.id !== id);
+            saveData();
+            renderInventoryTable();
+            renderPosProducts();
+            updateDashboard();
+            showToast('Producto eliminado por el Administrador');
         }
 
         function triggerExcelImport() {
