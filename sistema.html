@@ -176,23 +176,23 @@
 
             <div class="p-4 md:p-8 flex-1 space-y-6">
                 
-                <!-- 1. DASHBOARD, REPARTO Y CORTE -->
+                <!-- 1. DASHBOARD, REPARTO Y CORTE FINANCIERO -->
                 <section id="tab-dashboard" class="tab-content space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Dashboard & Corte Financiero</h2>
-                            <p class="text-xs text-slate-500 font-medium">Cierre mensual de cuentas los días 30 de cada mes</p>
+                            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Dashboard & Arqueo de Caja</h2>
+                            <p class="text-xs text-slate-500 font-medium">Control financiero y proyección de cuenta bancaria</p>
                         </div>
                         <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border border-slate-200 shadow-sm">
                             <i class="fa-regular fa-calendar text-purple-600"></i>
                             <select id="dash-month-filter" onchange="updateDashboard()" class="bg-transparent text-xs font-bold text-slate-700 focus:outline-none">
-                                <option value="CURRENT">Mes Actual (Corte 30)</option>
+                                <option value="CURRENT">Mes Actual</option>
                                 <option value="ALL">Histórico Completo</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- METRICS CARDS -->
+                    <!-- METRICS CARDS GENERALES -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
                             <div class="flex justify-between items-start">
@@ -233,7 +233,7 @@
                         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Deudas Prov.</p>
+                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Deudas Proveedores</p>
                                     <h3 id="dash-total-payables" class="text-2xl font-black text-rose-600 mt-1">$0</h3>
                                 </div>
                                 <div class="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
@@ -243,21 +243,59 @@
                         </div>
                     </div>
 
-                    <!-- REPARTO SOCIOS (50/50 O PERSONALIZADO) + RETIROS DE GANANCIA -->
+                    <!-- MÓDULO EXCLUSIVO MODO ADMIN: CUENTA DE AHORROS Y BALANCE ESPERADO -->
+                    <div class="admin-only hidden bg-gradient-to-r from-slate-900 to-purple-950 text-white rounded-3xl p-6 shadow-xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2.5 bg-purple-600/30 border border-purple-500/40 rounded-xl text-purple-300">
+                                    <i class="fa-solid fa-building-columns text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-base text-white">Panel de Arqueo Bancario (Exclusivo Administrador)</h3>
+                                    <p class="text-xs text-slate-400">Total acumulado de ventas históricas y control de cuenta de ahorros real.</p>
+                                </div>
+                            </div>
+                            <span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase">Modo Admin Activo</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                            <!-- Total Histórico Vendido -->
+                            <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Histórico Vendido</p>
+                                <h4 id="admin-total-historical-sales" class="text-2xl font-black text-emerald-400 mt-1">$0</h4>
+                            </div>
+
+                            <!-- Saldo en Cuenta de Ahorros (Modificable) -->
+                            <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
+                                <p class="text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-1">Saldo en Cuenta de Ahorros</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl font-bold text-purple-400">$</span>
+                                    <input type="number" id="admin-bank-savings" value="0" onchange="updateBankSavings()" class="w-full bg-slate-900 border border-purple-500/50 rounded-xl px-3 py-1.5 text-xl font-black text-white focus:outline-none focus:border-purple-400">
+                                </div>
+                            </div>
+
+                            <!-- Total Dinero Esperado en Banco -->
+                            <div class="bg-purple-900/40 p-4 rounded-2xl border border-purple-500/50">
+                                <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Total Esperado (Cuenta + Ganancias)</p>
+                                <h4 id="admin-total-expected-money" class="text-2xl font-black text-amber-400 mt-1">$0</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REPARTO SOCIOS -->
                     <div class="bg-white border border-purple-100 rounded-3xl p-6 shadow-sm space-y-4">
                         <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 pb-4">
                             <div>
                                 <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-                                    <i class="fa-solid fa-users text-purple-600"></i> Reparto de Utilidades & Retiros de Ganancias
+                                    <i class="fa-solid fa-users text-purple-600"></i> Reparto de Utilidades & Retiros
                                 </h3>
-                                <p class="text-xs text-slate-500">Calcula ganancias según porcentaje y descuenta los retiros realizados por cada socio.</p>
+                                <p class="text-xs text-slate-500">Calcula ganancias según porcentaje y descuenta retiros.</p>
                             </div>
                             <button onclick="openWithdrawalModal()" class="admin-only hidden bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-purple-600/20 flex items-center gap-2">
                                 <i class="fa-solid fa-money-bill-transfer"></i> Registrar Retiro de Socio
                             </button>
                         </div>
 
-                        <!-- Configuración Porcentajes -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-gradient-to-br from-purple-50/50 to-indigo-50/50 p-5 rounded-2xl border border-purple-100 space-y-3">
                                 <div class="flex justify-between items-center">
@@ -310,7 +348,7 @@
                     <!-- GRÁFICO & ALERTAS DE STOCK -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-2 bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
-                            <h3 class="font-bold text-slate-900 mb-4">Balance de Operaciones del Corte</h3>
+                            <h3 class="font-bold text-slate-900 mb-4">Balance de Operaciones</h3>
                             <div class="relative w-full h-64"><canvas id="financeChart"></canvas></div>
                         </div>
 
@@ -323,7 +361,7 @@
                     </div>
                 </section>
 
-                <!-- 2. POS / FACTURACIÓN -->
+                <!-- 2. POS / FACTURACIÓN CON PRODUCTO "ENVÍO" DINÁMICO -->
                 <section id="tab-pos" class="tab-content hidden space-y-6">
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                         <div class="lg:col-span-7 space-y-4">
@@ -358,7 +396,14 @@
                                         <input type="text" id="pos-client-phone" placeholder="Teléfono / WhatsApp..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500">
                                         <input type="text" id="pos-client-address" placeholder="Dirección de Envío + Ciudad..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500">
                                         
-                                        <!-- Fecha Personalizada (Admin / Retroactiva) -->
+                                        <!-- Costo del Envío -->
+                                        <div class="flex items-center justify-between pt-1">
+                                            <label class="text-xs text-amber-700 font-bold flex items-center gap-1">
+                                                <i class="fa-solid fa-truck"></i> Costo de Envío ($):
+                                            </label>
+                                            <input type="number" id="pos-shipping-cost" value="0" min="0" onchange="renderCart()" class="w-28 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-2 py-1 text-xs font-bold text-right focus:outline-none">
+                                        </div>
+
                                         <div class="flex items-center justify-between pt-1">
                                             <label class="text-xs text-slate-600 font-bold">Fecha Venta:</label>
                                             <input type="date" id="pos-sale-date" class="bg-white border border-slate-200 text-slate-800 rounded-xl px-2 py-1 text-xs font-bold focus:outline-none">
@@ -381,7 +426,7 @@
 
                                 <div class="border-t border-slate-100 pt-4 space-y-3">
                                     <div class="flex justify-between items-center">
-                                        <span class="text-xs font-bold text-slate-500 uppercase">Total Venta:</span>
+                                        <span class="text-xs font-bold text-slate-500 uppercase">Total Venta + Envío:</span>
                                         <span id="pos-total" class="text-2xl font-black text-emerald-600">$0</span>
                                     </div>
 
@@ -432,7 +477,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Histórico Completo de Ventas</h2>
-                            <p class="text-xs text-slate-500">Permite modificación hasta 2 meses atrás (Ilimitado en Modo Admin)</p>
+                            <p class="text-xs text-slate-500">Eliminación protegida en Modo Admin</p>
                         </div>
                     </div>
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
@@ -461,12 +506,12 @@
                     </div>
                 </section>
 
-                <!-- 6. INVENTARIO Y CARGA EXCEL -->
+                <!-- 6. INVENTARIO -->
                 <section id="tab-inventory" class="tab-content hidden space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Catálogo de Perfumes & Existencias</h2>
-                            <p class="text-xs text-slate-500">Gestión de stock, SKU automático e importación desde Excel</p>
+                            <p class="text-xs text-slate-500">Gestión de stock e importación Excel</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <button onclick="triggerExcelImport()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-emerald-600/20">
@@ -515,7 +560,7 @@
                             <h2 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
                                 <i class="fa-solid fa-hand-holding-dollar text-emerald-600"></i> Historial de Abonos de Clientes
                             </h2>
-                            <p class="text-xs text-slate-500 mt-0.5">Todos los abonos quedan entrelazados con fecha, hora y factura</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Eliminación restringida únicamente a Modo Administrador</p>
                         </div>
                         <button onclick="openDebtModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-emerald-600/20 flex items-center gap-2">
                             <i class="fa-solid fa-plus"></i> Registrar Abono a Cliente
@@ -526,11 +571,12 @@
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
-                                    <th class="p-4">Fecha y Hora Exacta</th>
+                                    <th class="p-4">Fecha y Hora</th>
                                     <th class="p-4">Factura Vinculada</th>
                                     <th class="p-4">Cliente</th>
                                     <th class="p-4">Concepto</th>
                                     <th class="p-4">Monto Abonado</th>
+                                    <th class="p-4 text-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="debts-table-body" class="divide-y divide-slate-100 text-slate-700"></tbody>
@@ -538,16 +584,16 @@
                     </div>
                 </section>
 
-                <!-- 8. FACTURAS POR PAGAR (PROVEEDORES) -->
+                <!-- 8. FACTURAS POR PAGAR (PROVEEDORES) CON EDICIÓN ADMIN -->
                 <section id="tab-payables" class="tab-content hidden space-y-6">
                     <div class="flex justify-between items-center bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
                         <div>
                             <h2 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
                                 <i class="fa-solid fa-file-invoice-dollar text-rose-600"></i> Cuentas por Pagar (Proveedores)
                             </h2>
-                            <p class="text-xs text-slate-500 mt-0.5">Controla las facturas que la perfumería debe y tus abonos a proveedores</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Edición de deudas y eliminación restringida a Modo Admin</p>
                         </div>
-                        <button onclick="openPayableModal()" class="admin-only hidden bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-rose-600/20 flex items-center gap-2">
+                        <button onclick="openPayableModal()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-rose-600/20 flex items-center gap-2">
                             <i class="fa-solid fa-plus"></i> + Nueva Factura por Pagar
                         </button>
                     </div>
@@ -570,14 +616,14 @@
                     </div>
                 </section>
 
-                <!-- 9. GASTOS OPERATIVOS -->
+                <!-- 9. GASTOS OPERATIVOS (AÑADIR NORMAL, ELIMINAR ADMIN) -->
                 <section id="tab-accounting" class="tab-content hidden space-y-6">
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Gastos Operativos</h2>
-                            <p class="text-xs text-slate-500">Registra gastos administrativos, insumos o envíos</p>
+                            <p class="text-xs text-slate-500">Registra gastos administrativos (Solo Admin puede eliminar)</p>
                         </div>
-                        <button onclick="openExpenseModal()" class="admin-only hidden bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-purple-600/20">
+                        <button onclick="openExpenseModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-purple-600/20">
                             <i class="fa-solid fa-plus"></i> Registrar Gasto
                         </button>
                     </div>
@@ -589,6 +635,7 @@
                                     <th class="p-4">Fecha y Hora</th>
                                     <th class="p-4">Descripción del Gasto</th>
                                     <th class="p-4">Monto</th>
+                                    <th class="p-4 text-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="expenses-table-body" class="divide-y divide-slate-100 text-slate-700"></tbody>
@@ -703,11 +750,12 @@
         </div>
     </div>
 
-    <!-- MODAL FACTURA PROVEEDOR -->
+    <!-- MODAL EDITAR / CREAR FACTURA PROVEEDOR (ADMIN) -->
     <div id="payable-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
-            <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3">Registrar Deuda a Proveedor</h3>
+            <h3 id="payable-modal-title" class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3">Registrar Deuda a Proveedor</h3>
             <form onsubmit="savePayable(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="pay-id">
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">Proveedor:</label>
                     <input type="text" id="pay-supplier" required placeholder="Ej: Perfumes Importados SAS" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
@@ -722,13 +770,13 @@
                         <input type="number" id="pay-total" min="1" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-600 mb-1">Abono Inicial ($):</label>
+                        <label class="block font-bold text-slate-600 mb-1">Total Abonado ($):</label>
                         <input type="number" id="pay-abono" min="0" value="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                     </div>
                 </div>
                 <div class="pt-2 flex justify-end gap-2">
                     <button type="button" onclick="closePayableModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold">Registrar Deuda</button>
+                    <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold">Guardar Factura</button>
                 </div>
             </form>
         </div>
@@ -827,6 +875,7 @@
                     </table>
 
                     <div class="text-right text-xs font-bold space-y-1">
+                        <p id="print-shipping-line" class="hidden text-amber-700">Costo Envío: <span id="print-shipping-val"></span></p>
                         <p id="print-abono-line" class="hidden text-amber-600">Monto Abonado: <span id="print-abono-val"></span></p>
                         <p class="text-sm text-slate-900">TOTAL FACTURA: <span id="print-total"></span></p>
                     </div>
@@ -870,9 +919,8 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CON TODA LA LÓGICA -->
+    <!-- JAVASCRIPT CON LÓGICA Y REGLAS DE SEGURIDAD -->
     <script>
-        // CREDENCIALES INVERTIDAS
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
         let isAdmin = false;
@@ -891,6 +939,7 @@
         let debts = JSON.parse(localStorage.getItem('fragatta_debts')) || [];
         let payables = JSON.parse(localStorage.getItem('fragatta_payables')) || [];
         let withdrawals = JSON.parse(localStorage.getItem('fragatta_withdrawals')) || [];
+        let bankSavings = parseFloat(localStorage.getItem('fragatta_bank_savings')) || 0;
 
         let cart = [];
         let financeChart = null;
@@ -933,8 +982,15 @@
             document.querySelectorAll('.admin-only').forEach(el => isAdmin ? el.classList.remove('hidden') : el.classList.add('hidden'));
             document.querySelectorAll('.admin-only-cell').forEach(el => el.style.display = isAdmin ? '' : 'none');
             document.getElementById('lock-btn-text').innerText = isAdmin ? 'Bloquear Admin' : 'Desbloquear Modo Admin';
+            
+            document.getElementById('admin-bank-savings').value = bankSavings;
+            
             renderInventoryTable();
             renderTablesViews();
+            renderExpensesTable();
+            renderDebtsTable();
+            renderPayablesTable();
+            updateDashboard();
         }
 
         function initApp() {
@@ -948,6 +1004,7 @@
             });
 
             document.getElementById('pos-sale-date').valueAsDate = new Date();
+            document.getElementById('admin-bank-savings').value = bankSavings;
 
             renderPosProducts();
             renderCart();
@@ -957,6 +1014,7 @@
             renderExpensesTable();
             renderTablesViews();
             updateDashboard();
+            updateAdminUI();
             switchTab('dashboard');
         }
 
@@ -967,6 +1025,16 @@
             localStorage.setItem('fragatta_debts', JSON.stringify(debts));
             localStorage.setItem('fragatta_payables', JSON.stringify(payables));
             localStorage.setItem('fragatta_withdrawals', JSON.stringify(withdrawals));
+            localStorage.setItem('fragatta_bank_savings', bankSavings.toString());
+        }
+
+        function updateBankSavings() {
+            if (!isAdmin) return;
+            const val = parseFloat(document.getElementById('admin-bank-savings').value) || 0;
+            bankSavings = val;
+            saveData();
+            updateDashboard();
+            showToast('Saldo en cuenta de ahorros actualizado');
         }
 
         function switchTab(tabId) {
@@ -1001,18 +1069,7 @@
             }, 3000);
         }
 
-        // --- RESTRICCIÓN DE EDICIÓN 2 MESES ---
-        function isModifiable(rawDateStr) {
-            if (isAdmin) return true;
-            if (!rawDateStr) return true;
-            const saleDate = new Date(rawDateStr);
-            const now = new Date();
-            const twoMonthsAgo = new Date();
-            twoMonthsAgo.setMonth(now.getMonth() - 2);
-            return saleDate >= twoMonthsAgo;
-        }
-
-        // --- POS / FACTURACIÓN ---
+        // --- POS / FACTURACIÓN CON ENVÍO ---
         function renderPosProducts() {
             const search = document.getElementById('pos-search').value.toLowerCase();
             const category = document.getElementById('pos-category-filter').value;
@@ -1059,16 +1116,18 @@
         function renderCart() {
             const container = document.getElementById('pos-cart-items');
             container.innerHTML = '';
-            if (cart.length === 0) {
+            const shippingCost = parseFloat(document.getElementById('pos-shipping-cost').value) || 0;
+
+            if (cart.length === 0 && shippingCost === 0) {
                 container.innerHTML = `<p class="text-center text-slate-400 text-xs py-6">Sin perfumes seleccionados</p>`;
                 document.getElementById('pos-total').innerText = "$0";
                 return;
             }
 
-            let total = 0;
+            let totalProds = 0;
             cart.forEach(item => {
                 const sub = item.price * item.qty;
-                total += sub;
+                totalProds += sub;
                 container.innerHTML += `
                     <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 text-xs">
                         <div class="flex-1 pr-2">
@@ -1082,16 +1141,29 @@
                     </div>
                 `;
             });
-            document.getElementById('pos-total').innerText = `$${total.toLocaleString('es-CO')}`;
+
+            if (shippingCost > 0) {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between bg-amber-50 p-2.5 rounded-xl border border-amber-200/60 text-xs font-bold text-amber-900">
+                        <span><i class="fa-solid fa-truck"></i> Envío Nacional</span>
+                        <span>$${shippingCost.toLocaleString('es-CO')}</span>
+                    </div>
+                `;
+            }
+
+            const grandTotal = totalProds + shippingCost;
+            document.getElementById('pos-total').innerText = `$${grandTotal.toLocaleString('es-CO')}`;
         }
 
         function clearCart() {
             cart = [];
+            document.getElementById('pos-shipping-cost').value = "0";
             renderCart();
         }
 
         function processSale(mode) {
-            if (cart.length === 0) return showToast('Agrega productos al carrito', 'error');
+            const shippingCost = parseFloat(document.getElementById('pos-shipping-cost').value) || 0;
+            if (cart.length === 0 && shippingCost === 0) return showToast('Agrega productos o envío al carrito', 'error');
 
             const client = document.getElementById('pos-client-name').value.trim() || "Cliente General";
             const phone = document.getElementById('pos-client-phone').value.trim() || "N/A";
@@ -1100,8 +1172,9 @@
             const abonoInput = parseFloat(document.getElementById('pos-abono-amount').value) || 0;
             const customDate = document.getElementById('pos-sale-date').value;
 
-            const totalSale = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const totalProds = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             const totalCost = cart.reduce((sum, item) => sum + (item.cost * item.qty), 0);
+            const totalSale = totalProds + shippingCost;
             
             let paidAmount = totalSale;
             if (status === 'ABONO') paidAmount = abonoInput;
@@ -1123,6 +1196,7 @@
                 clientPhone: phone,
                 clientAddr: addr,
                 items: [...cart],
+                shipping: shippingCost,
                 total: totalSale,
                 cost: totalCost,
                 paid: paidAmount,
@@ -1151,6 +1225,7 @@
             }
 
             cart = [];
+            document.getElementById('pos-shipping-cost').value = "0";
             renderCart();
             renderPosProducts();
             renderInventoryTable();
@@ -1185,6 +1260,13 @@
                     `;
                 });
 
+                if (data.shipping > 0) {
+                    document.getElementById('print-shipping-line').classList.remove('hidden');
+                    document.getElementById('print-shipping-val').innerText = `$${data.shipping.toLocaleString('es-CO')}`;
+                } else {
+                    document.getElementById('print-shipping-line').classList.add('hidden');
+                }
+
                 if (data.status === 'ABONO') {
                     document.getElementById('print-abono-line').classList.remove('hidden');
                     document.getElementById('print-abono-val').innerText = `$${data.paid.toLocaleString('es-CO')}`;
@@ -1213,12 +1295,11 @@
             window.print();
         }
 
-        // --- RENDERIZADO DE PESTAÑAS (MES ACTUAL, HISTÓRICO, GANANCIAS) ---
+        // --- RENDERIZADO DE TABLAS Y RESTRICCIONES ---
         function renderTablesViews() {
             const now = new Date();
             const currentMonthYear = now.getMonth() + "-" + now.getFullYear();
 
-            // MES ACTUAL
             const mesSales = sales.filter(s => {
                 const d = new Date(s.rawDate || Date.now());
                 return (d.getMonth() + "-" + d.getFullYear()) === currentMonthYear;
@@ -1227,7 +1308,6 @@
             document.getElementById('mes-actual-body').innerHTML = generateSalesTableRows(mesSales);
             document.getElementById('historico-completo-body').innerHTML = generateSalesTableRows(sales);
 
-            // GANANCIAS MES A MES
             const monthsMap = {};
             sales.forEach(s => {
                 const d = new Date(s.rawDate || Date.now());
@@ -1267,7 +1347,6 @@
         function generateSalesTableRows(salesArr) {
             if (salesArr.length === 0) return `<tr><td colspan="7" class="p-4 text-center text-slate-400">Sin registros para mostrar</td></tr>`;
             return salesArr.slice().reverse().map(s => {
-                const modifiable = isModifiable(s.rawDate);
                 return `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 font-mono font-bold text-purple-600">${s.id}</td>
@@ -1278,7 +1357,7 @@
                         <td class="p-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${s.status === 'PAGADO' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${s.status}</span></td>
                         <td class="p-4 text-center space-x-1">
                             <button onclick='showPrintPreview("invoice", ${JSON.stringify(s)})' class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"><i class="fa-solid fa-print"></i></button>
-                            ${modifiable ? `<button onclick="deleteSale('${s.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Bloqueado</span>`}
+                            ${isAdmin ? `<button onclick="deleteSale('${s.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Venta (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
                         </td>
                     </tr>
                 `;
@@ -1286,12 +1365,13 @@
         }
 
         function deleteSale(saleId) {
+            if (!isAdmin) return alert("Solo el Administrador puede eliminar registros de venta.");
             if (!confirm(`¿Estás seguro de eliminar la venta ${saleId}?`)) return;
             sales = sales.filter(s => s.id !== saleId);
             saveData();
             renderTablesViews();
             updateDashboard();
-            showToast('Venta eliminada correctamente');
+            showToast('Venta eliminada por el Administrador');
         }
 
         // --- INVENTARIO ---
@@ -1417,6 +1497,9 @@
                         <td class="p-4 font-bold text-slate-800">${d.client}</td>
                         <td class="p-4 text-slate-600">${d.concept}</td>
                         <td class="p-4 font-black text-emerald-600">$${d.amount.toLocaleString('es-CO')}</td>
+                        <td class="p-4 text-center">
+                            ${isAdmin ? `<button onclick="deleteDebt('${d.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Abono (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
+                        </td>
                     </tr>
                 `;
             });
@@ -1475,7 +1558,18 @@
             showToast('Abono registrado exitosamente');
         }
 
-        // --- FACTURAS PROVEEDORES ---
+        function deleteDebt(id) {
+            if (!isAdmin) return alert("Solo el Administrador puede eliminar abonos.");
+            if (!confirm("¿Desea eliminar este abono de cliente?")) return;
+            debts = debts.filter(d => d.id !== id);
+            saveData();
+            renderDebtsTable();
+            renderTablesViews();
+            updateDashboard();
+            showToast('Abono eliminado por el Administrador');
+        }
+
+        // --- FACTURAS PROVEEDORES (MODIFICABLE / ELIMINABLE ADMIN) ---
         function renderPayablesTable() {
             const tbody = document.getElementById('payables-table-body');
             tbody.innerHTML = '';
@@ -1489,8 +1583,10 @@
                         <td class="p-4 font-bold text-slate-800">$${p.total.toLocaleString('es-CO')}</td>
                         <td class="p-4 font-bold text-emerald-600">$${p.paid.toLocaleString('es-CO')}</td>
                         <td class="p-4 font-black ${pending > 0 ? 'text-rose-600' : 'text-slate-400'}">$${pending.toLocaleString('es-CO')}</td>
-                        <td class="p-4 text-center">
-                            ${pending > 0 ? `<button onclick="openPayableAbonoModal('${p.id}')" class="px-3 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl text-xs transition">+ Abonar</button>` : '<span class="text-xs font-bold text-emerald-600">PAGADO</span>'}
+                        <td class="p-4 text-center space-x-1">
+                            ${pending > 0 ? `<button onclick="openPayableAbonoModal('${p.id}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl text-xs transition">+ Abonar</button>` : '<span class="text-xs font-bold text-emerald-600 px-2">PAGADO</span>'}
+                            ${isAdmin ? `<button onclick="editPayable('${p.id}')" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar Deuda (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
+                            ${isAdmin ? `<button onclick="deletePayable('${p.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Factura (Admin)"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </td>
                     </tr>
                 `;
@@ -1498,6 +1594,8 @@
         }
 
         function openPayableModal() {
+            document.getElementById('pay-id').value = '';
+            document.getElementById('payable-modal-title').innerText = "Registrar Deuda a Proveedor";
             document.getElementById('payable-modal').classList.remove('hidden');
         }
 
@@ -1505,8 +1603,23 @@
             document.getElementById('payable-modal').classList.add('hidden');
         }
 
+        function editPayable(id) {
+            if (!isAdmin) return;
+            const p = payables.find(item => item.id === id);
+            if (p) {
+                document.getElementById('pay-id').value = p.id;
+                document.getElementById('pay-supplier').value = p.supplier;
+                document.getElementById('pay-invoice-num').value = p.invoiceNum;
+                document.getElementById('pay-total').value = p.total;
+                document.getElementById('pay-abono').value = p.paid;
+                document.getElementById('payable-modal-title').innerText = "Editar Deuda de Proveedor (Admin)";
+                document.getElementById('payable-modal').classList.remove('hidden');
+            }
+        }
+
         function savePayable(e) {
             e.preventDefault();
+            const editId = document.getElementById('pay-id').value;
             const supplier = document.getElementById('pay-supplier').value;
             const invoiceNum = document.getElementById('pay-invoice-num').value;
             const total = parseFloat(document.getElementById('pay-total').value);
@@ -1515,12 +1628,33 @@
             const now = new Date();
             const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
 
-            payables.push({ id: 'PAY-' + Date.now(), date: fullDateTime, supplier, invoiceNum, total, paid: abono });
+            if (editId) {
+                const p = payables.find(item => item.id === editId);
+                if (p) {
+                    p.supplier = supplier;
+                    p.invoiceNum = invoiceNum;
+                    p.total = total;
+                    p.paid = abono;
+                }
+            } else {
+                payables.push({ id: 'PAY-' + Date.now(), date: fullDateTime, supplier, invoiceNum, total, paid: abono });
+            }
+
             saveData();
             closePayableModal();
             renderPayablesTable();
             updateDashboard();
-            showToast('Factura de proveedor guardada');
+            showToast('Deuda de proveedor guardada');
+        }
+
+        function deletePayable(id) {
+            if (!isAdmin) return alert("Solo el Administrador puede eliminar facturas de proveedores.");
+            if (!confirm("¿Desea eliminar esta cuenta por pagar de proveedor?")) return;
+            payables = payables.filter(p => p.id !== id);
+            saveData();
+            renderPayablesTable();
+            updateDashboard();
+            showToast('Factura eliminada por el Administrador');
         }
 
         function openPayableAbonoModal(id) {
@@ -1552,7 +1686,7 @@
             }
         }
 
-        // --- RETIROS UTILIDAD ---
+        // --- RETIROS DE UTILIDAD ---
         function openWithdrawalModal() {
             document.getElementById('withdrawal-modal').classList.remove('hidden');
         }
@@ -1573,7 +1707,7 @@
             showToast('Retiro de ganancias guardado');
         }
 
-        // --- GASTOS ---
+        // --- GASTOS OPERATIVOS ---
         function renderExpensesTable() {
             const tbody = document.getElementById('expenses-table-body');
             tbody.innerHTML = '';
@@ -1583,6 +1717,9 @@
                         <td class="p-4 text-slate-500 font-mono">${e.date}</td>
                         <td class="p-4 font-bold text-slate-800">${e.desc}</td>
                         <td class="p-4 font-bold text-rose-600">$${e.amount.toLocaleString('es-CO')}</td>
+                        <td class="p-4 text-center">
+                            ${isAdmin ? `<button onclick="deleteExpense('${e.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Gasto (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
+                        </td>
                     </tr>
                 `;
             });
@@ -1609,10 +1746,20 @@
             closeExpenseModal();
             renderExpensesTable();
             updateDashboard();
-            showToast('Gasto registrado');
+            showToast('Gasto operativo registrado');
         }
 
-        // --- DASHBOARD & CORTE ---
+        function deleteExpense(id) {
+            if (!isAdmin) return alert("Solo el Administrador puede eliminar gastos operativos.");
+            if (!confirm("¿Desea eliminar este gasto operativo?")) return;
+            expenses = expenses.filter(e => e.id !== id);
+            saveData();
+            renderExpensesTable();
+            updateDashboard();
+            showToast('Gasto eliminado por el Administrador');
+        }
+
+        // --- DASHBOARD & CORTE FINANCIERO ---
         function updateDashboard() {
             const filterMonth = document.getElementById('dash-month-filter').value;
             const currentMonthYear = new Date().getMonth() + "-" + new Date().getFullYear();
@@ -1635,6 +1782,7 @@
             const totalProductCosts = activeSales.reduce((sum, s) => sum + s.cost, 0);
             const totalExpenses = activeExpenses.reduce((sum, e) => sum + e.amount, 0);
 
+            const totalHistoricalSales = sales.reduce((sum, s) => sum + s.total, 0);
             const totalStockCost = products.reduce((sum, p) => sum + (p.cost * p.stock), 0);
             const totalPayablesPending = payables.reduce((sum, p) => sum + (p.total - p.paid), 0);
 
@@ -1654,6 +1802,12 @@
             document.getElementById('dash-stock-cost').innerText = `$${totalStockCost.toLocaleString('es-CO')}`;
             document.getElementById('dash-total-payables').innerText = `$${totalPayablesPending.toLocaleString('es-CO')}`;
 
+            // Panel de Arqueo Exclusivo Modo Admin
+            document.getElementById('admin-total-historical-sales').innerText = `$${totalHistoricalSales.toLocaleString('es-CO')}`;
+            const totalExpected = bankSavings + Math.max(0, netProfit);
+            document.getElementById('admin-total-expected-money').innerText = `$${totalExpected.toLocaleString('es-CO')}`;
+
+            // Socios
             document.getElementById('partner1-earned').innerText = `$${earned1.toLocaleString('es-CO')}`;
             document.getElementById('partner1-withdrawn').innerText = `$${w1.toLocaleString('es-CO')}`;
             document.getElementById('partner1-remaining').innerText = `$${(earned1 - w1).toLocaleString('es-CO')}`;
