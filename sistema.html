@@ -12,18 +12,10 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#fdf4ff',
-                            100: '#fae8ff',
-                            200: '#f5d0fe',
-                            300: '#f0abfc',
-                            400: '#e879f9',
-                            500: '#d946ef',
-                            600: '#c026d3',
-                            700: '#a21caf',
-                            800: '#86198f',
-                            900: '#701a75',
-                            gold: '#d97706',
-                            goldlight: '#fef3c7'
+                            50: '#fdf4ff', 100: '#fae8ff', 200: '#f5d0fe',
+                            300: '#f0abfc', 400: '#e879f9', 500: '#d946ef',
+                            600: '#c026d3', 700: '#a21caf', 800: '#86198f',
+                            900: '#701a75', gold: '#d97706', goldlight: '#fef3c7'
                         }
                     }
                 }
@@ -70,7 +62,12 @@
             <div class="space-y-4 text-left">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Clave de Ingreso al Sistema</label>
-                    <input type="password" id="login-pass-input" placeholder="••••••••••••" onkeydown="if(event.key==='Enter') verifyLogin()" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition">
+                    <div class="relative">
+                        <input type="password" id="login-pass-input" placeholder="••••••••••••" onkeydown="if(event.key==='Enter') verifyLogin()" class="w-full bg-slate-100 border border-slate-200 rounded-xl pl-4 pr-10 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition">
+                        <button type="button" onclick="togglePasswordVisibility('login-pass-input', 'toggle-pass-icon')" class="absolute right-3 top-3.5 text-slate-400 hover:text-purple-600">
+                            <i id="toggle-pass-icon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="button" onclick="verifyLogin()" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-purple-600/30">
                     Ingresar al Sistema
@@ -176,7 +173,7 @@
 
             <div class="p-4 md:p-8 flex-1 space-y-6">
                 
-                <!-- 1. DASHBOARD, REPARTO Y CORTE FINANCIERO -->
+                <!-- 1. DASHBOARD & CORTE FINANCIERO -->
                 <section id="tab-dashboard" class="tab-content space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
@@ -192,7 +189,7 @@
                         </div>
                     </div>
 
-                    <!-- METRICS CARDS GENERALES -->
+                    <!-- METRICS CARDS -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
                             <div class="flex justify-between items-start">
@@ -243,7 +240,7 @@
                         </div>
                     </div>
 
-                    <!-- MÓDULO EXCLUSIVO MODO ADMIN: CUENTA DE AHORROS Y BALANCE ESPERADO -->
+                    <!-- MÓDULO MODO ADMIN: ARQUEO Y RESET DE MEMORIA -->
                     <div class="admin-only hidden bg-gradient-to-r from-slate-900 to-purple-950 text-white rounded-3xl p-6 shadow-xl space-y-4">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                             <div class="flex items-center gap-3">
@@ -251,21 +248,21 @@
                                     <i class="fa-solid fa-building-columns text-xl"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-base text-white">Panel de Arqueo Bancario (Exclusivo Administrador)</h3>
-                                    <p class="text-xs text-slate-400">Total acumulado de ventas históricas y control de cuenta de ahorros real.</p>
+                                    <h3 class="font-bold text-base text-white">Panel de Arqueo Bancario (Administrador)</h3>
+                                    <p class="text-xs text-slate-400">Arqueo real de cuenta bancaria y reinicio de pruebas.</p>
                                 </div>
                             </div>
-                            <span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase">Modo Admin Activo</span>
+                            <button onclick="resetSystemMemory()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl transition shadow-md flex items-center gap-1.5">
+                                <i class="fa-solid fa-rotate-right"></i> Resetear Datos
+                            </button>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
-                            <!-- Total Histórico Vendido -->
                             <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
                                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Histórico Vendido</p>
                                 <h4 id="admin-total-historical-sales" class="text-2xl font-black text-emerald-400 mt-1">$0</h4>
                             </div>
 
-                            <!-- Saldo en Cuenta de Ahorros (Modificable) -->
                             <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
                                 <p class="text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-1">Saldo en Cuenta de Ahorros</p>
                                 <div class="flex items-center gap-2">
@@ -274,7 +271,6 @@
                                 </div>
                             </div>
 
-                            <!-- Total Dinero Esperado en Banco -->
                             <div class="bg-purple-900/40 p-4 rounded-2xl border border-purple-500/50">
                                 <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Total Esperado (Cuenta + Ganancias)</p>
                                 <h4 id="admin-total-expected-money" class="text-2xl font-black text-amber-400 mt-1">$0</h4>
@@ -361,7 +357,7 @@
                     </div>
                 </section>
 
-                <!-- 2. POS / FACTURACIÓN CON PRODUCTO "ENVÍO" DINÁMICO -->
+                <!-- 2. POS / FACTURACIÓN CON ENVÍO DINÁMICO -->
                 <section id="tab-pos" class="tab-content hidden space-y-6">
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                         <div class="lg:col-span-7 space-y-4">
@@ -396,7 +392,6 @@
                                         <input type="text" id="pos-client-phone" placeholder="Teléfono / WhatsApp..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500">
                                         <input type="text" id="pos-client-address" placeholder="Dirección de Envío + Ciudad..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500">
                                         
-                                        <!-- Costo del Envío -->
                                         <div class="flex items-center justify-between pt-1">
                                             <label class="text-xs text-amber-700 font-bold flex items-center gap-1">
                                                 <i class="fa-solid fa-truck"></i> Costo de Envío ($):
@@ -472,12 +467,12 @@
                     </div>
                 </section>
 
-                <!-- 4. HISTÓRICO COMPLETO DE VENTAS -->
+                <!-- 4. HISTÓRICO COMPLETO -->
                 <section id="tab-historico-completo" class="tab-content hidden space-y-6">
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Histórico Completo de Ventas</h2>
-                            <p class="text-xs text-slate-500">Eliminación protegida en Modo Admin</p>
+                            <p class="text-xs text-slate-500">Edición total habilitada en Modo Administrador</p>
                         </div>
                     </div>
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
@@ -560,7 +555,7 @@
                             <h2 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
                                 <i class="fa-solid fa-hand-holding-dollar text-emerald-600"></i> Historial de Abonos de Clientes
                             </h2>
-                            <p class="text-xs text-slate-500 mt-0.5">Eliminación restringida únicamente a Modo Administrador</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Eliminación restringida a Modo Administrador</p>
                         </div>
                         <button onclick="openDebtModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-emerald-600/20 flex items-center gap-2">
                             <i class="fa-solid fa-plus"></i> Registrar Abono a Cliente
@@ -591,7 +586,7 @@
                             <h2 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
                                 <i class="fa-solid fa-file-invoice-dollar text-rose-600"></i> Cuentas por Pagar (Proveedores)
                             </h2>
-                            <p class="text-xs text-slate-500 mt-0.5">Edición de deudas y eliminación restringida a Modo Admin</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Edición de deudas y eliminación protegida en Modo Admin</p>
                         </div>
                         <button onclick="openPayableModal()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-rose-600/20 flex items-center gap-2">
                             <i class="fa-solid fa-plus"></i> + Nueva Factura por Pagar
@@ -616,12 +611,12 @@
                     </div>
                 </section>
 
-                <!-- 9. GASTOS OPERATIVOS (AÑADIR NORMAL, ELIMINAR ADMIN) -->
+                <!-- 9. GASTOS OPERATIVOS -->
                 <section id="tab-accounting" class="tab-content hidden space-y-6">
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Gastos Operativos</h2>
-                            <p class="text-xs text-slate-500">Registra gastos administrativos (Solo Admin puede eliminar)</p>
+                            <p class="text-xs text-slate-500">Registra gastos administrativos (Solo Admin elimina)</p>
                         </div>
                         <button onclick="openExpenseModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-purple-600/20">
                             <i class="fa-solid fa-plus"></i> Registrar Gasto
@@ -647,7 +642,7 @@
         </main>
     </div>
 
-    <!-- MODALES -->
+    <!-- MODALES DE CONTROL -->
 
     <!-- MODAL PRODUCTO -->
     <div id="product-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
@@ -750,7 +745,7 @@
         </div>
     </div>
 
-    <!-- MODAL EDITAR / CREAR FACTURA PROVEEDOR (ADMIN) -->
+    <!-- MODAL EDITAR / CREAR FACTURA PROVEEDOR -->
     <div id="payable-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
             <h3 id="payable-modal-title" class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3">Registrar Deuda a Proveedor</h3>
@@ -782,7 +777,7 @@
         </div>
     </div>
 
-    <!-- MODAL ABONAR A FACTURA PROVEEDOR -->
+    <!-- MODAL ABONAR A PROVEEDOR -->
     <div id="payable-abono-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
             <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3">Abonar a Factura de Proveedor</h3>
@@ -804,7 +799,7 @@
         </div>
     </div>
 
-    <!-- MODAL RETIRO DE SOCIO -->
+    <!-- MODAL RETIRO SOCIO -->
     <div id="withdrawal-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
             <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3">Registrar Retiro de Utilidades</h3>
@@ -828,7 +823,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE IMPRESIÓN LIMPIA -->
+    <!-- MODAL IMPRESIÓN LIMPIA -->
     <div id="print-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center no-print border-b pb-3">
@@ -919,7 +914,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CON LÓGICA Y REGLAS DE SEGURIDAD -->
+    <!-- JAVASCRIPT CON LÓGICA CORREGIDA -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -943,6 +938,18 @@
 
         let cart = [];
         let financeChart = null;
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.className = "fa-solid fa-eye-slash";
+            } else {
+                input.type = "password";
+                icon.className = "fa-solid fa-eye";
+            }
+        }
 
         function verifyLogin() {
             const pass = document.getElementById('login-pass-input').value.trim();
@@ -1028,6 +1035,13 @@
             localStorage.setItem('fragatta_bank_savings', bankSavings.toString());
         }
 
+        function resetSystemMemory() {
+            if (!isAdmin) return;
+            if (!confirm("¿Está seguro de reiniciar los datos del sistema? Esto dejará deudas, ventas y gastos en cero.")) return;
+            localStorage.clear();
+            location.reload();
+        }
+
         function updateBankSavings() {
             if (!isAdmin) return;
             const val = parseFloat(document.getElementById('admin-bank-savings').value) || 0;
@@ -1069,7 +1083,7 @@
             }, 3000);
         }
 
-        // --- POS / FACTURACIÓN CON ENVÍO ---
+        // --- POS / FACTURACIÓN ---
         function renderPosProducts() {
             const search = document.getElementById('pos-search').value.toLowerCase();
             const category = document.getElementById('pos-category-filter').value;
@@ -1083,6 +1097,7 @@
 
             container.innerHTML = '';
             filtered.forEach(p => {
+                const safePrice = parseFloat(p.price) || 0;
                 container.innerHTML += `
                     <div onclick="addToCart(${p.id})" class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm hover:border-purple-400 cursor-pointer transition flex flex-col justify-between">
                         <div>
@@ -1091,7 +1106,7 @@
                             <p class="text-[10px] text-slate-400 font-mono mt-0.5">${p.sku}</p>
                         </div>
                         <div class="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2">
-                            <span class="font-black text-emerald-600 text-xs">$${p.price.toLocaleString('es-CO')}</span>
+                            <span class="font-black text-emerald-600 text-xs">$${safePrice.toLocaleString('es-CO')}</span>
                             <span class="text-[10px] font-bold ${p.stock <= 3 ? 'text-rose-500' : 'text-slate-500'}">Stock: ${p.stock}</span>
                         </div>
                     </div>
@@ -1126,13 +1141,13 @@
 
             let totalProds = 0;
             cart.forEach(item => {
-                const sub = item.price * item.qty;
+                const sub = (parseFloat(item.price) || 0) * item.qty;
                 totalProds += sub;
                 container.innerHTML += `
                     <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 text-xs">
                         <div class="flex-1 pr-2">
                             <p class="font-bold text-slate-800">${item.name}</p>
-                            <p class="text-[10px] text-emerald-600 font-bold">$${item.price.toLocaleString('es-CO')}</p>
+                            <p class="text-[10px] text-emerald-600 font-bold">$${(parseFloat(item.price) || 0).toLocaleString('es-CO')}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="font-bold text-slate-600">x${item.qty}</span>
@@ -1172,8 +1187,8 @@
             const abonoInput = parseFloat(document.getElementById('pos-abono-amount').value) || 0;
             const customDate = document.getElementById('pos-sale-date').value;
 
-            const totalProds = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const totalCost = cart.reduce((sum, item) => sum + (item.cost * item.qty), 0);
+            const totalProds = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * item.qty), 0);
+            const totalCost = cart.reduce((sum, item) => sum + ((parseFloat(item.cost) || 0) * item.qty), 0);
             const totalSale = totalProds + shippingCost;
             
             let paidAmount = totalSale;
@@ -1250,12 +1265,13 @@
                 const tbody = document.getElementById('print-items-body');
                 tbody.innerHTML = '';
                 data.items.forEach(i => {
+                    const priceVal = parseFloat(i.price) || 0;
                     tbody.innerHTML += `
                         <tr class="border-b">
                             <td class="py-1 px-1">${i.qty}</td>
                             <td class="py-1 px-1 font-bold">${i.name}</td>
-                            <td class="py-1 px-1 text-right">$${i.price.toLocaleString('es-CO')}</td>
-                            <td class="py-1 px-1 text-right font-bold">$${(i.price * i.qty).toLocaleString('es-CO')}</td>
+                            <td class="py-1 px-1 text-right">$${priceVal.toLocaleString('es-CO')}</td>
+                            <td class="py-1 px-1 text-right font-bold">$${(priceVal * i.qty).toLocaleString('es-CO')}</td>
                         </tr>
                     `;
                 });
@@ -1269,12 +1285,12 @@
 
                 if (data.status === 'ABONO') {
                     document.getElementById('print-abono-line').classList.remove('hidden');
-                    document.getElementById('print-abono-val').innerText = `$${data.paid.toLocaleString('es-CO')}`;
+                    document.getElementById('print-abono-val').innerText = `$${(parseFloat(data.paid) || 0).toLocaleString('es-CO')}`;
                 } else {
                     document.getElementById('print-abono-line').classList.add('hidden');
                 }
 
-                document.getElementById('print-total').innerText = `$${data.total.toLocaleString('es-CO')}`;
+                document.getElementById('print-total').innerText = `$${(parseFloat(data.total) || 0).toLocaleString('es-CO')}`;
                 document.getElementById('invoice-doc').classList.remove('hidden');
             } else if (type === 'label') {
                 document.getElementById('lbl-dest-name').innerText = data.client.toUpperCase();
@@ -1295,7 +1311,7 @@
             window.print();
         }
 
-        // --- RENDERIZADO DE TABLAS Y RESTRICCIONES ---
+        // --- RENDER TABLAS ---
         function renderTablesViews() {
             const now = new Date();
             const currentMonthYear = now.getMonth() + "-" + now.getFullYear();
@@ -1313,9 +1329,11 @@
                 const d = new Date(s.rawDate || Date.now());
                 const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                 if (!monthsMap[key]) monthsMap[key] = { ventas: 0, costo: 0, ganancia: 0 };
-                monthsMap[key].ventas += s.total;
-                monthsMap[key].costo += s.cost;
-                monthsMap[key].ganancia += (s.total - s.cost);
+                const totalVal = parseFloat(s.total) || 0;
+                const costVal = parseFloat(s.cost) || 0;
+                monthsMap[key].ventas += totalVal;
+                monthsMap[key].costo += costVal;
+                monthsMap[key].ganancia += (totalVal - costVal);
             });
 
             let gHTML = `
@@ -1347,13 +1365,15 @@
         function generateSalesTableRows(salesArr) {
             if (salesArr.length === 0) return `<tr><td colspan="7" class="p-4 text-center text-slate-400">Sin registros para mostrar</td></tr>`;
             return salesArr.slice().reverse().map(s => {
+                const totalVal = parseFloat(s.total) || 0;
+                const paidVal = parseFloat(s.paid) || 0;
                 return `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 font-mono font-bold text-purple-600">${s.id}</td>
                         <td class="p-4 text-slate-500 font-mono">${s.date}</td>
                         <td class="p-4 font-bold text-slate-800">${s.clientName}</td>
-                        <td class="p-4 font-bold text-slate-800">$${s.total.toLocaleString('es-CO')}</td>
-                        <td class="p-4 font-bold text-emerald-600">$${s.paid.toLocaleString('es-CO')}</td>
+                        <td class="p-4 font-bold text-slate-800">$${totalVal.toLocaleString('es-CO')}</td>
+                        <td class="p-4 font-bold text-emerald-600">$${paidVal.toLocaleString('es-CO')}</td>
                         <td class="p-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${s.status === 'PAGADO' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${s.status}</span></td>
                         <td class="p-4 text-center space-x-1">
                             <button onclick='showPrintPreview("invoice", ${JSON.stringify(s)})' class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"><i class="fa-solid fa-print"></i></button>
@@ -1389,13 +1409,15 @@
             const filtered = products.filter(p => (cat === 'all' || p.category === cat) && (p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search)));
 
             filtered.forEach(p => {
+                const costVal = parseFloat(p.cost) || 0;
+                const priceVal = parseFloat(p.price) || 0;
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 font-mono font-bold text-purple-600">${p.sku}</td>
                         <td class="p-4 font-bold text-slate-800">${p.name}</td>
                         <td class="p-4"><span class="bg-purple-50 text-purple-700 font-bold px-2.5 py-1 rounded-full text-[10px]">${p.category}</span></td>
-                        <td class="p-4 admin-only-cell text-amber-600 font-bold" style="${isAdmin ? '' : 'display:none;'}">$${p.cost.toLocaleString('es-CO')}</td>
-                        <td class="p-4 font-bold text-emerald-600">$${p.price.toLocaleString('es-CO')}</td>
+                        <td class="p-4 admin-only-cell text-amber-600 font-bold" style="${isAdmin ? '' : 'display:none;'}">$${costVal.toLocaleString('es-CO')}</td>
+                        <td class="p-4 font-bold text-emerald-600">$${priceVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 font-bold">${p.stock}</td>
                         <td class="p-4 text-center">
                             <button onclick="quickAddStock(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition">+1 Stock</button>
@@ -1432,9 +1454,9 @@
 
             const name = document.getElementById('prod-name').value;
             const category = document.getElementById('prod-category').value;
-            const stock = parseInt(document.getElementById('prod-stock').value);
-            const cost = parseFloat(document.getElementById('prod-cost').value);
-            const price = parseFloat(document.getElementById('prod-price').value);
+            const stock = parseInt(document.getElementById('prod-stock').value) || 0;
+            const cost = parseFloat(document.getElementById('prod-cost').value) || 0;
+            const price = parseFloat(document.getElementById('prod-price').value) || 0;
 
             products.push({ id: Date.now(), sku, name, category, stock, cost, price });
             saveData();
@@ -1467,9 +1489,9 @@
                     if (name) {
                         const sku = row.SKU || generateAutoSKU();
                         const category = row.Categoria || row.Categoría || 'Unisex';
-                        const stock = parseInt(row.Stock || row.Cantidad || 10);
-                        const cost = parseFloat(row.Costo || row.PrecioCompra || 45000);
-                        const price = parseFloat(row.Precio || row.PrecioVenta || 115000);
+                        const stock = parseInt(row.Stock || row.Cantidad || 10) || 0;
+                        const cost = parseFloat(row.Costo || row.PrecioCompra || 45000) || 0;
+                        const price = parseFloat(row.Precio || row.PrecioVenta || 115000) || 0;
 
                         products.push({ id: Date.now() + Math.random(), sku, name, category, stock, cost, price });
                         importedCount++;
@@ -1490,13 +1512,14 @@
             const tbody = document.getElementById('debts-table-body');
             tbody.innerHTML = '';
             debts.slice().reverse().forEach(d => {
+                const amountVal = parseFloat(d.amount) || 0;
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 text-slate-500 font-mono">${d.date}</td>
                         <td class="p-4 font-bold text-purple-600">${d.saleId || 'Gral'}</td>
                         <td class="p-4 font-bold text-slate-800">${d.client}</td>
                         <td class="p-4 text-slate-600">${d.concept}</td>
-                        <td class="p-4 font-black text-emerald-600">$${d.amount.toLocaleString('es-CO')}</td>
+                        <td class="p-4 font-black text-emerald-600">$${amountVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 text-center">
                             ${isAdmin ? `<button onclick="deleteDebt('${d.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Abono (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
                         </td>
@@ -1510,7 +1533,7 @@
             select.innerHTML = '<option value="">Abono General</option>';
             const pendingSales = sales.filter(s => s.status === 'ABONO' || s.paid < s.total);
             pendingSales.forEach(s => {
-                const pend = s.total - s.paid;
+                const pend = (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0);
                 select.innerHTML += `<option value="${s.id}">${s.id} - ${s.clientName} (Pendiente: $${pend.toLocaleString('es-CO')})</option>`;
             });
             document.getElementById('debt-modal').classList.remove('hidden');
@@ -1536,7 +1559,7 @@
             const saleId = document.getElementById('debt-sale-select').value;
             const client = document.getElementById('debt-client').value;
             const concept = document.getElementById('debt-concept').value;
-            const amount = parseFloat(document.getElementById('debt-amount').value);
+            const amount = parseFloat(document.getElementById('debt-amount').value) || 0;
 
             const now = new Date();
             const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
@@ -1544,7 +1567,7 @@
             if (saleId) {
                 const s = sales.find(sale => sale.id === saleId);
                 if (s) {
-                    s.paid += amount;
+                    s.paid = (parseFloat(s.paid) || 0) + amount;
                     if (s.paid >= s.total) s.status = 'PAGADO';
                 }
             }
@@ -1569,19 +1592,21 @@
             showToast('Abono eliminado por el Administrador');
         }
 
-        // --- FACTURAS PROVEEDORES (MODIFICABLE / ELIMINABLE ADMIN) ---
+        // --- FACTURAS PROVEEDORES ---
         function renderPayablesTable() {
             const tbody = document.getElementById('payables-table-body');
             tbody.innerHTML = '';
             payables.forEach(p => {
-                const pending = p.total - p.paid;
+                const totalVal = parseFloat(p.total) || 0;
+                const paidVal = parseFloat(p.paid) || 0;
+                const pending = Math.max(0, totalVal - paidVal);
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 font-mono font-bold text-rose-600">${p.invoiceNum}</td>
                         <td class="p-4 font-bold text-slate-800">${p.supplier}</td>
                         <td class="p-4 text-slate-500 font-mono">${p.date}</td>
-                        <td class="p-4 font-bold text-slate-800">$${p.total.toLocaleString('es-CO')}</td>
-                        <td class="p-4 font-bold text-emerald-600">$${p.paid.toLocaleString('es-CO')}</td>
+                        <td class="p-4 font-bold text-slate-800">$${totalVal.toLocaleString('es-CO')}</td>
+                        <td class="p-4 font-bold text-emerald-600">$${paidVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 font-black ${pending > 0 ? 'text-rose-600' : 'text-slate-400'}">$${pending.toLocaleString('es-CO')}</td>
                         <td class="p-4 text-center space-x-1">
                             ${pending > 0 ? `<button onclick="openPayableAbonoModal('${p.id}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl text-xs transition">+ Abonar</button>` : '<span class="text-xs font-bold text-emerald-600 px-2">PAGADO</span>'}
@@ -1610,8 +1635,8 @@
                 document.getElementById('pay-id').value = p.id;
                 document.getElementById('pay-supplier').value = p.supplier;
                 document.getElementById('pay-invoice-num').value = p.invoiceNum;
-                document.getElementById('pay-total').value = p.total;
-                document.getElementById('pay-abono').value = p.paid;
+                document.getElementById('pay-total').value = parseFloat(p.total) || 0;
+                document.getElementById('pay-abono').value = parseFloat(p.paid) || 0;
                 document.getElementById('payable-modal-title').innerText = "Editar Deuda de Proveedor (Admin)";
                 document.getElementById('payable-modal').classList.remove('hidden');
             }
@@ -1622,7 +1647,7 @@
             const editId = document.getElementById('pay-id').value;
             const supplier = document.getElementById('pay-supplier').value;
             const invoiceNum = document.getElementById('pay-invoice-num').value;
-            const total = parseFloat(document.getElementById('pay-total').value);
+            const total = parseFloat(document.getElementById('pay-total').value) || 0;
             const abono = parseFloat(document.getElementById('pay-abono').value) || 0;
 
             const now = new Date();
@@ -1673,11 +1698,11 @@
         function savePayableAbono(e) {
             e.preventDefault();
             const id = document.getElementById('pay-abono-id').value;
-            const amount = parseFloat(document.getElementById('pay-abono-amount').value);
+            const amount = parseFloat(document.getElementById('pay-abono-amount').value) || 0;
 
             const p = payables.find(item => item.id === id);
             if (p) {
-                p.paid += amount;
+                p.paid = (parseFloat(p.paid) || 0) + amount;
                 saveData();
                 closePayableAbonoModal();
                 renderPayablesTable();
@@ -1686,7 +1711,7 @@
             }
         }
 
-        // --- RETIROS DE UTILIDAD ---
+        // --- RETIROS ---
         function openWithdrawalModal() {
             document.getElementById('withdrawal-modal').classList.remove('hidden');
         }
@@ -1698,7 +1723,7 @@
         function saveWithdrawal(e) {
             e.preventDefault();
             const partner = document.getElementById('withdrawal-partner').value;
-            const amount = parseFloat(document.getElementById('withdrawal-amount').value);
+            const amount = parseFloat(document.getElementById('withdrawal-amount').value) || 0;
 
             withdrawals.push({ id: 'WDR-' + Date.now(), partner, amount, date: new Date().toLocaleDateString('es-CO') });
             saveData();
@@ -1712,11 +1737,12 @@
             const tbody = document.getElementById('expenses-table-body');
             tbody.innerHTML = '';
             expenses.slice().reverse().forEach(e => {
+                const amountVal = parseFloat(e.amount) || 0;
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 text-slate-500 font-mono">${e.date}</td>
                         <td class="p-4 font-bold text-slate-800">${e.desc}</td>
-                        <td class="p-4 font-bold text-rose-600">$${e.amount.toLocaleString('es-CO')}</td>
+                        <td class="p-4 font-bold text-rose-600">$${amountVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 text-center">
                             ${isAdmin ? `<button onclick="deleteExpense('${e.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Gasto (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
                         </td>
@@ -1736,7 +1762,7 @@
         function saveExpense(e) {
             e.preventDefault();
             const desc = document.getElementById('exp-desc').value;
-            const amount = parseFloat(document.getElementById('exp-amount').value);
+            const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
 
             const now = new Date();
             const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
@@ -1759,7 +1785,7 @@
             showToast('Gasto eliminado por el Administrador');
         }
 
-        // --- DASHBOARD & CORTE FINANCIERO ---
+        // --- DASHBOARD ---
         function updateDashboard() {
             const filterMonth = document.getElementById('dash-month-filter').value;
             const currentMonthYear = new Date().getMonth() + "-" + new Date().getFullYear();
@@ -1778,18 +1804,28 @@
                 });
             }
 
-            const totalGrossSales = activeSales.reduce((sum, s) => sum + s.total, 0);
-            const totalProductCosts = activeSales.reduce((sum, s) => sum + s.cost, 0);
-            const totalExpenses = activeExpenses.reduce((sum, e) => sum + e.amount, 0);
+            const totalGrossSales = activeSales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
+            const totalProductCosts = activeSales.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
+            const totalExpenses = activeExpenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
 
-            const totalHistoricalSales = sales.reduce((sum, s) => sum + s.total, 0);
-            const totalStockCost = products.reduce((sum, p) => sum + (p.cost * p.stock), 0);
-            const totalPayablesPending = payables.reduce((sum, p) => sum + (p.total - p.paid), 0);
+            const totalHistoricalSales = sales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
+            
+            const totalStockCost = products.reduce((sum, p) => {
+                const c = parseFloat(p.cost) || 0;
+                const st = parseInt(p.stock) || 0;
+                return sum + (c * st);
+            }, 0);
+
+            const totalPayablesPending = payables.reduce((sum, p) => {
+                const tot = parseFloat(p.total) || 0;
+                const pd = parseFloat(p.paid) || 0;
+                return sum + Math.max(0, tot - pd);
+            }, 0);
 
             const netProfit = totalGrossSales - totalProductCosts - totalExpenses;
 
-            const w1 = withdrawals.filter(w => w.partner === "1").reduce((sum, w) => sum + w.amount, 0);
-            const w2 = withdrawals.filter(w => w.partner === "2").reduce((sum, w) => sum + w.amount, 0);
+            const w1 = withdrawals.filter(w => w.partner === "1").reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+            const w2 = withdrawals.filter(w => w.partner === "2").reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
 
             const pct1 = (parseFloat(document.getElementById('partner1-pct').value) || 50) / 100;
             const pct2 = (parseFloat(document.getElementById('partner2-pct').value) || 50) / 100;
@@ -1802,12 +1838,10 @@
             document.getElementById('dash-stock-cost').innerText = `$${totalStockCost.toLocaleString('es-CO')}`;
             document.getElementById('dash-total-payables').innerText = `$${totalPayablesPending.toLocaleString('es-CO')}`;
 
-            // Panel de Arqueo Exclusivo Modo Admin
             document.getElementById('admin-total-historical-sales').innerText = `$${totalHistoricalSales.toLocaleString('es-CO')}`;
             const totalExpected = bankSavings + Math.max(0, netProfit);
             document.getElementById('admin-total-expected-money').innerText = `$${totalExpected.toLocaleString('es-CO')}`;
 
-            // Socios
             document.getElementById('partner1-earned').innerText = `$${earned1.toLocaleString('es-CO')}`;
             document.getElementById('partner1-withdrawn').innerText = `$${w1.toLocaleString('es-CO')}`;
             document.getElementById('partner1-remaining').innerText = `$${(earned1 - w1).toLocaleString('es-CO')}`;
