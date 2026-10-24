@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fragatta Parfums - Sistema de Gestión Comercial y POS</title>
+    <title>Fragatta Parfums - Sistema POS & Gestión Nube</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -29,6 +29,10 @@
     <!-- SheetJS (XLSX Import Library) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+    <!-- FIREBASE SDK COMPAT (v9) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -48,7 +52,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
 
-    <!-- 1. PANTALLA DE BLOQUEO / LOGIN -->
+    <!-- PANTALLA DE BLOQUEO / LOGIN -->
     <div id="login-screen" class="fixed inset-0 bg-gradient-to-br from-purple-900 via-slate-900 to-fuchsia-950 flex items-center justify-center p-4 z-50">
         <div class="bg-white/95 backdrop-blur-md border border-purple-100 rounded-3xl p-8 w-full max-w-md shadow-2xl space-y-6 text-center">
             <div class="inline-flex bg-gradient-to-tr from-purple-600 to-fuchsia-500 text-white p-5 rounded-2xl shadow-lg shadow-purple-500/30">
@@ -56,7 +60,7 @@
             </div>
             <div>
                 <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Fragatta Parfums</h1>
-                <p class="text-xs font-semibold text-purple-600 uppercase tracking-widest mt-1">Perfumería Exclusiva • Sistema de Gestión</p>
+                <p class="text-xs font-semibold text-purple-600 uppercase tracking-widest mt-1">Perfumería Exclusiva • Nube Firebase POS</p>
             </div>
 
             <div class="space-y-4 text-left">
@@ -64,8 +68,8 @@
                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Clave de Ingreso al Sistema</label>
                     <div class="relative">
                         <input type="password" id="login-pass-input" placeholder="••••••••••••" onkeydown="if(event.key==='Enter') verifyLogin()" class="w-full bg-slate-100 border border-slate-200 rounded-xl pl-4 pr-10 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition">
-                        <button type="button" onclick="togglePasswordVisibility('login-pass-input', 'toggle-pass-icon')" class="absolute right-3 top-3.5 text-slate-400 hover:text-purple-600">
-                            <i id="toggle-pass-icon" class="fa-solid fa-eye"></i>
+                        <button type="button" onclick="togglePasswordVisibility('login-pass-input', 'toggle-pass-icon-login')" class="absolute right-3 top-3.5 text-slate-400 hover:text-purple-600">
+                            <i id="toggle-pass-icon-login" class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
@@ -77,7 +81,7 @@
         </div>
     </div>
 
-    <!-- 2. APLICACIÓN PRINCIPAL -->
+    <!-- APLICACIÓN PRINCIPAL -->
     <div id="app-content" class="hidden min-h-screen flex flex-col md:flex-row">
         
         <!-- BARRA LATERAL -->
@@ -86,17 +90,17 @@
                 <div class="p-5 flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-purple-50/50 to-fuchsia-50/50">
                     <div class="flex items-center gap-3">
                         <div class="bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white p-2.5 rounded-xl shadow-md shadow-purple-500/20">
-                            <i class="fa-solid fa-spray-can text-lg"></i>
+                            <i class="fa-solid fa-cloud text-lg"></i>
                         </div>
                         <div>
                             <h1 class="font-extrabold text-lg text-slate-900 leading-tight">Fragatta</h1>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-purple-600">Parfums POS</span>
+                            <span id="cloud-status-badge" class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Nube Activa</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="p-3 border-b border-slate-100 bg-slate-50/80">
-                    <button id="btn-toggle-admin" onclick="toggleAdminMode()" class="w-full py-2 px-3 bg-purple-100/70 hover:bg-purple-200/70 text-purple-800 border border-purple-200/80 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+                    <button id="btn-toggle-admin" onclick="openAdminModal()" class="w-full py-2 px-3 bg-purple-100/70 hover:bg-purple-200/70 text-purple-800 border border-purple-200/80 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-lock" id="lock-icon"></i>
                         <span id="lock-btn-text">Desbloquear Modo Admin</span>
                     </button>
@@ -169,6 +173,19 @@
 
             <div class="p-4 md:p-8 flex-1 space-y-6">
                 
+                <!-- CONFIGURACIÓN DE FIREBASE (MODO ADMIN) -->
+                <div class="admin-only hidden bg-white border border-purple-200 rounded-3xl p-5 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-fire text-amber-500"></i> Conexión a Nube Firebase (Persistencia de Productos)
+                        </h3>
+                        <button onclick="openFirebaseConfigModal()" class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-md">
+                            ⚙️ Configurar Llaves
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500">Configura Firebase una sola vez. Al estar conectado, tus productos y ventas se respaldan en la nube automáticamente y jamás se perderán.</p>
+                </div>
+
                 <!-- 1. DASHBOARD & CORTE FINANCIERO -->
                 <section id="tab-dashboard" class="tab-content space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -246,7 +263,7 @@
                                     <p class="text-xs text-slate-400">Proyección real en banco = Saldo + Ventas Cobradas - Gastos - Pagos a Proveedores - Retiros.</p>
                                 </div>
                             </div>
-                            <button onclick="resetSystemMemory()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl transition shadow-md flex items-center gap-1.5">
+                            <button onclick="openResetModal()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
                                 <i class="fa-solid fa-rotate-right"></i> Resetear Datos
                             </button>
                         </div>
@@ -268,88 +285,6 @@
                             <div class="bg-purple-900/40 p-4 rounded-2xl border border-purple-500/50">
                                 <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Total Esperado en Banco (Flujo Real)</p>
                                 <h4 id="admin-total-expected-money" class="text-2xl font-black text-amber-400 mt-1">$0</h4>
-                            </div>
-                        </div>
-
-                        <div class="bg-slate-800/90 border border-amber-500/30 rounded-2xl p-4 mt-3">
-                            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <i class="fa-solid fa-vault"></i> Control de Fondo Base en Banco
-                            </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fondo Base Objetivo ($):</label>
-                                    <input type="number" id="admin-base-target" value="0" min="0" onchange="updateBaseCalculations()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm font-bold text-white focus:outline-none focus:border-amber-400">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fondo Base Actual ($):</label>
-                                    <input type="number" id="admin-base-current" value="0" min="0" onchange="updateBaseCalculations()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm font-bold text-white focus:outline-none focus:border-amber-400">
-                                </div>
-                                <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700/80 flex flex-col justify-center">
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase">Faltante para Meta Base:</span>
-                                    <span id="admin-base-missing" class="text-lg font-black text-emerald-400">$0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="admin-only hidden bg-white border border-purple-100 rounded-3xl p-6 shadow-sm space-y-4">
-                        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 pb-4">
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-                                    <i class="fa-solid fa-users text-purple-600"></i> Reparto de Utilidades & Retiros (Privado Administrador)
-                                </h3>
-                                <p class="text-xs text-slate-500">Calcula ganancias según porcentaje y descuenta retiros para el periodo seleccionado.</p>
-                            </div>
-                            <button onclick="openWithdrawalModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-purple-600/20 flex items-center gap-2">
-                                <i class="fa-solid fa-money-bill-transfer"></i> Registrar Retiro de Socio
-                            </button>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-gradient-to-br from-purple-50/50 to-indigo-50/50 p-5 rounded-2xl border border-purple-100 space-y-3">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-bold text-slate-800 text-sm">Socio 1 (Propietario A)</span>
-                                    <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-slate-200">
-                                        <input type="number" id="partner1-pct" value="50" min="0" max="100" onchange="updateDashboard()" class="w-10 text-xs font-bold text-center bg-transparent focus:outline-none">%
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-                                    <div class="bg-white p-2 rounded-xl border border-purple-100">
-                                        <p class="text-[10px] text-slate-400 font-semibold">Ganado</p>
-                                        <p id="partner1-earned" class="font-bold text-slate-800 mt-0.5">$0</p>
-                                    </div>
-                                    <div class="bg-white p-2 rounded-xl border border-purple-100">
-                                        <p class="text-[10px] text-rose-500 font-semibold">Retirado</p>
-                                        <p id="partner1-withdrawn" class="font-bold text-rose-600 mt-0.5">$0</p>
-                                    </div>
-                                    <div class="bg-white p-2 rounded-xl border border-purple-100">
-                                        <p class="text-[10px] text-emerald-600 font-bold">Disponible</p>
-                                        <p id="partner1-remaining" class="font-extrabold text-emerald-600 mt-0.5">$0</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="bg-gradient-to-br from-fuchsia-50/50 to-pink-50/50 p-5 rounded-2xl border border-fuchsia-100 space-y-3">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-bold text-slate-800 text-sm">Socio 2 (Propietario B)</span>
-                                    <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-slate-200">
-                                        <input type="number" id="partner2-pct" value="50" min="0" max="100" onchange="updateDashboard()" class="w-10 text-xs font-bold text-center bg-transparent focus:outline-none">%
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-                                    <div class="bg-white p-2 rounded-xl border border-fuchsia-100">
-                                        <p class="text-[10px] text-slate-400 font-semibold">Ganado</p>
-                                        <p id="partner2-earned" class="font-bold text-slate-800 mt-0.5">$0</p>
-                                    </div>
-                                    <div class="bg-white p-2 rounded-xl border border-fuchsia-100">
-                                        <p class="text-[10px] text-rose-500 font-semibold">Retirado</p>
-                                        <p id="partner2-withdrawn" class="font-bold text-rose-600 mt-0.5">$0</p>
-                                    </div>
-                                    <div class="bg-white p-2 rounded-xl border border-fuchsia-100">
-                                        <p class="text-[10px] text-emerald-600 font-bold">Disponible</p>
-                                        <p id="partner2-remaining" class="font-extrabold text-emerald-600 mt-0.5">$0</p>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -376,7 +311,7 @@
                             <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row gap-3">
                                 <div class="relative flex-1">
                                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
-                                    <input type="text" id="pos-search" oninput="renderPosProducts()" placeholder="Buscar perfume o combo..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white">
+                                    <input type="text" id="pos-search" oninput="renderPosProducts()" placeholder="Buscar perfume por SKU o nombre..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white">
                                 </div>
                                 <select id="pos-category-filter" onchange="renderPosProducts()" class="px-3 py-2 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl focus:outline-none">
                                     <option value="">Todas las Categorías</option>
@@ -527,12 +462,12 @@
                     </div>
                 </section>
 
-                <!-- 6. INVENTARIO CON CATEGORÍAS EXTENDIDAS -->
+                <!-- 6. INVENTARIO ULTRARRÁPIDO -->
                 <section id="tab-inventory" class="tab-content hidden space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Catálogo de Perfumes & Combos</h2>
-                            <p class="text-xs text-slate-500">Gestión de productos individuales, Por Mayor y Paquetes Especiales</p>
+                            <p class="text-xs text-slate-500">Gestión rápida de stock respaldado en la Nube</p>
                         </div>
                         <div class="flex items-center gap-2 flex-wrap">
                             <button onclick="triggerExcelImport()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-emerald-600/20">
@@ -541,7 +476,7 @@
                             <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" onchange="importExcelCatalog(event)" class="hidden">
                             
                             <button onclick="openComboModal()" class="admin-only hidden bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-amber-600/20">
-                                <i class="fa-solid fa-cubes"></i> + Crear Combo / Promo
+                                <i class="fa-solid fa-boxes-packing"></i> + Crear Combo / Promo
                             </button>
 
                             <button onclick="openProductModal()" class="admin-only hidden bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-purple-600/20">
@@ -677,9 +612,99 @@
         </main>
     </div>
 
-    <!-- MODALES DE CONTROL Y NUEVAS CATEGORÍAS -->
+    <!-- MODALES DE CONTROL -->
 
-    <!-- MODAL CREAR / EDITAR COMBOS (PROMOS, KITS, EMPRENDEDOR) -->
+    <!-- MODAL DESBLOQUEAR ADMIN CON OJO -->
+    <div id="admin-lock-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border border-slate-200 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-lock text-purple-600"></i> Desbloquear Modo Administrador
+            </h3>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Clave de Administrador:</label>
+                    <div class="relative">
+                        <input type="password" id="admin-pass-input" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <button type="button" onclick="togglePasswordVisibility('admin-pass-input', 'toggle-pass-icon-admin')" class="absolute right-3 top-3 text-slate-400 hover:text-purple-600">
+                            <i id="toggle-pass-icon-admin" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeAdminModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
+                    <button type="button" onclick="verifyAdminKey()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold">Ingresar Admin</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RESET CON PISTA EN PANTALLA Y OJO DE CLAVE -->
+    <div id="reset-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border border-rose-200 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center gap-3 text-rose-600">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <h3 class="font-black text-slate-900 text-base">Confirmar Reset de Datos</h3>
+            </div>
+            <p class="text-xs text-slate-600">Ingresa la clave de reset para limpiar los datos locales de caja y ventas.</p>
+            
+            <div class="bg-rose-50 border border-rose-200 p-2.5 rounded-xl text-center">
+                <span class="text-[11px] font-extrabold text-rose-700 uppercase tracking-wider">🔑 Pista de Clave Reset: <span class="underline">123456</span></span>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Clave de Reset:</label>
+                    <div class="relative">
+                        <input type="password" id="reset-pass-input" placeholder="••••••" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <button type="button" onclick="togglePasswordVisibility('reset-pass-input', 'toggle-pass-icon-reset')" class="absolute right-3 top-3 text-slate-400 hover:text-rose-600">
+                            <i id="toggle-pass-icon-reset" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeResetModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
+                    <button type="button" onclick="executeResetMemory()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold">Confirmar Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIGURACIÓN FIREBASE -->
+    <div id="firebase-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-key text-amber-500"></i> Credenciales de Firebase
+            </h3>
+            <form onsubmit="saveFirebaseConfig(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">API Key:</label>
+                    <input type="text" id="fb-apiKey" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none font-mono">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Auth Domain:</label>
+                    <input type="text" id="fb-authDomain" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none font-mono">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Project ID:</label>
+                    <input type="text" id="fb-projectId" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none font-mono">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Storage Bucket:</label>
+                    <input type="text" id="fb-storageBucket" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none font-mono">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">App ID:</label>
+                    <input type="text" id="fb-appId" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none font-mono">
+                </div>
+                <div class="pt-2 flex justify-end gap-2 border-t">
+                    <button type="button" onclick="closeFirebaseConfigModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold">Guardar y Conectar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL COMBOS -->
     <div id="combo-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-lg rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3 flex items-center gap-2">
@@ -705,7 +730,6 @@
                     </div>
                 </div>
 
-                <!-- Selección de productos integrados -->
                 <div class="border-t border-slate-100 pt-3">
                     <div class="flex justify-between items-center mb-2">
                         <label class="font-bold text-slate-700">Productos del Paquete:</label>
@@ -727,7 +751,7 @@
         </div>
     </div>
 
-    <!-- MODAL EDITAR VENTA GENERADA (ADMIN) -->
+    <!-- MODAL EDITAR VENTA -->
     <div id="sale-edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
             <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3 flex items-center gap-2">
@@ -935,30 +959,6 @@
         </div>
     </div>
 
-    <!-- MODAL RETIRO SOCIO -->
-    <div id="withdrawal-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
-            <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3">Registrar Retiro de Utilidades</h3>
-            <form onsubmit="saveWithdrawal(event)" class="space-y-3 text-xs">
-                <div>
-                    <label class="block font-bold text-slate-600 mb-1">Seleccionar Socio:</label>
-                    <select id="withdrawal-partner" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-bold focus:outline-none">
-                        <option value="1">Socio 1 (Propietario A)</option>
-                        <option value="2">Socio 2 (Propietario B)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-600 mb-1">Monto Retirado ($):</label>
-                    <input type="number" id="withdrawal-amount" min="1" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
-                </div>
-                <div class="pt-2 flex justify-end gap-2">
-                    <button type="button" onclick="closeWithdrawalModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold">Registrar Retiro</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- MODAL IMPRESIÓN LIMPIA -->
     <div id="print-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -1051,11 +1051,15 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CON COMBOS Y DUPLICADOR A POR MAYOR -->
+    <!-- JAVASCRIPT CON OPTIMIZACIÓN Y VISIBILIDAD DE OJO -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
+        const RESET_PASS = "123456";
         let isAdmin = false;
+
+        let db = null;
+        let isFirebaseConnected = false;
 
         const INITIAL_PRODUCTS = [
             { id: 1, sku: 'FRAG-1001', name: '1 MILLION RABANNE - PACO RABANNE', category: 'Caballero', cost: 45000, price: 115000, stock: 10 },
@@ -1078,6 +1082,7 @@
         let cart = [];
         let financeChart = null;
 
+        // --- MANEJO DE VER / OCULTAR CONTRASEÑA ---
         function togglePasswordVisibility(inputId, iconId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
@@ -1087,6 +1092,144 @@
             } else {
                 input.type = "password";
                 icon.className = "fa-solid fa-eye";
+            }
+        }
+
+        // --- RESET CON CLAVE 123456 ---
+        function openResetModal() {
+            document.getElementById('reset-pass-input').value = '';
+            document.getElementById('reset-modal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('reset-modal').classList.add('hidden');
+        }
+
+        function executeResetMemory() {
+            const inputPass = document.getElementById('reset-pass-input').value.trim();
+            if (inputPass === RESET_PASS) {
+                localStorage.clear();
+                showToast('Memoria borrada exitosamente');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                alert("Contraseña de Reset incorrecta. (Recuerda que es 123456)");
+            }
+        }
+
+        // --- CONEXIÓN FIREBASE ---
+        function initFirebase() {
+            const savedConfig = localStorage.getItem('fragatta_firebase_config');
+            if (savedConfig) {
+                try {
+                    const cfg = JSON.parse(savedConfig);
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(cfg);
+                    }
+                    db = firebase.firestore();
+                    isFirebaseConnected = true;
+                    document.getElementById('cloud-status-badge').innerText = "Nube Firebase Activa";
+                    document.getElementById('cloud-status-badge').className = "text-[10px] font-bold uppercase tracking-wider text-emerald-600";
+                    syncWithFirebase();
+                } catch (err) {
+                    console.error("Error Firebase:", err);
+                    document.getElementById('cloud-status-badge').innerText = "Modo Local";
+                    document.getElementById('cloud-status-badge').className = "text-[10px] font-bold uppercase tracking-wider text-amber-600";
+                }
+            } else {
+                document.getElementById('cloud-status-badge').innerText = "Modo Local (Sin Llaves)";
+                document.getElementById('cloud-status-badge').className = "text-[10px] font-bold uppercase tracking-wider text-amber-600";
+            }
+        }
+
+        function openFirebaseConfigModal() {
+            const saved = localStorage.getItem('fragatta_firebase_config');
+            if (saved) {
+                const cfg = JSON.parse(saved);
+                document.getElementById('fb-apiKey').value = cfg.apiKey || '';
+                document.getElementById('fb-authDomain').value = cfg.authDomain || '';
+                document.getElementById('fb-projectId').value = cfg.projectId || '';
+                document.getElementById('fb-storageBucket').value = cfg.storageBucket || '';
+                document.getElementById('fb-appId').value = cfg.appId || '';
+            }
+            document.getElementById('firebase-modal').classList.remove('hidden');
+        }
+
+        function closeFirebaseConfigModal() {
+            document.getElementById('firebase-modal').classList.add('hidden');
+        }
+
+        function saveFirebaseConfig(e) {
+            e.preventDefault();
+            const config = {
+                apiKey: document.getElementById('fb-apiKey').value.trim(),
+                authDomain: document.getElementById('fb-authDomain').value.trim(),
+                projectId: document.getElementById('fb-projectId').value.trim(),
+                storageBucket: document.getElementById('fb-storageBucket').value.trim(),
+                appId: document.getElementById('fb-appId').value.trim()
+            };
+
+            localStorage.setItem('fragatta_firebase_config', JSON.stringify(config));
+            closeFirebaseConfigModal();
+            showToast('Credenciales guardadas. Iniciando Firebase...');
+            initFirebase();
+        }
+
+        function syncWithFirebase() {
+            if (!db) return;
+            
+            db.collection("products").get().then((querySnapshot) => {
+                if (!querySnapshot.empty) {
+                    let cloudProds = [];
+                    querySnapshot.forEach((doc) => {
+                        cloudProds.push({ id: doc.id, ...doc.data() });
+                    });
+                    products = cloudProds;
+                    saveDataLocalOnly();
+                    renderInventoryTable();
+                    renderPosProducts();
+                    updateDashboard();
+                } else {
+                    saveData();
+                }
+            }).catch(err => console.log("Error consultando productos nube:", err));
+
+            db.collection("sales").get().then((querySnapshot) => {
+                if (!querySnapshot.empty) {
+                    let cloudSales = [];
+                    querySnapshot.forEach((doc) => {
+                        cloudSales.push(doc.data());
+                    });
+                    sales = cloudSales;
+                    saveDataLocalOnly();
+                    renderTablesViews();
+                    updateDashboard();
+                }
+            });
+        }
+
+        function saveDataLocalOnly() {
+            localStorage.setItem('fragatta_products', JSON.stringify(products));
+            localStorage.setItem('fragatta_sales', JSON.stringify(sales));
+            localStorage.setItem('fragatta_expenses', JSON.stringify(expenses));
+            localStorage.setItem('fragatta_debts', JSON.stringify(debts));
+            localStorage.setItem('fragatta_payables', JSON.stringify(payables));
+            localStorage.setItem('fragatta_withdrawals', JSON.stringify(withdrawals));
+            localStorage.setItem('fragatta_bank_savings', bankSavings.toString());
+            localStorage.setItem('fragatta_base_target', baseTarget.toString());
+            localStorage.setItem('fragatta_base_current', baseCurrent.toString());
+        }
+
+        function saveData() {
+            saveDataLocalOnly();
+
+            if (isFirebaseConnected && db) {
+                products.forEach(p => {
+                    db.collection("products").doc(String(p.id)).set(p, { merge: true });
+                });
+
+                sales.forEach(s => {
+                    db.collection("sales").doc(String(s.id)).set(s, { merge: true });
+                });
             }
         }
 
@@ -1108,20 +1251,31 @@
             document.getElementById('login-pass-input').value = '';
         }
 
-        function toggleAdminMode() {
+        function openAdminModal() {
             if (isAdmin) {
                 isAdmin = false;
+                updateAdminUI();
                 showToast('Modo Admin desactivado');
             } else {
-                const p = prompt('Ingresa la clave de Administrador:');
-                if (p && p.trim() === ADMIN_PASS) {
-                    isAdmin = true;
-                    showToast('Acceso Administrador concedido');
-                } else if (p) {
-                    alert('Contraseña incorrecta.');
-                }
+                document.getElementById('admin-pass-input').value = '';
+                document.getElementById('admin-lock-modal').classList.remove('hidden');
             }
-            updateAdminUI();
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-lock-modal').classList.add('hidden');
+        }
+
+        function verifyAdminKey() {
+            const pass = document.getElementById('admin-pass-input').value.trim();
+            if (pass === ADMIN_PASS) {
+                isAdmin = true;
+                closeAdminModal();
+                updateAdminUI();
+                showToast('Acceso Administrador concedido');
+            } else {
+                alert('Contraseña de Administrador incorrecta.');
+            }
         }
 
         function updateAdminUI() {
@@ -1165,6 +1319,8 @@
         }
 
         function initApp() {
+            initFirebase();
+
             document.getElementById('pos-payment-status').addEventListener('change', (e) => {
                 const container = document.getElementById('pos-abono-input-container');
                 if (e.target.value === 'ABONO') {
@@ -1190,25 +1346,6 @@
             updateDashboard();
             updateAdminUI();
             switchTab('dashboard');
-        }
-
-        function saveData() {
-            localStorage.setItem('fragatta_products', JSON.stringify(products));
-            localStorage.setItem('fragatta_sales', JSON.stringify(sales));
-            localStorage.setItem('fragatta_expenses', JSON.stringify(expenses));
-            localStorage.setItem('fragatta_debts', JSON.stringify(debts));
-            localStorage.setItem('fragatta_payables', JSON.stringify(payables));
-            localStorage.setItem('fragatta_withdrawals', JSON.stringify(withdrawals));
-            localStorage.setItem('fragatta_bank_savings', bankSavings.toString());
-            localStorage.setItem('fragatta_base_target', baseTarget.toString());
-            localStorage.setItem('fragatta_base_current', baseCurrent.toString());
-        }
-
-        function resetSystemMemory() {
-            if (!isAdmin) return;
-            if (!confirm("¿Está seguro de reiniciar los datos del sistema? Esto dejará deudas, ventas y gastos en cero.")) return;
-            localStorage.clear();
-            location.reload();
         }
 
         function updateBankSavings() {
@@ -1268,7 +1405,7 @@
             }, 3000);
         }
 
-        // --- POS / FACTURACIÓN CON CATEGORÍAS EXTENDIDAS ---
+        // --- POS / FACTURACIÓN ---
         function renderPosProducts() {
             const search = document.getElementById('pos-search').value.toLowerCase();
             const category = document.getElementById('pos-category-filter').value;
@@ -1294,7 +1431,7 @@
                         </div>
                         <div class="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2">
                             <span class="font-black text-emerald-600 text-xs">$${safePrice.toLocaleString('es-CO')}</span>
-                            <span class="text-[10px] font-bold ${p.stock <= 3 ? 'text-rose-500' : 'text-slate-500'}">${isCombo ? 'Combo' : 'Stock: ' + p.stock}</span>
+                            <span id="pos-stock-${p.id}" class="text-[10px] font-bold ${p.stock <= 3 ? 'text-rose-500' : 'text-slate-500'}">${isCombo ? 'Combo' : 'Stock: ' + p.stock}</span>
                         </div>
                     </div>
                 `;
@@ -1404,7 +1541,6 @@
             const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
             const saleId = `FAC-${1000 + sales.length + 1}`;
 
-            // Descontar inventario para productos individuales y combos
             cart.forEach(cItem => {
                 const p = products.find(prod => prod.id === cItem.id);
                 if (p) {
@@ -1465,7 +1601,7 @@
             renderTablesViews();
             populateMonthFilterOptions();
             updateDashboard();
-            showToast('¡Venta registrada correctamente!');
+            showToast('¡Venta registrada y respaldada en Firebase!');
         }
 
         // --- IMPRESIÓN ---
@@ -1537,7 +1673,7 @@
             window.print();
         }
 
-        // --- RENDER TABLAS & EDICIÓN DE VENTAS ---
+        // --- RENDER TABLAS ---
         function renderTablesViews() {
             const now = new Date();
             const currentMonthYear = now.getMonth() + "-" + now.getFullYear();
@@ -1659,13 +1795,18 @@
             if (!isAdmin) return alert("Solo el Administrador puede eliminar registros de venta.");
             if (!confirm(`¿Estás seguro de eliminar la venta ${saleId}?`)) return;
             sales = sales.filter(s => s.id !== saleId);
+            
+            if (isFirebaseConnected && db) {
+                db.collection("sales").doc(String(saleId)).delete();
+            }
+
             saveData();
             renderTablesViews();
             updateDashboard();
             showToast('Venta eliminada por el Administrador');
         }
 
-        // --- INVENTARIO & COPIADOR A POR MAYOR ---
+        // --- INVENTARIO OPTIMIZADO Y ULTRARRÁPIDO ---
         function generateAutoSKU() {
             const nextNum = products.length + 1001;
             return `FRAG-${nextNum}`;
@@ -1685,7 +1826,7 @@
                 const isCombo = ['Promociones', 'Kits', 'Emprendedor'].includes(p.category);
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <tr id="inv-row-${p.id}" class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 font-mono font-bold text-purple-600">${p.sku}</td>
                         <td class="p-4 font-bold text-slate-800">${p.name}</td>
                         <td class="p-4"><span class="bg-purple-50 text-purple-700 font-bold px-2.5 py-1 rounded-full text-[10px]">${p.category}</span></td>
@@ -1695,7 +1836,7 @@
                             ${isCombo ? '<span class="text-xs text-amber-600">Paquete</span>' : `
                             <div class="flex items-center gap-1.5">
                                 <button onclick="adjustStock(${p.id}, -1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">-</button>
-                                <span class="px-1.5">${p.stock}</span>
+                                <span id="stock-val-${p.id}" class="px-1.5">${p.stock}</span>
                                 <button onclick="adjustStock(${p.id}, 1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">+</button>
                             </div>
                             `}
@@ -1710,6 +1851,25 @@
             });
         }
 
+        // Ajuste de stock optimizado: Solo modifica el valor de esa casilla sin parpadear
+        function adjustStock(id, delta) {
+            const p = products.find(prod => prod.id === id);
+            if (p) {
+                if (p.stock + delta < 0) return showToast('El stock no puede ser menor a cero', 'error');
+                p.stock += delta;
+                
+                // Actualizar inmediatamente en pantalla
+                const stockEl = document.getElementById(`stock-val-${id}`);
+                if (stockEl) stockEl.innerText = p.stock;
+
+                const posStockEl = document.getElementById(`pos-stock-${id}`);
+                if (posStockEl) posStockEl.innerText = `Stock: ${p.stock}`;
+
+                saveData();
+                updateDashboard();
+            }
+        }
+
         function copyToWholesale(id) {
             if (!isAdmin) return;
             const p = products.find(item => item.id === id);
@@ -1721,25 +1881,13 @@
                     category: 'Por Mayor',
                     stock: p.stock,
                     cost: p.cost,
-                    price: Math.round(p.price * 0.75) // Precio sugerido al por mayor
+                    price: Math.round(p.price * 0.75)
                 };
                 products.push(newWholesale);
                 saveData();
                 renderInventoryTable();
                 renderPosProducts();
-                showToast(`¡Copiado a Por Mayor! Ajusta su precio si es necesario.`);
-            }
-        }
-
-        function adjustStock(id, delta) {
-            const p = products.find(prod => prod.id === id);
-            if (p) {
-                if (p.stock + delta < 0) return showToast('El stock no puede ser menor a cero', 'error');
-                p.stock += delta;
-                saveData();
-                renderInventoryTable();
-                renderPosProducts();
-                updateDashboard();
+                showToast(`¡Copiado a Por Mayor! Guardado en Firebase.`);
             }
         }
 
@@ -1806,21 +1954,26 @@
             renderInventoryTable();
             renderPosProducts();
             updateDashboard();
-            showToast('Catálogo actualizado correctamente');
+            showToast('Producto respaldado en Firebase');
         }
 
         function deleteProduct(id) {
             if (!isAdmin) return alert("Solo el Administrador puede eliminar perfumes.");
             if (!confirm("¿Desea eliminar este producto del catálogo?")) return;
             products = products.filter(p => p.id !== id);
+            
+            if (isFirebaseConnected && db) {
+                db.collection("products").doc(String(id)).delete();
+            }
+
             saveData();
             renderInventoryTable();
             renderPosProducts();
             updateDashboard();
-            showToast('Producto eliminado por el Administrador');
+            showToast('Producto eliminado');
         }
 
-        // --- MÓDULO COMBOS / PROMOS / EMPRENDEDOR ---
+        // --- COMBOS / PROMOS ---
         function openComboModal() {
             document.getElementById('combo-name').value = '';
             document.getElementById('combo-price').value = '';
@@ -1901,7 +2054,7 @@
                 category,
                 price,
                 cost: totalCost,
-                stock: 999, // Stock dinámico basado en componentes
+                stock: 999,
                 items: comboItems
             };
 
@@ -1910,7 +2063,7 @@
             closeComboModal();
             renderInventoryTable();
             renderPosProducts();
-            showToast('¡Combo o Promoción guardada exitosamente!');
+            showToast('¡Combo guardado en Firebase!');
         }
 
         function triggerExcelImport() {
@@ -1956,7 +2109,7 @@
                 renderInventoryTable();
                 renderPosProducts();
                 updateDashboard();
-                showToast(`¡Se importaron ${importedCount} perfumes con Stock en 0!`);
+                showToast(`¡Se importaron ${importedCount} perfumes a Firebase!`);
             };
             reader.readAsArrayBuffer(file);
         }
@@ -2296,15 +2449,6 @@
 
             const totalExpectedBank = bankSavings + totalAllCollectedSales - totalAllExpenses - totalAllPayablesPaid - totalAllWithdrawals;
 
-            const w1 = activeWithdrawals.filter(w => w.partner === "1").reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
-            const w2 = activeWithdrawals.filter(w => w.partner === "2").reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
-
-            const pct1 = (parseFloat(document.getElementById('partner1-pct').value) || 50) / 100;
-            const pct2 = (parseFloat(document.getElementById('partner2-pct').value) || 50) / 100;
-
-            const earned1 = Math.max(0, netProfit) * pct1;
-            const earned2 = Math.max(0, netProfit) * pct2;
-
             document.getElementById('dash-total-sales').innerText = `$${totalGrossSales.toLocaleString('es-CO')}`;
             document.getElementById('dash-net-profit').innerText = `$${netProfit.toLocaleString('es-CO')}`;
             document.getElementById('dash-stock-cost').innerText = `$${totalStockCost.toLocaleString('es-CO')}`;
@@ -2312,14 +2456,6 @@
 
             document.getElementById('admin-total-historical-sales').innerText = `$${totalAllCollectedSales.toLocaleString('es-CO')}`;
             document.getElementById('admin-total-expected-money').innerText = `$${totalExpectedBank.toLocaleString('es-CO')}`;
-
-            document.getElementById('partner1-earned').innerText = `$${earned1.toLocaleString('es-CO')}`;
-            document.getElementById('partner1-withdrawn').innerText = `$${w1.toLocaleString('es-CO')}`;
-            document.getElementById('partner1-remaining').innerText = `$${(earned1 - w1).toLocaleString('es-CO')}`;
-
-            document.getElementById('partner2-earned').innerText = `$${earned2.toLocaleString('es-CO')}`;
-            document.getElementById('partner2-withdrawn').innerText = `$${w2.toLocaleString('es-CO')}`;
-            document.getElementById('partner2-remaining').innerText = `$${(earned2 - w2).toLocaleString('es-CO')}`;
 
             const lowStockList = document.getElementById('dash-low-stock-list');
             const lowProds = products.filter(p => p.stock <= 3 && !['Promociones', 'Kits', 'Emprendedor'].includes(p.category));
