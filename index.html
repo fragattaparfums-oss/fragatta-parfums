@@ -100,7 +100,7 @@
     <!-- Header Principal -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-            <div class="w-8"></div> <!-- Espaciador para centrar el logo -->
+            <div class="w-8"></div>
 
             <div class="flex flex-col items-center">
                 <div id="logo-container" class="mb-1">
@@ -203,6 +203,7 @@
                 <button onclick="setCategoryFilter('Nicho', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Nicho</button>
                 <button onclick="setCategoryFilter('Body Spray', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Body Spray</button>
                 <button onclick="setCategoryFilter('Kids', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Kids</button>
+                <button onclick="setCategoryFilter('Emprendedores', this)" class="cat-btn bg-amber-100 border border-amber-300 hover:bg-amber-200 text-amber-900 font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Emprendedores 🚀</button>
                 <button onclick="setCategoryFilter('Promociones', this)" class="cat-btn bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Promociones 🏷️</button>
             </div>
 
@@ -254,7 +255,7 @@
             
             <div class="pt-4 border-t border-gray-800 text-[11px] text-gray-600 flex items-center justify-between">
                 <span>&copy; 2026 Parfums Luxury. Todos los derechos reservados.</span>
-                <!-- CANDADO ADMIN REUBICADO DE FORMA DISCRETA EN EL PIE DE PÁGINA -->
+                <!-- CANDADO MODO ADMIN OCULTO DISCRETAMENTE EN EL PIE DE PÁGINA -->
                 <button id="admin-lock-btn" type="button" onclick="handleAdminToggle()" title="Acceso Administrador" class="text-gray-700 hover:text-amber-500 transition p-1 text-xs">
                     <i id="admin-lock-icon" class="fas fa-lock"></i>
                 </button>
@@ -272,7 +273,7 @@
         </div>
     </div>
 
-    <!-- MODAL CARRITO CON IMÁGENES Y DESCUENTOS -->
+    <!-- MODAL CARRITO -->
     <div id="cart-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-end hidden">
         <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl relative">
             <div class="p-4 bg-luxury-dark text-white flex items-center justify-between border-b border-luxury-gold/40">
@@ -358,6 +359,7 @@
                             <option value="Nicho">Nicho</option>
                             <option value="Body Spray">Body Spray</option>
                             <option value="Kids">Kids</option>
+                            <option value="Emprendedores">Emprendedores</option>
                             <option value="Promociones">Promociones</option>
                         </select>
                     </div>
@@ -425,7 +427,7 @@
 
         const ADMIN_PASSWORD = "J.p12022013";
         const DEFAULT_LOGO_URL = "https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg";
-        const WHATSAPP_NUMBER = "573105390115"; // Número oficial de Fragatta Parfums
+        const WHATSAPP_NUMBER = "573105390115";
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
@@ -668,7 +670,7 @@
             renderProducts();
         }
 
-        // RENDERIZADO CON ORDEN DE PRIORIDAD & BÚSQUEDA DIDÁCTICA
+        // RENDERIZADO CON REGLA ESPECIAL PARA EMPRENDEDORES & BÚSQUEDA DIDÁCTICA
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             const emptyState = document.getElementById('empty-state');
@@ -688,7 +690,17 @@
 
                 return { ...p, matchScore };
             }).filter(p => {
-                const matchesCat = (currentCategory === 'Todas') || p.category.toLowerCase() === currentCategory.toLowerCase();
+                const isEmprendedores = p.category.toLowerCase() === 'emprendedores';
+
+                // REGLA CLAVE: Si la categoría actual es "Todas", SE EXCLUYE la categoría Emprendedores.
+                // Solo se muestran si la categoría activa es exactamente 'Emprendedores'.
+                let matchesCat = false;
+                if (currentCategory === 'Todas') {
+                    matchesCat = !isEmprendedores; // Ocultar de la vista general
+                } else {
+                    matchesCat = (p.category.toLowerCase() === currentCategory.toLowerCase());
+                }
+
                 const matchesPrio = (currentPriority === 'Todas') || p.priority === currentPriority;
                 const matchesGender = (currentGender === 'Todos') || p.gender === currentGender;
                 const matchesSearch = !searchVal || p.matchScore >= 55;
@@ -843,8 +855,16 @@
 
         function setCategoryFilter(cat, btn) {
             currentCategory = cat;
-            document.querySelectorAll('.cat-btn').forEach(b => b.className = 'cat-btn bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg whitespace-nowrap');
-            btn.className = 'cat-btn bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap';
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                if(b.innerText.includes('Emprendedores')) {
+                    b.className = 'cat-btn bg-amber-100 border border-amber-300 hover:bg-amber-200 text-amber-900 font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap';
+                } else if(b.innerText.includes('Promociones')) {
+                    b.className = 'cat-btn bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap';
+                } else {
+                    b.className = 'cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap';
+                }
+            });
+            btn.className = 'cat-btn bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap';
             renderProducts();
         }
 
