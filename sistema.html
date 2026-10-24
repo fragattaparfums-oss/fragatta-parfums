@@ -369,20 +369,25 @@
                     </div>
                 </section>
 
-                <!-- 2. POS / FACTURACIÓN CON DESCUENTO INTEGRADO -->
+                <!-- 2. POS / FACTURACIÓN -->
                 <section id="tab-pos" class="tab-content hidden space-y-6">
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                         <div class="lg:col-span-7 space-y-4">
                             <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row gap-3">
                                 <div class="relative flex-1">
                                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
-                                    <input type="text" id="pos-search" oninput="renderPosProducts()" placeholder="Buscar perfume por SKU o nombre..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white">
+                                    <input type="text" id="pos-search" oninput="renderPosProducts()" placeholder="Buscar perfume o combo..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white">
                                 </div>
                                 <select id="pos-category-filter" onchange="renderPosProducts()" class="px-3 py-2 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl focus:outline-none">
                                     <option value="">Todas las Categorías</option>
                                     <option value="Dama">Dama</option>
                                     <option value="Caballero">Caballero</option>
                                     <option value="Árabes">Árabes</option>
+                                    <option value="Body Spray">Body Spray</option>
+                                    <option value="Por Mayor">Por Mayor</option>
+                                    <option value="Promociones">Promociones</option>
+                                    <option value="Kits">Kits</option>
+                                    <option value="Emprendedor">Emprendedor</option>
                                 </select>
                             </div>
 
@@ -488,7 +493,7 @@
                     </div>
                 </section>
 
-                <!-- 4. HISTÓRICO COMPLETO CON EDICIÓN ADMIN -->
+                <!-- 4. HISTÓRICO COMPLETO -->
                 <section id="tab-historico-completo" class="tab-content hidden space-y-6">
                     <div class="flex justify-between items-center">
                         <div>
@@ -522,21 +527,25 @@
                     </div>
                 </section>
 
-                <!-- 6. INVENTARIO -->
+                <!-- 6. INVENTARIO CON CATEGORÍAS EXTENDIDAS -->
                 <section id="tab-inventory" class="tab-content hidden space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Catálogo de Perfumes & Existencias</h2>
-                            <p class="text-xs text-slate-500">Gestión de stock e importación Excel</p>
+                            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Catálogo de Perfumes & Combos</h2>
+                            <p class="text-xs text-slate-500">Gestión de productos individuales, Por Mayor y Paquetes Especiales</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="triggerExcelImport()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-emerald-600/20">
-                                <i class="fa-solid fa-file-excel"></i> Importar desde Excel
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button onclick="triggerExcelImport()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-emerald-600/20">
+                                <i class="fa-solid fa-file-excel"></i> Importar Excel
                             </button>
                             <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" onchange="importExcelCatalog(event)" class="hidden">
                             
-                            <button onclick="openProductModal()" class="admin-only hidden bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-purple-600/20">
-                                <i class="fa-solid fa-plus"></i> Agregar Perfume
+                            <button onclick="openComboModal()" class="admin-only hidden bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-amber-600/20">
+                                <i class="fa-solid fa-cubes"></i> + Crear Combo / Promo
+                            </button>
+
+                            <button onclick="openProductModal()" class="admin-only hidden bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-purple-600/20">
+                                <i class="fa-solid fa-plus"></i> + Crear Producto
                             </button>
                         </div>
                     </div>
@@ -548,6 +557,11 @@
                             <option value="Dama">Dama</option>
                             <option value="Caballero">Caballero</option>
                             <option value="Árabes">Árabes</option>
+                            <option value="Body Spray">Body Spray</option>
+                            <option value="Por Mayor">Por Mayor</option>
+                            <option value="Promociones">Promociones</option>
+                            <option value="Kits">Kits</option>
+                            <option value="Emprendedor">Emprendedor</option>
                         </select>
                     </div>
 
@@ -556,9 +570,9 @@
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                     <th class="p-4">SKU</th>
-                                    <th class="p-4">Perfume</th>
+                                    <th class="p-4">Nombre / Contenido</th>
                                     <th class="p-4">Categoría</th>
-                                    <th class="p-4 admin-only-cell" style="display:none;">P. Compra (Costo)</th>
+                                    <th class="p-4 admin-only-cell" style="display:none;">P. Costo</th>
                                     <th class="p-4">P. Venta</th>
                                     <th class="p-4">Stock</th>
                                     <th class="p-4 text-center">Acciones</th>
@@ -663,7 +677,55 @@
         </main>
     </div>
 
-    <!-- MODALES DE CONTROL -->
+    <!-- MODALES DE CONTROL Y NUEVAS CATEGORÍAS -->
+
+    <!-- MODAL CREAR / EDITAR COMBOS (PROMOS, KITS, EMPRENDEDOR) -->
+    <div id="combo-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border border-slate-200 w-full max-w-lg rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-boxes-packing text-amber-600"></i> Armar Combo / Paquete Promocional
+            </h3>
+            <form onsubmit="saveCombo(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Nombre del Combo o Paquete:</label>
+                    <input type="text" id="combo-name" required placeholder="Ej: Combo Emprendedor 10 Perfumes Árabes" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">Categoría Combo:</label>
+                        <select id="combo-category" onchange="updateComboLimitsInfo()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none font-bold">
+                            <option value="Promociones">Promociones (Máx 3 prod.)</option>
+                            <option value="Kits">Kits (Sueltos)</option>
+                            <option value="Emprendedor">Emprendedor (Máx 20 prod.)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">Precio Venta Combo ($):</label>
+                        <input type="number" id="combo-price" min="0" required placeholder="Ej: 850000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-bold focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Selección de productos integrados -->
+                <div class="border-t border-slate-100 pt-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="font-bold text-slate-700">Productos del Paquete:</label>
+                        <span id="combo-limit-text" class="text-[10px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-full">Límite: Máx 3 productos</span>
+                    </div>
+
+                    <div id="combo-items-container" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+
+                    <button type="button" onclick="addComboProductRow()" class="mt-2 w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-plus text-xs"></i> Seleccionar Producto Existente
+                    </button>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2 border-t">
+                    <button type="button" onclick="closeComboModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold">Guardar Combo</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL EDITAR VENTA GENERADA (ADMIN) -->
     <div id="sale-edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
@@ -740,6 +802,8 @@
                             <option value="Dama">Dama</option>
                             <option value="Caballero">Caballero</option>
                             <option value="Árabes">Árabes</option>
+                            <option value="Body Spray">Body Spray</option>
+                            <option value="Por Mayor">Por Mayor</option>
                         </select>
                     </div>
                     <div>
@@ -987,7 +1051,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT COMPLETO Y CORREGIDO -->
+    <!-- JAVASCRIPT CON COMBOS Y DUPLICADOR A POR MAYOR -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -1204,7 +1268,7 @@
             }, 3000);
         }
 
-        // --- POS / FACTURACIÓN ---
+        // --- POS / FACTURACIÓN CON CATEGORÍAS EXTENDIDAS ---
         function renderPosProducts() {
             const search = document.getElementById('pos-search').value.toLowerCase();
             const category = document.getElementById('pos-category-filter').value;
@@ -1219,16 +1283,18 @@
             container.innerHTML = '';
             filtered.forEach(p => {
                 const safePrice = parseFloat(p.price) || 0;
+                const isCombo = ['Promociones', 'Kits', 'Emprendedor'].includes(p.category);
+                
                 container.innerHTML += `
                     <div onclick="addToCart(${p.id})" class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm hover:border-purple-400 cursor-pointer transition flex flex-col justify-between">
                         <div>
-                            <span class="text-[9px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">${p.category}</span>
+                            <span class="text-[9px] font-bold ${isCombo ? 'text-amber-700 bg-amber-50' : 'text-purple-600 bg-purple-50'} px-2 py-0.5 rounded-full">${p.category}</span>
                             <h4 class="font-bold text-slate-800 text-xs mt-1.5 line-clamp-2">${p.name}</h4>
                             <p class="text-[10px] text-slate-400 font-mono mt-0.5">${p.sku}</p>
                         </div>
                         <div class="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2">
                             <span class="font-black text-emerald-600 text-xs">$${safePrice.toLocaleString('es-CO')}</span>
-                            <span class="text-[10px] font-bold ${p.stock <= 3 ? 'text-rose-500' : 'text-slate-500'}">Stock: ${p.stock}</span>
+                            <span class="text-[10px] font-bold ${p.stock <= 3 ? 'text-rose-500' : 'text-slate-500'}">${isCombo ? 'Combo' : 'Stock: ' + p.stock}</span>
                         </div>
                     </div>
                 `;
@@ -1237,11 +1303,17 @@
 
         function addToCart(productId) {
             const product = products.find(p => p.id === productId);
-            if (!product || product.stock <= 0) return showToast('Sin existencias en stock', 'error');
+            if (!product) return;
+
+            if (!['Promociones', 'Kits', 'Emprendedor'].includes(product.category) && product.stock <= 0) {
+                return showToast('Sin existencias en stock', 'error');
+            }
 
             const existing = cart.find(item => item.id === productId);
             if (existing) {
-                if (existing.qty + 1 > product.stock) return showToast('Excede el stock disponible', 'error');
+                if (!['Promociones', 'Kits', 'Emprendedor'].includes(product.category) && existing.qty + 1 > product.stock) {
+                    return showToast('Excede el stock disponible', 'error');
+                }
                 existing.qty++;
             } else {
                 cart.push({ ...product, qty: 1 });
@@ -1332,9 +1404,19 @@
             const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
             const saleId = `FAC-${1000 + sales.length + 1}`;
 
+            // Descontar inventario para productos individuales y combos
             cart.forEach(cItem => {
                 const p = products.find(prod => prod.id === cItem.id);
-                if (p) p.stock -= cItem.qty;
+                if (p) {
+                    if (['Promociones', 'Kits', 'Emprendedor'].includes(p.category) && p.items && p.items.length > 0) {
+                        p.items.forEach(cSub => {
+                            const subProd = products.find(sp => sp.id === cSub.prodId);
+                            if (subProd) subProd.stock -= (cSub.qty * cItem.qty);
+                        });
+                    } else {
+                        p.stock -= cItem.qty;
+                    }
+                }
             });
 
             const newSale = {
@@ -1386,7 +1468,7 @@
             showToast('¡Venta registrada correctamente!');
         }
 
-        // --- IMPRESIÓN CON DESCUENTOS ---
+        // --- IMPRESIÓN ---
         function showPrintPreview(type, data) {
             document.getElementById('invoice-doc').classList.add('hidden');
             document.getElementById('label-doc').classList.add('hidden');
@@ -1583,7 +1665,7 @@
             showToast('Venta eliminada por el Administrador');
         }
 
-        // --- INVENTARIO ---
+        // --- INVENTARIO & COPIADOR A POR MAYOR ---
         function generateAutoSKU() {
             const nextNum = products.length + 1001;
             return `FRAG-${nextNum}`;
@@ -1600,6 +1682,8 @@
             filtered.forEach(p => {
                 const costVal = parseFloat(p.cost) || 0;
                 const priceVal = parseFloat(p.price) || 0;
+                const isCombo = ['Promociones', 'Kits', 'Emprendedor'].includes(p.category);
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 font-mono font-bold text-purple-600">${p.sku}</td>
@@ -1608,19 +1692,43 @@
                         <td class="p-4 admin-only-cell text-amber-600 font-bold" style="${isAdmin ? '' : 'display:none;'}">$${costVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 font-bold text-emerald-600">$${priceVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 font-bold">
+                            ${isCombo ? '<span class="text-xs text-amber-600">Paquete</span>' : `
                             <div class="flex items-center gap-1.5">
                                 <button onclick="adjustStock(${p.id}, -1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">-</button>
                                 <span class="px-1.5">${p.stock}</span>
                                 <button onclick="adjustStock(${p.id}, 1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">+</button>
                             </div>
+                            `}
                         </td>
                         <td class="p-4 text-center space-x-1">
-                            ${isAdmin ? `<button onclick="editProduct(${p.id})" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar Producto (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
-                            ${isAdmin ? `<button onclick="deleteProduct(${p.id})" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Producto (Admin)"><i class="fa-solid fa-trash"></i></button>` : ''}
+                            ${isAdmin && !isCombo ? `<button onclick="copyToWholesale(${p.id})" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition" title="Copiar a Por Mayor"><i class="fa-solid fa-copy"></i> Por Mayor</button>` : ''}
+                            ${isAdmin ? `<button onclick="editProduct(${p.id})" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
+                            ${isAdmin ? `<button onclick="deleteProduct(${p.id})" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar (Admin)"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </td>
                     </tr>
                 `;
             });
+        }
+
+        function copyToWholesale(id) {
+            if (!isAdmin) return;
+            const p = products.find(item => item.id === id);
+            if (p) {
+                const newWholesale = {
+                    id: Date.now(),
+                    sku: generateAutoSKU(),
+                    name: `${p.name} - Por Mayor`,
+                    category: 'Por Mayor',
+                    stock: p.stock,
+                    cost: p.cost,
+                    price: Math.round(p.price * 0.75) // Precio sugerido al por mayor
+                };
+                products.push(newWholesale);
+                saveData();
+                renderInventoryTable();
+                renderPosProducts();
+                showToast(`¡Copiado a Por Mayor! Ajusta su precio si es necesario.`);
+            }
         }
 
         function adjustStock(id, delta) {
@@ -1710,6 +1818,99 @@
             renderPosProducts();
             updateDashboard();
             showToast('Producto eliminado por el Administrador');
+        }
+
+        // --- MÓDULO COMBOS / PROMOS / EMPRENDEDOR ---
+        function openComboModal() {
+            document.getElementById('combo-name').value = '';
+            document.getElementById('combo-price').value = '';
+            document.getElementById('combo-category').value = 'Promociones';
+            document.getElementById('combo-items-container').innerHTML = '';
+            updateComboLimitsInfo();
+            addComboProductRow();
+            document.getElementById('combo-modal').classList.remove('hidden');
+        }
+
+        function closeComboModal() {
+            document.getElementById('combo-modal').classList.add('hidden');
+        }
+
+        function updateComboLimitsInfo() {
+            const cat = document.getElementById('combo-category').value;
+            const label = document.getElementById('combo-limit-text');
+            if (cat === 'Promociones') label.innerText = 'Límite: Máx 3 productos';
+            else if (cat === 'Emprendedor') label.innerText = 'Límite: Máx 20 productos';
+            else label.innerText = 'Kit sin límite estructurado';
+        }
+
+        function addComboProductRow() {
+            const container = document.getElementById('combo-items-container');
+            const cat = document.getElementById('combo-category').value;
+            const currentRows = container.children.length;
+
+            if (cat === 'Promociones' && currentRows >= 3) return showToast('Promociones permite máximo 3 productos', 'error');
+            if (cat === 'Emprendedor' && currentRows >= 20) return showToast('Emprendedor permite máximo 20 productos', 'error');
+
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200";
+
+            let optionsHtml = '';
+            products.filter(p => !['Promociones', 'Kits', 'Emprendedor'].includes(p.category)).forEach(prod => {
+                optionsHtml += `<option value="${prod.id}">${prod.name} (${prod.category})</option>`;
+            });
+
+            div.innerHTML = `
+                <select class="combo-prod-select flex-1 bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-none">
+                    ${optionsHtml}
+                </select>
+                <input type="number" value="1" min="1" class="combo-prod-qty w-16 bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-bold text-center">
+                <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 font-bold px-2 hover:text-rose-700">✕</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function saveCombo(e) {
+            e.preventDefault();
+            const name = document.getElementById('combo-name').value.trim();
+            const category = document.getElementById('combo-category').value;
+            const price = parseFloat(document.getElementById('combo-price').value) || 0;
+
+            const container = document.getElementById('combo-items-container');
+            const selects = container.querySelectorAll('.combo-prod-select');
+            const qtys = container.querySelectorAll('.combo-prod-qty');
+
+            if (selects.length === 0) return showToast('Añade al menos un producto al combo', 'error');
+
+            let comboItems = [];
+            let totalCost = 0;
+
+            selects.forEach((sel, idx) => {
+                const prodId = parseFloat(sel.value);
+                const qty = parseInt(qtys[idx].value) || 1;
+                const p = products.find(prod => prod.id === prodId);
+                if (p) {
+                    comboItems.push({ prodId, qty, name: p.name });
+                    totalCost += (p.cost * qty);
+                }
+            });
+
+            const newCombo = {
+                id: Date.now(),
+                sku: generateAutoSKU(),
+                name,
+                category,
+                price,
+                cost: totalCost,
+                stock: 999, // Stock dinámico basado en componentes
+                items: comboItems
+            };
+
+            products.push(newCombo);
+            saveData();
+            closeComboModal();
+            renderInventoryTable();
+            renderPosProducts();
+            showToast('¡Combo o Promoción guardada exitosamente!');
         }
 
         function triggerExcelImport() {
@@ -2121,7 +2322,7 @@
             document.getElementById('partner2-remaining').innerText = `$${(earned2 - w2).toLocaleString('es-CO')}`;
 
             const lowStockList = document.getElementById('dash-low-stock-list');
-            const lowProds = products.filter(p => p.stock <= 3);
+            const lowProds = products.filter(p => p.stock <= 3 && !['Promociones', 'Kits', 'Emprendedor'].includes(p.category));
             lowStockList.innerHTML = '';
             if (lowProds.length === 0) {
                 lowStockList.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Sin alertas de stock bajo</p>`;
