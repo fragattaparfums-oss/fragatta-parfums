@@ -179,11 +179,16 @@
                         <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
                             <i class="fa-solid fa-fire text-amber-500"></i> Conexión a Nube Firebase (Persistencia de Productos)
                         </h3>
-                        <button onclick="openFirebaseConfigModal()" class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-md">
-                            ⚙️ Configurar Llaves
-                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="importarDesdeWeb()" class="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-xs rounded-xl shadow-md flex items-center gap-1">
+                                <i class="fa-solid fa-cloud-arrow-down"></i> Importar desde Web
+                            </button>
+                            <button onclick="openFirebaseConfigModal()" class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-md">
+                                ⚙️ Configurar Llaves
+                            </button>
+                        </div>
                     </div>
-                    <p class="text-xs text-slate-500">Configura Firebase una sola vez. Al estar conectado, tus productos y ventas se respaldan en la nube automáticamente y jamás se perderán.</p>
+                    <p class="text-xs text-slate-500">Configura Firebase una sola vez. Al estar conectado, tus productos y ventas se respaldan en la nube de forma independiente a tu página web.</p>
                 </div>
 
                 <!-- 1. DASHBOARD & CORTE FINANCIERO -->
@@ -1051,7 +1056,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CON OPTIMIZACIÓN Y VISIBILIDAD DE OJO -->
+    <!-- JAVASCRIPT CON OPTIMIZACIÓN Y ISOLACIÓN DE FIREBASE -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -1082,7 +1087,6 @@
         let cart = [];
         let financeChart = null;
 
-        // --- MANEJO DE VER / OCULTAR CONTRASEÑA ---
         function togglePasswordVisibility(inputId, iconId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
@@ -1095,7 +1099,6 @@
             }
         }
 
-        // --- RESET CON CLAVE 123456 ---
         function openResetModal() {
             document.getElementById('reset-pass-input').value = '';
             document.getElementById('reset-modal').classList.remove('hidden');
@@ -1116,7 +1119,7 @@
             }
         }
 
-        // --- CONEXIÓN FIREBASE ---
+        // CONEXIÓN FIREBASE AISLADA EN POS_PRODUCTS
         function initFirebase() {
             const savedConfig = localStorage.getItem('fragatta_firebase_config');
             if (savedConfig) {
@@ -1177,7 +1180,8 @@
         function syncWithFirebase() {
             if (!db) return;
             
-            db.collection("products").get().then((querySnapshot) => {
+            // LECTURA DESDE POS_PRODUCTS (TOTALMENTE AISLADO DE LA WEB)
+            db.collection("pos_products").get().then((querySnapshot) => {
                 if (!querySnapshot.empty) {
                     let cloudProds = [];
                     querySnapshot.forEach((doc) => {
@@ -1191,7 +1195,7 @@
                 } else {
                     saveData();
                 }
-            }).catch(err => console.log("Error consultando productos nube:", err));
+            }).catch(err => console.log("Error consultando productos POS:", err));
 
             db.collection("sales").get().then((querySnapshot) => {
                 if (!querySnapshot.empty) {
@@ -1204,6 +1208,38 @@
                     renderTablesViews();
                     updateDashboard();
                 }
+            });
+        }
+
+        // IMPORTACIÓN PUNTUAL DESDE PRODUCTS (LA WEB) HACIA POS_PRODUCTS
+        function importarDesdeWeb() {
+            if (!db) return showToast("Firebase no está conectado", "error");
+            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Esta es una copia independiente y no afectará tu página web al editar o borrar.")) return;
+
+            db.collection("products").get().then((querySnapshot) => {
+                let cont = 0;
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const newProd = {
+                        id: doc.id,
+                        sku: data.sku || generateAutoSKU(),
+                        name: data.name || data.title || "Perfume Importado",
+                        category: data.category || "General",
+                        cost: data.cost || 45000,
+                        price: parseFloat(data.price) || 115000,
+                        stock: data.stock || 10
+                    };
+                    
+                    // Se guarda exclusivamente en la colección local pos_products
+                    db.collection("pos_products").doc(String(newProd.id)).set(newProd, { merge: true });
+                    cont++;
+                });
+
+                showToast(`¡Se importaron ${cont} perfumes de la web al POS!`);
+                setTimeout(() => syncWithFirebase(), 1200);
+            }).catch(err => {
+                console.error("Error al importar de la web:", err);
+                showToast("Error al importar productos", "error");
             });
         }
 
@@ -1223,8 +1259,9 @@
             saveDataLocalOnly();
 
             if (isFirebaseConnected && db) {
+                // GUARDADO AISLADO EN POS_PRODUCTS
                 products.forEach(p => {
-                    db.collection("products").doc(String(p.id)).set(p, { merge: true });
+                    db.collection("pos_products").doc(String(p.id)).set(p, { merge: true });
                 });
 
                 sales.forEach(s => {
@@ -1284,9 +1321,6 @@
             document.getElementById('lock-btn-text').innerText = isAdmin ? 'Bloquear Admin' : 'Desbloquear Modo Admin';
             
             document.getElementById('admin-bank-savings').value = bankSavings;
-            document.getElementById('admin-base-target').value = baseTarget;
-            document.getElementById('admin-base-current').value = baseCurrent;
-            updateBaseCalculations();
             
             renderInventoryTable();
             renderTablesViews();
@@ -1332,8 +1366,6 @@
 
             document.getElementById('pos-sale-date').valueAsDate = new Date();
             document.getElementById('admin-bank-savings').value = bankSavings;
-            document.getElementById('admin-base-target').value = baseTarget;
-            document.getElementById('admin-base-current').value = baseCurrent;
 
             populateMonthFilterOptions();
             renderPosProducts();
@@ -1355,19 +1387,6 @@
             saveData();
             updateDashboard();
             showToast('Saldo en cuenta de ahorros actualizado');
-        }
-
-        function updateBaseCalculations() {
-            baseTarget = parseFloat(document.getElementById('admin-base-target').value) || 0;
-            baseCurrent = parseFloat(document.getElementById('admin-base-current').value) || 0;
-            const missing = Math.max(0, baseTarget - baseCurrent);
-            
-            const missingEl = document.getElementById('admin-base-missing');
-            if (missingEl) {
-                missingEl.innerText = `$${missing.toLocaleString('es-CO')}`;
-                missingEl.className = missing > 0 ? "text-lg font-black text-rose-400" : "text-lg font-black text-emerald-400";
-            }
-            saveData();
         }
 
         function switchTab(tabId) {
@@ -1405,7 +1424,6 @@
             }, 3000);
         }
 
-        // --- POS / FACTURACIÓN ---
         function renderPosProducts() {
             const search = document.getElementById('pos-search').value.toLowerCase();
             const category = document.getElementById('pos-category-filter').value;
@@ -1439,14 +1457,14 @@
         }
 
         function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
+            const product = products.find(p => p.id == productId);
             if (!product) return;
 
             if (!['Promociones', 'Kits', 'Emprendedor'].includes(product.category) && product.stock <= 0) {
                 return showToast('Sin existencias en stock', 'error');
             }
 
-            const existing = cart.find(item => item.id === productId);
+            const existing = cart.find(item => item.id == productId);
             if (existing) {
                 if (!['Promociones', 'Kits', 'Emprendedor'].includes(product.category) && existing.qty + 1 > product.stock) {
                     return showToast('Excede el stock disponible', 'error');
@@ -1542,11 +1560,11 @@
             const saleId = `FAC-${1000 + sales.length + 1}`;
 
             cart.forEach(cItem => {
-                const p = products.find(prod => prod.id === cItem.id);
+                const p = products.find(prod => prod.id == cItem.id);
                 if (p) {
                     if (['Promociones', 'Kits', 'Emprendedor'].includes(p.category) && p.items && p.items.length > 0) {
                         p.items.forEach(cSub => {
-                            const subProd = products.find(sp => sp.id === cSub.prodId);
+                            const subProd = products.find(sp => sp.id == cSub.prodId);
                             if (subProd) subProd.stock -= (cSub.qty * cItem.qty);
                         });
                     } else {
@@ -1601,10 +1619,9 @@
             renderTablesViews();
             populateMonthFilterOptions();
             updateDashboard();
-            showToast('¡Venta registrada y respaldada en Firebase!');
+            showToast('¡Venta registrada de forma independiente!');
         }
 
-        // --- IMPRESIÓN ---
         function showPrintPreview(type, data) {
             document.getElementById('invoice-doc').classList.add('hidden');
             document.getElementById('label-doc').classList.add('hidden');
@@ -1673,7 +1690,6 @@
             window.print();
         }
 
-        // --- RENDER TABLAS ---
         function renderTablesViews() {
             const now = new Date();
             const currentMonthYear = now.getMonth() + "-" + now.getFullYear();
@@ -1806,7 +1822,6 @@
             showToast('Venta eliminada por el Administrador');
         }
 
-        // --- INVENTARIO OPTIMIZADO Y ULTRARRÁPIDO ---
         function generateAutoSKU() {
             const nextNum = products.length + 1001;
             return `FRAG-${nextNum}`;
@@ -1835,30 +1850,28 @@
                         <td class="p-4 font-bold">
                             ${isCombo ? '<span class="text-xs text-amber-600">Paquete</span>' : `
                             <div class="flex items-center gap-1.5">
-                                <button onclick="adjustStock(${p.id}, -1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">-</button>
+                                <button onclick="adjustStock('${p.id}', -1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">-</button>
                                 <span id="stock-val-${p.id}" class="px-1.5">${p.stock}</span>
-                                <button onclick="adjustStock(${p.id}, 1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">+</button>
+                                <button onclick="adjustStock('${p.id}', 1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">+</button>
                             </div>
                             `}
                         </td>
                         <td class="p-4 text-center space-x-1">
-                            ${isAdmin && !isCombo ? `<button onclick="copyToWholesale(${p.id})" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition" title="Copiar a Por Mayor"><i class="fa-solid fa-copy"></i> Por Mayor</button>` : ''}
-                            ${isAdmin ? `<button onclick="editProduct(${p.id})" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
-                            ${isAdmin ? `<button onclick="deleteProduct(${p.id})" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar (Admin)"><i class="fa-solid fa-trash"></i></button>` : ''}
+                            ${isAdmin && !isCombo ? `<button onclick="copyToWholesale('${p.id}')" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition" title="Copiar a Por Mayor"><i class="fa-solid fa-copy"></i> Por Mayor</button>` : ''}
+                            ${isAdmin ? `<button onclick="editProduct('${p.id}')" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
+                            ${isAdmin ? `<button onclick="deleteProduct('${p.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar del POS"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </td>
                     </tr>
                 `;
             });
         }
 
-        // Ajuste de stock optimizado: Solo modifica el valor de esa casilla sin parpadear
         function adjustStock(id, delta) {
-            const p = products.find(prod => prod.id === id);
+            const p = products.find(prod => prod.id == id);
             if (p) {
                 if (p.stock + delta < 0) return showToast('El stock no puede ser menor a cero', 'error');
                 p.stock += delta;
                 
-                // Actualizar inmediatamente en pantalla
                 const stockEl = document.getElementById(`stock-val-${id}`);
                 if (stockEl) stockEl.innerText = p.stock;
 
@@ -1872,7 +1885,7 @@
 
         function copyToWholesale(id) {
             if (!isAdmin) return;
-            const p = products.find(item => item.id === id);
+            const p = products.find(item => item.id == id);
             if (p) {
                 const newWholesale = {
                     id: Date.now(),
@@ -1887,7 +1900,7 @@
                 saveData();
                 renderInventoryTable();
                 renderPosProducts();
-                showToast(`¡Copiado a Por Mayor! Guardado en Firebase.`);
+                showToast(`¡Copiado a Por Mayor! Guardado en Firebase POS.`);
             }
         }
 
@@ -1905,7 +1918,7 @@
 
         function editProduct(id) {
             if (!isAdmin) return;
-            const p = products.find(item => item.id === id);
+            const p = products.find(item => item.id == id);
             if (p) {
                 document.getElementById('prod-id').value = p.id;
                 document.getElementById('prod-sku').value = p.sku;
@@ -1954,26 +1967,26 @@
             renderInventoryTable();
             renderPosProducts();
             updateDashboard();
-            showToast('Producto respaldado en Firebase');
+            showToast('Producto guardado exclusivamente en el POS');
         }
 
+        // ELIMINACIÓN AISLADA EN POS_PRODUCTS (NO AFECTA A LA WEB)
         function deleteProduct(id) {
             if (!isAdmin) return alert("Solo el Administrador puede eliminar perfumes.");
-            if (!confirm("¿Desea eliminar este producto del catálogo?")) return;
-            products = products.filter(p => p.id !== id);
+            if (!confirm("¿Deseas eliminar este producto del inventario del POS?\n\n*Tranquilo: Tu página web NO se verá afectada.")) return;
+            products = products.filter(p => p.id != id);
             
             if (isFirebaseConnected && db) {
-                db.collection("products").doc(String(id)).delete();
+                db.collection("pos_products").doc(String(id)).delete();
             }
 
             saveData();
             renderInventoryTable();
             renderPosProducts();
             updateDashboard();
-            showToast('Producto eliminado');
+            showToast('Producto eliminado únicamente del POS');
         }
 
-        // --- COMBOS / PROMOS ---
         function openComboModal() {
             document.getElementById('combo-name').value = '';
             document.getElementById('combo-price').value = '';
@@ -2038,9 +2051,9 @@
             let totalCost = 0;
 
             selects.forEach((sel, idx) => {
-                const prodId = parseFloat(sel.value);
+                const prodId = sel.value;
                 const qty = parseInt(qtys[idx].value) || 1;
-                const p = products.find(prod => prod.id === prodId);
+                const p = products.find(prod => prod.id == prodId);
                 if (p) {
                     comboItems.push({ prodId, qty, name: p.name });
                     totalCost += (p.cost * qty);
@@ -2063,7 +2076,7 @@
             closeComboModal();
             renderInventoryTable();
             renderPosProducts();
-            showToast('¡Combo guardado en Firebase!');
+            showToast('¡Combo guardado en el POS!');
         }
 
         function triggerExcelImport() {
@@ -2109,12 +2122,11 @@
                 renderInventoryTable();
                 renderPosProducts();
                 updateDashboard();
-                showToast(`¡Se importaron ${importedCount} perfumes a Firebase!`);
+                showToast(`¡Se importaron ${importedCount} perfumes al POS!`);
             };
             reader.readAsArrayBuffer(file);
         }
 
-        // --- ABONOS CLIENTES ---
         function renderDebtsTable() {
             const tbody = document.getElementById('debts-table-body');
             tbody.innerHTML = '';
@@ -2199,7 +2211,6 @@
             showToast('Abono eliminado por el Administrador');
         }
 
-        // --- FACTURAS PROVEEDORES ---
         function renderPayablesTable() {
             const tbody = document.getElementById('payables-table-body');
             tbody.innerHTML = '';
@@ -2318,28 +2329,6 @@
             }
         }
 
-        // --- RETIROS ---
-        function openWithdrawalModal() {
-            document.getElementById('withdrawal-modal').classList.remove('hidden');
-        }
-
-        function closeWithdrawalModal() {
-            document.getElementById('withdrawal-modal').classList.add('hidden');
-        }
-
-        function saveWithdrawal(e) {
-            e.preventDefault();
-            const partner = document.getElementById('withdrawal-partner').value;
-            const amount = parseFloat(document.getElementById('withdrawal-amount').value) || 0;
-
-            withdrawals.push({ id: 'WDR-' + Date.now(), partner, amount, date: new Date().toLocaleDateString('es-CO') });
-            saveData();
-            closeWithdrawalModal();
-            updateDashboard();
-            showToast('Retiro de ganancias guardado');
-        }
-
-        // --- GASTOS OPERATIVOS ---
         function renderExpensesTable() {
             const tbody = document.getElementById('expenses-table-body');
             tbody.innerHTML = '';
@@ -2392,7 +2381,6 @@
             showToast('Gasto eliminado por el Administrador');
         }
 
-        // --- DASHBOARD DE CORTES Y ARQUEO REAL ---
         function updateDashboard() {
             const filterValue = document.getElementById('dash-month-filter').value;
             const now = new Date();
@@ -2401,7 +2389,6 @@
             let activeSales = sales;
             let activeExpenses = expenses;
             let activePayables = payables;
-            let activeWithdrawals = withdrawals;
 
             if (filterValue === 'CURRENT') {
                 activeSales = sales.filter(s => {
@@ -2424,7 +2411,6 @@
             }
 
             const totalGrossSales = activeSales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
-            const totalCollectedSales = activeSales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
             const totalProductCosts = activeSales.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
             const totalExpenses = activeExpenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
 
