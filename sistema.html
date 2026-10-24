@@ -257,6 +257,7 @@
                         </div>
                     </div>
 
+                    <!-- PANEL BANCARIO Y CONTROL DE FLUJO RESTAURADO -->
                     <div class="admin-only hidden bg-gradient-to-r from-slate-900 to-purple-950 text-white rounded-3xl p-6 shadow-xl space-y-4">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                             <div class="flex items-center gap-3">
@@ -268,15 +269,25 @@
                                     <p class="text-xs text-slate-400">Proyección real en banco = Saldo + Ventas Cobradas - Gastos - Pagos a Proveedores - Retiros.</p>
                                 </div>
                             </div>
-                            <button onclick="openResetModal()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
-                                <i class="fa-solid fa-rotate-right"></i> Resetear Datos
-                            </button>
+                            <div class="flex gap-2">
+                                <button onclick="openWithdrawalModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
+                                    <i class="fa-solid fa-hand-holding-dollar"></i> Registrar Retiro
+                                </button>
+                                <button onclick="openResetModal()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
+                                    <i class="fa-solid fa-rotate-right"></i> Resetear Datos
+                                </button>
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
                             <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
                                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Ventas Cobradas</p>
                                 <h4 id="admin-total-historical-sales" class="text-2xl font-black text-emerald-400 mt-1">$0</h4>
+                            </div>
+
+                            <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
+                                <p class="text-[10px] font-bold text-rose-300 uppercase tracking-wider">Total Retiros de Caja</p>
+                                <h4 id="admin-total-withdrawals" class="text-2xl font-black text-rose-400 mt-1">$0</h4>
                             </div>
 
                             <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
@@ -640,6 +651,29 @@
                     <button type="button" onclick="verifyAdminKey()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold">Ingresar Admin</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL REGISTRAR RETIRO DE CAJA -->
+    <div id="withdrawal-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border border-slate-200 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-hand-holding-dollar text-amber-600"></i> Registrar Retiro de Dinero
+            </h3>
+            <form onsubmit="saveWithdrawal(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Monto del Retiro ($):</label>
+                    <input type="number" id="withdrawal-amount" min="1" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Concepto / Motivo:</label>
+                    <input type="text" id="withdrawal-concept" required placeholder="Ej: Pago de nómina / Retiro personal" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeWithdrawalModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold">Guardar Retiro</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1056,7 +1090,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CON OPTIMIZACIÓN Y ISOLACIÓN DE FIREBASE -->
+    <!-- JAVASCRIPT CON PARSEO ROBUSTO DE NUMEROS E INVENTARIO EDITABLE -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -1067,11 +1101,11 @@
         let isFirebaseConnected = false;
 
         const INITIAL_PRODUCTS = [
-            { id: 1, sku: 'FRAG-1001', name: '1 MILLION RABANNE - PACO RABANNE', category: 'Caballero', cost: 45000, price: 115000, stock: 10 },
-            { id: 2, sku: 'FRAG-1002', name: '9 AM AFNAN', category: 'Árabes', cost: 55000, price: 135000, stock: 8 },
-            { id: 3, sku: 'FRAG-1003', name: 'ARI ARIANA GRANDE', category: 'Dama', cost: 45000, price: 110000, stock: 12 },
-            { id: 4, sku: 'FRAG-1004', name: 'CLUB DE NUIT INTENSE - ARMAF', category: 'Árabes', cost: 55000, price: 135000, stock: 15 },
-            { id: 5, sku: 'FRAG-1005', name: 'LATTAFA ASAD', category: 'Árabes', cost: 55000, price: 135000, stock: 10 }
+            { id: '1', sku: 'FRAG-1001', name: '1 MILLION RABANNE - PACO RABANNE', category: 'Caballero', cost: 45000, price: 115000, stock: 10 },
+            { id: '2', sku: 'FRAG-1002', name: '9 AM AFNAN', category: 'Árabes', cost: 55000, price: 135000, stock: 8 },
+            { id: '3', sku: 'FRAG-1003', name: 'ARI ARIANA GRANDE', category: 'Dama', cost: 45000, price: 110000, stock: 12 },
+            { id: '4', sku: 'FRAG-1004', name: 'CLUB DE NUIT INTENSE - ARMAF', category: 'Árabes', cost: 55000, price: 135000, stock: 15 },
+            { id: '5', sku: 'FRAG-1005', name: 'LATTAFA ASAD', category: 'Árabes', cost: 55000, price: 135000, stock: 10 }
         ];
 
         let products = JSON.parse(localStorage.getItem('fragatta_products')) || INITIAL_PRODUCTS;
@@ -1119,7 +1153,39 @@
             }
         }
 
-        // CONEXIÓN FIREBASE AISLADA EN POS_PRODUCTS
+        function openWithdrawalModal() {
+            document.getElementById('withdrawal-amount').value = '';
+            document.getElementById('withdrawal-concept').value = '';
+            document.getElementById('withdrawal-modal').classList.remove('hidden');
+        }
+
+        function closeWithdrawalModal() {
+            document.getElementById('withdrawal-modal').classList.add('hidden');
+        }
+
+        function saveWithdrawal(e) {
+            e.preventDefault();
+            const amount = parseFloat(document.getElementById('withdrawal-amount').value) || 0;
+            const concept = document.getElementById('withdrawal-concept').value.trim();
+
+            if (amount <= 0) return showToast('El monto debe ser mayor a cero', 'error');
+
+            const now = new Date();
+            const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
+
+            withdrawals.push({
+                id: 'WIT-' + Date.now(),
+                date: fullDateTime,
+                concept: concept,
+                amount: amount
+            });
+
+            saveData();
+            closeWithdrawalModal();
+            updateDashboard();
+            showToast('Retiro de dinero registrado correctamente');
+        }
+
         function initFirebase() {
             const savedConfig = localStorage.getItem('fragatta_firebase_config');
             if (savedConfig) {
@@ -1180,12 +1246,24 @@
         function syncWithFirebase() {
             if (!db) return;
             
-            // LECTURA DESDE POS_PRODUCTS (TOTALMENTE AISLADO DE LA WEB)
             db.collection("pos_products").get().then((querySnapshot) => {
                 if (!querySnapshot.empty) {
                     let cloudProds = [];
                     querySnapshot.forEach((doc) => {
-                        cloudProds.push({ id: doc.id, ...doc.data() });
+                        const data = doc.data();
+                        const parsedStock = parseInt(data.stock);
+                        const parsedCost = parseFloat(data.cost);
+                        const parsedPrice = parseFloat(data.price);
+
+                        cloudProds.push({
+                            id: String(doc.id),
+                            sku: (data.sku && data.sku !== "undefined") ? data.sku : generateAutoSKU(),
+                            name: data.name || data.title || "Perfume sin Nombre",
+                            category: data.category || "Árabes",
+                            cost: isNaN(parsedCost) ? 0 : parsedCost,
+                            price: isNaN(parsedPrice) ? 0 : parsedPrice,
+                            stock: isNaN(parsedStock) ? 10 : parsedStock
+                        });
                     });
                     products = cloudProds;
                     saveDataLocalOnly();
@@ -1211,7 +1289,6 @@
             });
         }
 
-        // IMPORTACIÓN PUNTUAL DESDE PRODUCTS (LA WEB) HACIA POS_PRODUCTS
         function importarDesdeWeb() {
             if (!db) return showToast("Firebase no está conectado", "error");
             if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Esta es una copia independiente y no afectará tu página web al editar o borrar.")) return;
@@ -1220,17 +1297,20 @@
                 let cont = 0;
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
+                    const parsedStock = parseInt(data.stock);
+                    const parsedCost = parseFloat(data.cost);
+                    const parsedPrice = parseFloat(data.price);
+
                     const newProd = {
-                        id: doc.id,
-                        sku: data.sku || generateAutoSKU(),
+                        id: String(doc.id),
+                        sku: (data.sku && data.sku !== "undefined") ? data.sku : generateAutoSKU(),
                         name: data.name || data.title || "Perfume Importado",
-                        category: data.category || "General",
-                        cost: data.cost || 45000,
-                        price: parseFloat(data.price) || 115000,
-                        stock: data.stock || 10
+                        category: data.category || "Árabes",
+                        cost: isNaN(parsedCost) ? 0 : parsedCost,
+                        price: isNaN(parsedPrice) ? 0 : parsedPrice,
+                        stock: isNaN(parsedStock) ? 10 : parsedStock
                     };
                     
-                    // Se guarda exclusivamente en la colección local pos_products
                     db.collection("pos_products").doc(String(newProd.id)).set(newProd, { merge: true });
                     cont++;
                 });
@@ -1259,7 +1339,6 @@
             saveDataLocalOnly();
 
             if (isFirebaseConnected && db) {
-                // GUARDADO AISLADO EN POS_PRODUCTS
                 products.forEach(p => {
                     db.collection("pos_products").doc(String(p.id)).set(p, { merge: true });
                 });
@@ -1430,7 +1509,7 @@
             const container = document.getElementById('pos-products-grid');
 
             const filtered = products.filter(p => {
-                const matchesSearch = p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search);
+                const matchesSearch = (p.name || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search);
                 const matchesCategory = category === '' || p.category === category;
                 return matchesSearch && matchesCategory;
             });
@@ -1438,10 +1517,11 @@
             container.innerHTML = '';
             filtered.forEach(p => {
                 const safePrice = parseFloat(p.price) || 0;
+                const safeStock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
                 const isCombo = ['Promociones', 'Kits', 'Emprendedor'].includes(p.category);
                 
                 container.innerHTML += `
-                    <div onclick="addToCart(${p.id})" class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm hover:border-purple-400 cursor-pointer transition flex flex-col justify-between">
+                    <div onclick="addToCart('${p.id}')" class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm hover:border-purple-400 cursor-pointer transition flex flex-col justify-between">
                         <div>
                             <span class="text-[9px] font-bold ${isCombo ? 'text-amber-700 bg-amber-50' : 'text-purple-600 bg-purple-50'} px-2 py-0.5 rounded-full">${p.category}</span>
                             <h4 class="font-bold text-slate-800 text-xs mt-1.5 line-clamp-2">${p.name}</h4>
@@ -1449,7 +1529,7 @@
                         </div>
                         <div class="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2">
                             <span class="font-black text-emerald-600 text-xs">$${safePrice.toLocaleString('es-CO')}</span>
-                            <span id="pos-stock-${p.id}" class="text-[10px] font-bold ${p.stock <= 3 ? 'text-rose-500' : 'text-slate-500'}">${isCombo ? 'Combo' : 'Stock: ' + p.stock}</span>
+                            <span id="pos-stock-${p.id}" class="text-[10px] font-bold ${safeStock <= 3 ? 'text-rose-500' : 'text-slate-500'}">${isCombo ? 'Combo' : 'Stock: ' + safeStock}</span>
                         </div>
                     </div>
                 `;
@@ -1457,16 +1537,18 @@
         }
 
         function addToCart(productId) {
-            const product = products.find(p => p.id == productId);
+            const product = products.find(p => String(p.id) === String(productId));
             if (!product) return;
 
-            if (!['Promociones', 'Kits', 'Emprendedor'].includes(product.category) && product.stock <= 0) {
+            const safeStock = isNaN(parseInt(product.stock)) ? 0 : parseInt(product.stock);
+
+            if (!['Promociones', 'Kits', 'Emprendedor'].includes(product.category) && safeStock <= 0) {
                 return showToast('Sin existencias en stock', 'error');
             }
 
-            const existing = cart.find(item => item.id == productId);
+            const existing = cart.find(item => String(item.id) === String(productId));
             if (existing) {
-                if (!['Promociones', 'Kits', 'Emprendedor'].includes(product.category) && existing.qty + 1 > product.stock) {
+                if (!['Promociones', 'Kits', 'Emprendedor'].includes(product.category) && existing.qty + 1 > safeStock) {
                     return showToast('Excede el stock disponible', 'error');
                 }
                 existing.qty++;
@@ -1560,15 +1642,19 @@
             const saleId = `FAC-${1000 + sales.length + 1}`;
 
             cart.forEach(cItem => {
-                const p = products.find(prod => prod.id == cItem.id);
+                const p = products.find(prod => String(prod.id) === String(cItem.id));
                 if (p) {
                     if (['Promociones', 'Kits', 'Emprendedor'].includes(p.category) && p.items && p.items.length > 0) {
                         p.items.forEach(cSub => {
-                            const subProd = products.find(sp => sp.id == cSub.prodId);
-                            if (subProd) subProd.stock -= (cSub.qty * cItem.qty);
+                            const subProd = products.find(sp => String(sp.id) === String(cSub.prodId));
+                            if (subProd) {
+                                const currentSubStock = isNaN(parseInt(subProd.stock)) ? 0 : parseInt(subProd.stock);
+                                subProd.stock = currentSubStock - (cSub.qty * cItem.qty);
+                            }
                         });
                     } else {
-                        p.stock -= cItem.qty;
+                        const currentStock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
+                        p.stock = currentStock - cItem.qty;
                     }
                 }
             });
@@ -1619,7 +1705,7 @@
             renderTablesViews();
             populateMonthFilterOptions();
             updateDashboard();
-            showToast('¡Venta registrada de forma independiente!');
+            showToast('¡Venta registrada correctamente!');
         }
 
         function showPrintPreview(type, data) {
@@ -1833,11 +1919,12 @@
             const tbody = document.getElementById('inventory-table-body');
             tbody.innerHTML = '';
 
-            const filtered = products.filter(p => (cat === 'all' || p.category === cat) && (p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search)));
+            const filtered = products.filter(p => (cat === 'all' || p.category === cat) && ((p.name || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search)));
 
             filtered.forEach(p => {
                 const costVal = parseFloat(p.cost) || 0;
                 const priceVal = parseFloat(p.price) || 0;
+                const safeStock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
                 const isCombo = ['Promociones', 'Kits', 'Emprendedor'].includes(p.category);
 
                 tbody.innerHTML += `
@@ -1851,7 +1938,7 @@
                             ${isCombo ? '<span class="text-xs text-amber-600">Paquete</span>' : `
                             <div class="flex items-center gap-1.5">
                                 <button onclick="adjustStock('${p.id}', -1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">-</button>
-                                <span id="stock-val-${p.id}" class="px-1.5">${p.stock}</span>
+                                <span id="stock-val-${p.id}" class="px-1.5">${safeStock}</span>
                                 <button onclick="adjustStock('${p.id}', 1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">+</button>
                             </div>
                             `}
@@ -1867,10 +1954,14 @@
         }
 
         function adjustStock(id, delta) {
-            const p = products.find(prod => prod.id == id);
+            const p = products.find(prod => String(prod.id) === String(id));
             if (p) {
-                if (p.stock + delta < 0) return showToast('El stock no puede ser menor a cero', 'error');
-                p.stock += delta;
+                let currentStock = parseInt(p.stock);
+                if (isNaN(currentStock)) currentStock = 0;
+
+                if (currentStock + delta < 0) return showToast('El stock no puede ser menor a cero', 'error');
+                
+                p.stock = currentStock + delta;
                 
                 const stockEl = document.getElementById(`stock-val-${id}`);
                 if (stockEl) stockEl.innerText = p.stock;
@@ -1885,22 +1976,22 @@
 
         function copyToWholesale(id) {
             if (!isAdmin) return;
-            const p = products.find(item => item.id == id);
+            const p = products.find(item => String(item.id) === String(id));
             if (p) {
                 const newWholesale = {
-                    id: Date.now(),
+                    id: String(Date.now()),
                     sku: generateAutoSKU(),
                     name: `${p.name} - Por Mayor`,
                     category: 'Por Mayor',
-                    stock: p.stock,
-                    cost: p.cost,
-                    price: Math.round(p.price * 0.75)
+                    stock: isNaN(parseInt(p.stock)) ? 10 : parseInt(p.stock),
+                    cost: parseFloat(p.cost) || 0,
+                    price: Math.round((parseFloat(p.price) || 0) * 0.75)
                 };
                 products.push(newWholesale);
                 saveData();
                 renderInventoryTable();
                 renderPosProducts();
-                showToast(`¡Copiado a Por Mayor! Guardado en Firebase POS.`);
+                showToast(`¡Copiado a Por Mayor! Guardado en POS.`);
             }
         }
 
@@ -1909,7 +2000,7 @@
             document.getElementById('prod-sku').value = generateAutoSKU();
             document.getElementById('prod-name').value = '';
             document.getElementById('prod-category').value = 'Dama';
-            document.getElementById('prod-stock').value = '0';
+            document.getElementById('prod-stock').value = '10';
             document.getElementById('prod-cost').value = '45000';
             document.getElementById('prod-price').value = '115000';
             document.getElementById('product-modal-title').innerText = "Nuevo Perfume";
@@ -1918,15 +2009,15 @@
 
         function editProduct(id) {
             if (!isAdmin) return;
-            const p = products.find(item => item.id == id);
+            const p = products.find(item => String(item.id) === String(id));
             if (p) {
                 document.getElementById('prod-id').value = p.id;
                 document.getElementById('prod-sku').value = p.sku;
                 document.getElementById('prod-name').value = p.name;
                 document.getElementById('prod-category').value = p.category;
-                document.getElementById('prod-stock').value = p.stock;
-                document.getElementById('prod-cost').value = p.cost;
-                document.getElementById('prod-price').value = p.price;
+                document.getElementById('prod-stock').value = isNaN(parseInt(p.stock)) ? 10 : parseInt(p.stock);
+                document.getElementById('prod-cost').value = parseFloat(p.cost) || 0;
+                document.getElementById('prod-price').value = parseFloat(p.price) || 0;
                 document.getElementById('product-modal-title').innerText = "Editar Perfume (Admin)";
                 document.getElementById('product-modal').classList.remove('hidden');
             }
@@ -1944,12 +2035,12 @@
 
             const name = document.getElementById('prod-name').value;
             const category = document.getElementById('prod-category').value;
-            const stock = parseInt(document.getElementById('prod-stock').value) ?? 0;
+            const stock = parseInt(document.getElementById('prod-stock').value) || 0;
             const cost = parseFloat(document.getElementById('prod-cost').value) || 0;
             const price = parseFloat(document.getElementById('prod-price').value) || 0;
 
             if (editId) {
-                const p = products.find(item => item.id == editId);
+                const p = products.find(item => String(item.id) === String(editId));
                 if (p) {
                     p.sku = sku;
                     p.name = name;
@@ -1959,7 +2050,7 @@
                     p.price = price;
                 }
             } else {
-                products.push({ id: Date.now(), sku, name, category, stock, cost, price });
+                products.push({ id: String(Date.now()), sku, name, category, stock, cost, price });
             }
 
             saveData();
@@ -1970,11 +2061,10 @@
             showToast('Producto guardado exclusivamente en el POS');
         }
 
-        // ELIMINACIÓN AISLADA EN POS_PRODUCTS (NO AFECTA A LA WEB)
         function deleteProduct(id) {
             if (!isAdmin) return alert("Solo el Administrador puede eliminar perfumes.");
             if (!confirm("¿Deseas eliminar este producto del inventario del POS?\n\n*Tranquilo: Tu página web NO se verá afectada.")) return;
-            products = products.filter(p => p.id != id);
+            products = products.filter(p => String(p.id) !== String(id));
             
             if (isFirebaseConnected && db) {
                 db.collection("pos_products").doc(String(id)).delete();
@@ -2053,15 +2143,15 @@
             selects.forEach((sel, idx) => {
                 const prodId = sel.value;
                 const qty = parseInt(qtys[idx].value) || 1;
-                const p = products.find(prod => prod.id == prodId);
+                const p = products.find(prod => String(prod.id) === String(prodId));
                 if (p) {
                     comboItems.push({ prodId, qty, name: p.name });
-                    totalCost += (p.cost * qty);
+                    totalCost += ((parseFloat(p.cost) || 0) * qty);
                 }
             });
 
             const newCombo = {
-                id: Date.now(),
+                id: String(Date.now()),
                 sku: generateAutoSKU(),
                 name,
                 category,
@@ -2102,18 +2192,18 @@
                     const name = row.Nombre || row.PERFUME || row.Producto;
                     if (name) {
                         const sku = row.SKU || generateAutoSKU();
-                        const category = row.Categoria || row.CATEGORIA || row.Categoría || 'Unisex';
+                        const category = row.Categoria || row.CATEGORIA || row.Categoría || 'Árabes';
                         
                         let rawStock = row.STOCK !== undefined ? row.STOCK : (row.Stock !== undefined ? row.Stock : row.Cantidad);
-                        const stock = rawStock !== undefined ? parseInt(rawStock) : 0;
+                        const stock = rawStock !== undefined && !isNaN(rawStock) ? parseInt(rawStock) : 10;
                         
                         let rawCost = row.COSTO !== undefined ? row.COSTO : (row.Costo !== undefined ? row.Costo : row.PrecioCompra);
-                        const cost = rawCost !== undefined ? parseFloat(rawCost) : 0;
+                        const cost = rawCost !== undefined && !isNaN(rawCost) ? parseFloat(rawCost) : 0;
 
                         let rawPrice = row.PRECIO !== undefined ? row.PRECIO : (row.Precio !== undefined ? row.Precio : row.PrecioVenta);
-                        const price = rawPrice !== undefined ? parseFloat(rawPrice) : 0;
+                        const price = rawPrice !== undefined && !isNaN(rawPrice) ? parseFloat(rawPrice) : 0;
 
-                        products.push({ id: Date.now() + Math.random(), sku, name, category, stock, cost, price });
+                        products.push({ id: String(Date.now() + Math.random()), sku, name, category, stock, cost, price });
                         importedCount++;
                     }
                 });
@@ -2416,7 +2506,7 @@
 
             const totalStockCost = products.reduce((sum, p) => {
                 const c = parseFloat(p.cost) || 0;
-                const st = parseInt(p.stock) || 0;
+                const st = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
                 return sum + (c * st);
             }, 0);
 
@@ -2441,10 +2531,15 @@
             document.getElementById('dash-total-payables').innerText = `$${totalPayablesPending.toLocaleString('es-CO')}`;
 
             document.getElementById('admin-total-historical-sales').innerText = `$${totalAllCollectedSales.toLocaleString('es-CO')}`;
+            document.getElementById('admin-total-withdrawals').innerText = `$${totalAllWithdrawals.toLocaleString('es-CO')}`;
             document.getElementById('admin-total-expected-money').innerText = `$${totalExpectedBank.toLocaleString('es-CO')}`;
 
             const lowStockList = document.getElementById('dash-low-stock-list');
-            const lowProds = products.filter(p => p.stock <= 3 && !['Promociones', 'Kits', 'Emprendedor'].includes(p.category));
+            const lowProds = products.filter(p => {
+                const st = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
+                return st <= 3 && !['Promociones', 'Kits', 'Emprendedor'].includes(p.category);
+            });
+
             lowStockList.innerHTML = '';
             if (lowProds.length === 0) {
                 lowStockList.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Sin alertas de stock bajo</p>`;
