@@ -83,7 +83,6 @@
         <!-- BARRA LATERAL -->
         <aside class="w-full md:w-64 bg-white text-slate-700 flex-shrink-0 no-print flex flex-col justify-between border-r border-slate-200/80 shadow-sm">
             <div>
-                <!-- Brand Header -->
                 <div class="p-5 flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-purple-50/50 to-fuchsia-50/50">
                     <div class="flex items-center gap-3">
                         <div class="bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white p-2.5 rounded-xl shadow-md shadow-purple-500/20">
@@ -96,7 +95,6 @@
                     </div>
                 </div>
 
-                <!-- Admin Status Toggle -->
                 <div class="p-3 border-b border-slate-100 bg-slate-50/80">
                     <button id="btn-toggle-admin" onclick="toggleAdminMode()" class="w-full py-2 px-3 bg-purple-100/70 hover:bg-purple-200/70 text-purple-800 border border-purple-200/80 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-lock" id="lock-icon"></i>
@@ -104,7 +102,6 @@
                     </button>
                 </div>
 
-                <!-- Navigation Links -->
                 <nav class="p-3 space-y-1">
                     <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all">
                         <i class="fa-solid fa-chart-pie w-4 text-center"></i>
@@ -163,7 +160,6 @@
         <!-- ÁREA PRINCIPAL -->
         <main class="flex-1 flex flex-col min-w-0 overflow-y-auto max-h-screen bg-slate-50">
             
-            <!-- NOTIFICACIÓN TOAST -->
             <div id="toast" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-100px] opacity-0 pointer-events-none">
                 <div id="toast-content" class="bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-800">
                     <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
@@ -189,7 +185,6 @@
                         </div>
                     </div>
 
-                    <!-- METRICS CARDS -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
                             <div class="flex justify-between items-start">
@@ -240,7 +235,6 @@
                         </div>
                     </div>
 
-                    <!-- MÓDULO MODO ADMIN: ARQUEO Y FONDO BASE BANCARIO -->
                     <div class="admin-only hidden bg-gradient-to-r from-slate-900 to-purple-950 text-white rounded-3xl p-6 shadow-xl space-y-4">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                             <div class="flex items-center gap-3">
@@ -277,7 +271,6 @@
                             </div>
                         </div>
 
-                        <!-- RECUADRO ADICIONAL: CAJA / BASE DE BANCO -->
                         <div class="bg-slate-800/90 border border-amber-500/30 rounded-2xl p-4 mt-3">
                             <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                                 <i class="fa-solid fa-vault"></i> Control de Fondo Base en Banco
@@ -299,7 +292,6 @@
                         </div>
                     </div>
 
-                    <!-- REPARTO SOCIOS EXCLUSIVO MODO ADMIN -->
                     <div class="admin-only hidden bg-white border border-purple-100 rounded-3xl p-6 shadow-sm space-y-4">
                         <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 pb-4">
                             <div>
@@ -362,7 +354,6 @@
                         </div>
                     </div>
 
-                    <!-- GRÁFICO & ALERTAS DE STOCK -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-2 bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
                             <h3 class="font-bold text-slate-900 mb-4">Balance de Operaciones</h3>
@@ -378,7 +369,7 @@
                     </div>
                 </section>
 
-                <!-- 2. POS / FACTURACIÓN -->
+                <!-- 2. POS / FACTURACIÓN CON DESCUENTO INTEGRADO -->
                 <section id="tab-pos" class="tab-content hidden space-y-6">
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                         <div class="lg:col-span-7 space-y-4">
@@ -413,11 +404,20 @@
                                         <input type="text" id="pos-client-phone" placeholder="Teléfono / WhatsApp..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500">
                                         <input type="text" id="pos-client-address" placeholder="Dirección de Envío + Ciudad..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500">
                                         
-                                        <div class="flex items-center justify-between pt-1">
-                                            <label class="text-xs text-amber-700 font-bold flex items-center gap-1">
-                                                <i class="fa-solid fa-truck"></i> Costo de Envío ($):
-                                            </label>
-                                            <input type="number" id="pos-shipping-cost" value="0" min="0" onchange="renderCart()" class="w-28 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-2 py-1 text-xs font-bold text-right focus:outline-none">
+                                        <div class="grid grid-cols-2 gap-2 pt-1">
+                                            <div class="flex flex-col">
+                                                <label class="text-[10px] text-amber-700 font-bold flex items-center gap-1 mb-0.5">
+                                                    <i class="fa-solid fa-truck"></i> Envío ($):
+                                                </label>
+                                                <input type="number" id="pos-shipping-cost" value="0" min="0" onchange="renderCart()" class="w-full bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-2 py-1 text-xs font-bold text-right focus:outline-none">
+                                            </div>
+
+                                            <div class="flex flex-col">
+                                                <label class="text-[10px] text-purple-700 font-bold flex items-center gap-1 mb-0.5">
+                                                    <i class="fa-solid fa-tag"></i> Descuento ($):
+                                                </label>
+                                                <input type="number" id="pos-discount-amount" value="0" min="0" onchange="renderCart()" class="w-full bg-purple-50 border border-purple-200 text-purple-800 rounded-xl px-2 py-1 text-xs font-bold text-right focus:outline-none">
+                                            </div>
                                         </div>
 
                                         <div class="flex items-center justify-between pt-1">
@@ -442,7 +442,7 @@
 
                                 <div class="border-t border-slate-100 pt-4 space-y-3">
                                     <div class="flex justify-between items-center">
-                                        <span class="text-xs font-bold text-slate-500 uppercase">Total Venta + Envío:</span>
+                                        <span class="text-xs font-bold text-slate-500 uppercase">Total Venta Final:</span>
                                         <span id="pos-total" class="text-2xl font-black text-emerald-600">$0</span>
                                     </div>
 
@@ -488,12 +488,12 @@
                     </div>
                 </section>
 
-                <!-- 4. HISTÓRICO COMPLETO -->
+                <!-- 4. HISTÓRICO COMPLETO CON EDICIÓN ADMIN -->
                 <section id="tab-historico-completo" class="tab-content hidden space-y-6">
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Histórico Completo de Ventas</h2>
-                            <p class="text-xs text-slate-500">Edición total habilitada en Modo Administrador</p>
+                            <p class="text-xs text-slate-500">Modo Admin te permite corregir clientes, fechas, montos y descuentos de ventas pasadas.</p>
                         </div>
                     </div>
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
@@ -502,7 +502,7 @@
                                 <tr>
                                     <th class="p-4">N° Factura</th>
                                     <th class="p-4">Fecha Exacta</th>
-                                    <th class="p-4">Cliente</th>
+                                    <th class="p-4">Cliente / Contacto</th>
                                     <th class="p-4">Total</th>
                                     <th class="p-4">Cobrado</th>
                                     <th class="p-4">Estado</th>
@@ -527,7 +527,7 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Catálogo de Perfumes & Existencias</h2>
-                            <p class="text-xs text-slate-500">Gestión de stock e importación Excel (Modo Admin permite modificar precios y unidades subidas)</p>
+                            <p class="text-xs text-slate-500">Gestión de stock e importación Excel</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <button onclick="triggerExcelImport()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-emerald-600/20">
@@ -607,7 +607,7 @@
                             <h2 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
                                 <i class="fa-solid fa-file-invoice-dollar text-rose-600"></i> Cuentas por Pagar (Proveedores)
                             </h2>
-                            <p class="text-xs text-slate-500 mt-0.5">Edición de deudas y eliminación protegida en Modo Admin</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Edición de deudas protegida en Modo Admin</p>
                         </div>
                         <button onclick="openPayableModal()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-rose-600/20 flex items-center gap-2">
                             <i class="fa-solid fa-plus"></i> + Nueva Factura por Pagar
@@ -637,7 +637,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Gastos Operativos</h2>
-                            <p class="text-xs text-slate-500">Registra gastos administrativos (Solo Admin elimina)</p>
+                            <p class="text-xs text-slate-500">Registra gastos administrativos</p>
                         </div>
                         <button onclick="openExpenseModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-purple-600/20">
                             <i class="fa-solid fa-plus"></i> Registrar Gasto
@@ -664,6 +664,57 @@
     </div>
 
     <!-- MODALES DE CONTROL -->
+
+    <!-- MODAL EDITAR VENTA GENERADA (ADMIN) -->
+    <div id="sale-edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-purple-600"></i> Corregir Venta / Cliente
+            </h3>
+            <form onsubmit="saveEditedSale(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="edit-sale-id">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Nombre del Cliente:</label>
+                    <input type="text" id="edit-sale-client" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Teléfono / WhatsApp:</label>
+                    <input type="text" id="edit-sale-phone" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Dirección de Envío:</label>
+                    <input type="text" id="edit-sale-addr" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">Costo Envío ($):</label>
+                        <input type="number" id="edit-sale-shipping" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">Descuento ($):</label>
+                        <input type="number" id="edit-sale-discount" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">Estado Pago:</label>
+                        <select id="edit-sale-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                            <option value="PAGADO">Pagado Completo</option>
+                            <option value="ABONO">Con Abono / Pendiente</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">Monto Cobrado ($):</label>
+                        <input type="number" id="edit-sale-paid" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                    </div>
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeSaleEditModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL PRODUCTO -->
     <div id="product-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
@@ -892,8 +943,9 @@
 
                     <div class="text-right text-xs font-bold space-y-1">
                         <p id="print-shipping-line" class="hidden text-amber-700">Costo Envío: <span id="print-shipping-val"></span></p>
+                        <p id="print-discount-line" class="hidden text-purple-700">Descuento Aplicado: -<span id="print-discount-val"></span></p>
                         <p id="print-abono-line" class="hidden text-amber-600">Monto Abonado: <span id="print-abono-val"></span></p>
-                        <p class="text-sm text-slate-900">TOTAL FACTURA: <span id="print-total"></span></p>
+                        <p class="text-sm text-slate-900 pt-1 border-t">TOTAL FACTURA: <span id="print-total"></span></p>
                     </div>
 
                     <div class="mt-8 text-center text-[10px] text-slate-400 border-t pt-4">
@@ -935,7 +987,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CON LÓGICA FINANCIERA CORREGIDA -->
+    <!-- JAVASCRIPT COMPLETO Y CORREGIDO -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -1033,7 +1085,6 @@
                 <option value="ALL">Histórico Completo (A la fecha)</option>
             `;
 
-            // Detectar todos los meses únicos en ventas
             const monthsSet = new Set();
             sales.forEach(s => {
                 const d = new Date(s.rawDate || Date.now());
@@ -1202,6 +1253,7 @@
             const container = document.getElementById('pos-cart-items');
             container.innerHTML = '';
             const shippingCost = parseFloat(document.getElementById('pos-shipping-cost').value) || 0;
+            const discountAmount = parseFloat(document.getElementById('pos-discount-amount').value) || 0;
 
             if (cart.length === 0 && shippingCost === 0) {
                 container.innerHTML = `<p class="text-center text-slate-400 text-xs py-6">Sin perfumes seleccionados</p>`;
@@ -1229,26 +1281,38 @@
 
             if (shippingCost > 0) {
                 container.innerHTML += `
-                    <div class="flex items-center justify-between bg-amber-50 p-2.5 rounded-xl border border-amber-200/60 text-xs font-bold text-amber-900">
+                    <div class="flex items-center justify-between bg-amber-50 p-2 rounded-xl border border-amber-200/60 text-xs font-bold text-amber-900">
                         <span><i class="fa-solid fa-truck"></i> Envío Nacional</span>
-                        <span>$${shippingCost.toLocaleString('es-CO')}</span>
+                        <span>+$${shippingCost.toLocaleString('es-CO')}</span>
                     </div>
                 `;
             }
 
-            const grandTotal = totalProds + shippingCost;
+            if (discountAmount > 0) {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between bg-purple-50 p-2 rounded-xl border border-purple-200/60 text-xs font-bold text-purple-900">
+                        <span><i class="fa-solid fa-tag"></i> Descuento Aplicado</span>
+                        <span>-$${discountAmount.toLocaleString('es-CO')}</span>
+                    </div>
+                `;
+            }
+
+            const grandTotal = Math.max(0, totalProds + shippingCost - discountAmount);
             document.getElementById('pos-total').innerText = `$${grandTotal.toLocaleString('es-CO')}`;
         }
 
         function clearCart() {
             cart = [];
             document.getElementById('pos-shipping-cost').value = "0";
+            document.getElementById('pos-discount-amount').value = "0";
             renderCart();
         }
 
         function processSale(mode) {
             const shippingCost = parseFloat(document.getElementById('pos-shipping-cost').value) || 0;
-            if (cart.length === 0 && shippingCost === 0) return showToast('Agrega productos o envío al carrito', 'error');
+            const discountAmount = parseFloat(document.getElementById('pos-discount-amount').value) || 0;
+            
+            if (cart.length === 0 && shippingCost === 0) return showToast('Agrega productos al carrito', 'error');
 
             const client = document.getElementById('pos-client-name').value.trim() || "Cliente General";
             const phone = document.getElementById('pos-client-phone').value.trim() || "N/A";
@@ -1259,7 +1323,7 @@
 
             const totalProds = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * item.qty), 0);
             const totalCost = cart.reduce((sum, item) => sum + ((parseFloat(item.cost) || 0) * item.qty), 0);
-            const totalSale = totalProds + shippingCost;
+            const totalSale = Math.max(0, totalProds + shippingCost - discountAmount);
             
             let paidAmount = totalSale;
             if (status === 'ABONO') paidAmount = abonoInput;
@@ -1282,6 +1346,7 @@
                 clientAddr: addr,
                 items: [...cart],
                 shipping: shippingCost,
+                discount: discountAmount,
                 total: totalSale,
                 cost: totalCost,
                 paid: paidAmount,
@@ -1311,6 +1376,7 @@
 
             cart = [];
             document.getElementById('pos-shipping-cost').value = "0";
+            document.getElementById('pos-discount-amount').value = "0";
             renderCart();
             renderPosProducts();
             renderInventoryTable();
@@ -1320,7 +1386,7 @@
             showToast('¡Venta registrada correctamente!');
         }
 
-        // --- IMPRESIÓN ---
+        // --- IMPRESIÓN CON DESCUENTOS ---
         function showPrintPreview(type, data) {
             document.getElementById('invoice-doc').classList.add('hidden');
             document.getElementById('label-doc').classList.add('hidden');
@@ -1354,6 +1420,13 @@
                     document.getElementById('print-shipping-line').classList.add('hidden');
                 }
 
+                if (data.discount > 0) {
+                    document.getElementById('print-discount-line').classList.remove('hidden');
+                    document.getElementById('print-discount-val').innerText = `$${data.discount.toLocaleString('es-CO')}`;
+                } else {
+                    document.getElementById('print-discount-line').classList.add('hidden');
+                }
+
                 if (data.status === 'ABONO') {
                     document.getElementById('print-abono-line').classList.remove('hidden');
                     document.getElementById('print-abono-val').innerText = `$${(parseFloat(data.paid) || 0).toLocaleString('es-CO')}`;
@@ -1382,7 +1455,7 @@
             window.print();
         }
 
-        // --- RENDER TABLAS ---
+        // --- RENDER TABLAS & EDICIÓN DE VENTAS ---
         function renderTablesViews() {
             const now = new Date();
             const currentMonthYear = now.getMonth() + "-" + now.getFullYear();
@@ -1447,12 +1520,57 @@
                         <td class="p-4 font-bold text-emerald-600">$${paidVal.toLocaleString('es-CO')}</td>
                         <td class="p-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${s.status === 'PAGADO' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${s.status}</span></td>
                         <td class="p-4 text-center space-x-1">
-                            <button onclick='showPrintPreview("invoice", ${JSON.stringify(s)})' class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"><i class="fa-solid fa-print"></i></button>
-                            ${isAdmin ? `<button onclick="deleteSale('${s.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Venta (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
+                            <button onclick='showPrintPreview("invoice", ${JSON.stringify(s)})' class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition" title="Ver / Imprimir Factura"><i class="fa-solid fa-print"></i></button>
+                            ${isAdmin ? `<button onclick="openSaleEditModal('${s.id}')" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar Cliente / Datos Venta (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
+                            ${isAdmin ? `<button onclick="deleteSale('${s.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Venta (Admin)"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </td>
                     </tr>
                 `;
             }).join('');
+        }
+
+        function openSaleEditModal(saleId) {
+            if (!isAdmin) return;
+            const s = sales.find(item => item.id === saleId);
+            if (s) {
+                document.getElementById('edit-sale-id').value = s.id;
+                document.getElementById('edit-sale-client').value = s.clientName || '';
+                document.getElementById('edit-sale-phone').value = s.clientPhone || '';
+                document.getElementById('edit-sale-addr').value = s.clientAddr || '';
+                document.getElementById('edit-sale-shipping').value = s.shipping || 0;
+                document.getElementById('edit-sale-discount').value = s.discount || 0;
+                document.getElementById('edit-sale-status').value = s.status || 'PAGADO';
+                document.getElementById('edit-sale-paid').value = s.paid || s.total;
+                document.getElementById('sale-edit-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeSaleEditModal() {
+            document.getElementById('sale-edit-modal').classList.add('hidden');
+        }
+
+        function saveEditedSale(e) {
+            e.preventDefault();
+            const saleId = document.getElementById('edit-sale-id').value;
+            const s = sales.find(item => item.id === saleId);
+            if (s) {
+                s.clientName = document.getElementById('edit-sale-client').value.trim() || 'Cliente General';
+                s.clientPhone = document.getElementById('edit-sale-phone').value.trim() || 'N/A';
+                s.clientAddr = document.getElementById('edit-sale-addr').value.trim() || 'N/A';
+                s.shipping = parseFloat(document.getElementById('edit-sale-shipping').value) || 0;
+                s.discount = parseFloat(document.getElementById('edit-sale-discount').value) || 0;
+                s.status = document.getElementById('edit-sale-status').value;
+                s.paid = parseFloat(document.getElementById('edit-sale-paid').value) || 0;
+
+                const totalProds = (s.items || []).reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * item.qty), 0);
+                s.total = Math.max(0, totalProds + s.shipping - s.discount);
+
+                saveData();
+                closeSaleEditModal();
+                renderTablesViews();
+                updateDashboard();
+                showToast('Factura y cliente corregidos correctamente');
+            }
         }
 
         function deleteSale(saleId) {
@@ -1941,7 +2059,6 @@
                     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === currentMonthYear;
                 });
             } else if (filterValue !== 'ALL') {
-                // Filtro por mes específico (ej: 2026-09)
                 activeSales = sales.filter(s => {
                     const d = new Date(s.rawDate || Date.now());
                     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === filterValue;
@@ -1952,7 +2069,6 @@
                 });
             }
 
-            // MÉTIRCAS DEL PERIODO SELECCIONADO
             const totalGrossSales = activeSales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
             const totalCollectedSales = activeSales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
             const totalProductCosts = activeSales.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
@@ -1970,20 +2086,15 @@
                 return sum + Math.max(0, tot - pd);
             }, 0);
 
-            const totalPayablesPaid = activePayables.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
-
             const netProfit = totalGrossSales - totalProductCosts - totalExpenses;
 
-            // CÁLCULO DE FLUJO BANCARIO ESPERADO
             const totalAllCollectedSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
             const totalAllExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
             const totalAllPayablesPaid = payables.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
             const totalAllWithdrawals = withdrawals.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
 
-            // Dinero líquido real esperado en banco = Saldo Inicial + Cobros Reales - Gastos - Pagos Prov - Retiros
             const totalExpectedBank = bankSavings + totalAllCollectedSales - totalAllExpenses - totalAllPayablesPaid - totalAllWithdrawals;
 
-            // REPARTO DE SOCIOS
             const w1 = activeWithdrawals.filter(w => w.partner === "1").reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
             const w2 = activeWithdrawals.filter(w => w.partner === "2").reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
 
