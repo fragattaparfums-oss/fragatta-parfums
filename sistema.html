@@ -178,13 +178,13 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Dashboard & Arqueo de Caja</h2>
-                            <p class="text-xs text-slate-500 font-medium">Control financiero y proyección de cuenta bancaria</p>
+                            <p class="text-xs text-slate-500 font-medium">Control financiero, cortes mensuales y proyección de cuenta bancaria</p>
                         </div>
                         <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border border-slate-200 shadow-sm">
                             <i class="fa-regular fa-calendar text-purple-600"></i>
                             <select id="dash-month-filter" onchange="updateDashboard()" class="bg-transparent text-xs font-bold text-slate-700 focus:outline-none">
                                 <option value="CURRENT">Mes Actual</option>
-                                <option value="ALL">Histórico Completo</option>
+                                <option value="ALL">Histórico Completo (A la fecha)</option>
                             </select>
                         </div>
                     </div>
@@ -194,7 +194,7 @@
                         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ventas Brutas Mes</p>
+                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ventas Brutas Periodo</p>
                                     <h3 id="dash-total-sales" class="text-2xl font-black text-slate-900 mt-1">$0</h3>
                                 </div>
                                 <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
@@ -248,8 +248,8 @@
                                     <i class="fa-solid fa-building-columns text-xl"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-base text-white">Panel de Arqueo Bancario y Control de Base (Administrador)</h3>
-                                    <p class="text-xs text-slate-400">Control de cuenta de ahorros y seguimiento de dinero base gastado.</p>
+                                    <h3 class="font-bold text-base text-white">Panel de Arqueo Bancario y Control de Flujo (Administrador)</h3>
+                                    <p class="text-xs text-slate-400">Proyección real en banco = Saldo + Ventas Cobradas - Gastos - Pagos a Proveedores - Retiros.</p>
                                 </div>
                             </div>
                             <button onclick="resetSystemMemory()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl transition shadow-md flex items-center gap-1.5">
@@ -259,7 +259,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
                             <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Histórico Vendido</p>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Ventas Cobradas</p>
                                 <h4 id="admin-total-historical-sales" class="text-2xl font-black text-emerald-400 mt-1">$0</h4>
                             </div>
 
@@ -272,7 +272,7 @@
                             </div>
 
                             <div class="bg-purple-900/40 p-4 rounded-2xl border border-purple-500/50">
-                                <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Total Esperado (Cuenta + Ganancias)</p>
+                                <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Total Esperado en Banco (Flujo Real)</p>
                                 <h4 id="admin-total-expected-money" class="text-2xl font-black text-amber-400 mt-1">$0</h4>
                             </div>
                         </div>
@@ -299,16 +299,16 @@
                         </div>
                     </div>
 
-                    <!-- REPARTO SOCIOS -->
-                    <div class="bg-white border border-purple-100 rounded-3xl p-6 shadow-sm space-y-4">
+                    <!-- REPARTO SOCIOS EXCLUSIVO MODO ADMIN -->
+                    <div class="admin-only hidden bg-white border border-purple-100 rounded-3xl p-6 shadow-sm space-y-4">
                         <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 pb-4">
                             <div>
                                 <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-                                    <i class="fa-solid fa-users text-purple-600"></i> Reparto de Utilidades & Retiros
+                                    <i class="fa-solid fa-users text-purple-600"></i> Reparto de Utilidades & Retiros (Privado Administrador)
                                 </h3>
-                                <p class="text-xs text-slate-500">Calcula ganancias según porcentaje y descuenta retiros.</p>
+                                <p class="text-xs text-slate-500">Calcula ganancias según porcentaje y descuenta retiros para el periodo seleccionado.</p>
                             </div>
-                            <button onclick="openWithdrawalModal()" class="admin-only hidden bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-purple-600/20 flex items-center gap-2">
+                            <button onclick="openWithdrawalModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-purple-600/20 flex items-center gap-2">
                                 <i class="fa-solid fa-money-bill-transfer"></i> Registrar Retiro de Socio
                             </button>
                         </div>
@@ -935,7 +935,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CORREGIDO -->
+    <!-- JAVASCRIPT CON LÓGICA FINANCIERA CORREGIDA -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -1026,6 +1026,29 @@
             updateDashboard();
         }
 
+        function populateMonthFilterOptions() {
+            const select = document.getElementById('dash-month-filter');
+            select.innerHTML = `
+                <option value="CURRENT">Mes Actual</option>
+                <option value="ALL">Histórico Completo (A la fecha)</option>
+            `;
+
+            // Detectar todos los meses únicos en ventas
+            const monthsSet = new Set();
+            sales.forEach(s => {
+                const d = new Date(s.rawDate || Date.now());
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                monthsSet.add(key);
+            });
+
+            Array.from(monthsSet).sort().reverse().forEach(mKey => {
+                const [year, month] = mKey.split('-');
+                const dateObj = new Date(year, month - 1, 1);
+                const monthName = dateObj.toLocaleString('es-CO', { month: 'long', year: 'numeric' });
+                select.innerHTML += `<option value="${mKey}">Corte ${monthName}</option>`;
+            });
+        }
+
         function initApp() {
             document.getElementById('pos-payment-status').addEventListener('change', (e) => {
                 const container = document.getElementById('pos-abono-input-container');
@@ -1041,6 +1064,7 @@
             document.getElementById('admin-base-target').value = baseTarget;
             document.getElementById('admin-base-current').value = baseCurrent;
 
+            populateMonthFilterOptions();
             renderPosProducts();
             renderCart();
             renderInventoryTable();
@@ -1108,7 +1132,10 @@
                 activeNav.classList.remove('text-slate-600', 'hover:bg-purple-50');
             }
 
-            if (tabId === 'dashboard') updateDashboard();
+            if (tabId === 'dashboard') {
+                populateMonthFilterOptions();
+                updateDashboard();
+            }
             renderTablesViews();
         }
 
@@ -1288,6 +1315,7 @@
             renderPosProducts();
             renderInventoryTable();
             renderTablesViews();
+            populateMonthFilterOptions();
             updateDashboard();
             showToast('¡Venta registrada correctamente!');
         }
@@ -1570,7 +1598,6 @@
             document.getElementById('excel-file-input').click();
         }
 
-        /* IMPORTACIÓN CORREGIDA: HACE DISTINCIÓN EXACTA DE STOCK EN 0 */
         function importExcelCatalog(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1583,7 +1610,6 @@
                 const worksheet = workbook.Sheets[firstSheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet);
 
-                // Limpiamos la lista previa para evitar mezclar datos con stock 10
                 products = [];
 
                 let importedCount = 0;
@@ -1593,7 +1619,6 @@
                         const sku = row.SKU || generateAutoSKU();
                         const category = row.Categoria || row.CATEGORIA || row.Categoría || 'Unisex';
                         
-                        // CORRECCIÓN CLAVE: Si row.STOCK es 0, no usar || que lo evalúa como falso
                         let rawStock = row.STOCK !== undefined ? row.STOCK : (row.Stock !== undefined ? row.Stock : row.Cantidad);
                         const stock = rawStock !== undefined ? parseInt(rawStock) : 0;
                         
@@ -1895,47 +1920,72 @@
             showToast('Gasto eliminado por el Administrador');
         }
 
-        // --- DASHBOARD ---
+        // --- DASHBOARD DE CORTES Y ARQUEO REAL ---
         function updateDashboard() {
-            const filterMonth = document.getElementById('dash-month-filter').value;
-            const currentMonthYear = new Date().getMonth() + "-" + new Date().getFullYear();
+            const filterValue = document.getElementById('dash-month-filter').value;
+            const now = new Date();
+            const currentMonthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
             let activeSales = sales;
             let activeExpenses = expenses;
+            let activePayables = payables;
+            let activeWithdrawals = withdrawals;
 
-            if (filterMonth === 'CURRENT') {
+            if (filterValue === 'CURRENT') {
                 activeSales = sales.filter(s => {
                     const d = new Date(s.rawDate || Date.now());
-                    return (d.getMonth() + "-" + d.getFullYear()) === currentMonthYear;
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === currentMonthYear;
                 });
                 activeExpenses = expenses.filter(e => {
                     const d = new Date(e.date);
-                    return (d.getMonth() + "-" + d.getFullYear()) === currentMonthYear;
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === currentMonthYear;
+                });
+            } else if (filterValue !== 'ALL') {
+                // Filtro por mes específico (ej: 2026-09)
+                activeSales = sales.filter(s => {
+                    const d = new Date(s.rawDate || Date.now());
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === filterValue;
+                });
+                activeExpenses = expenses.filter(e => {
+                    const d = new Date(e.date);
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === filterValue;
                 });
             }
 
+            // MÉTIRCAS DEL PERIODO SELECCIONADO
             const totalGrossSales = activeSales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
+            const totalCollectedSales = activeSales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
             const totalProductCosts = activeSales.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
             const totalExpenses = activeExpenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
 
-            const totalHistoricalSales = sales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
-            
             const totalStockCost = products.reduce((sum, p) => {
                 const c = parseFloat(p.cost) || 0;
                 const st = parseInt(p.stock) || 0;
                 return sum + (c * st);
             }, 0);
 
-            const totalPayablesPending = payables.reduce((sum, p) => {
+            const totalPayablesPending = activePayables.reduce((sum, p) => {
                 const tot = parseFloat(p.total) || 0;
                 const pd = parseFloat(p.paid) || 0;
                 return sum + Math.max(0, tot - pd);
             }, 0);
 
+            const totalPayablesPaid = activePayables.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
+
             const netProfit = totalGrossSales - totalProductCosts - totalExpenses;
 
-            const w1 = withdrawals.filter(w => w.partner === "1").reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
-            const w2 = withdrawals.filter(w => w.partner === "2").reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+            // CÁLCULO DE FLUJO BANCARIO ESPERADO
+            const totalAllCollectedSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
+            const totalAllExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+            const totalAllPayablesPaid = payables.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
+            const totalAllWithdrawals = withdrawals.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+
+            // Dinero líquido real esperado en banco = Saldo Inicial + Cobros Reales - Gastos - Pagos Prov - Retiros
+            const totalExpectedBank = bankSavings + totalAllCollectedSales - totalAllExpenses - totalAllPayablesPaid - totalAllWithdrawals;
+
+            // REPARTO DE SOCIOS
+            const w1 = activeWithdrawals.filter(w => w.partner === "1").reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+            const w2 = activeWithdrawals.filter(w => w.partner === "2").reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
 
             const pct1 = (parseFloat(document.getElementById('partner1-pct').value) || 50) / 100;
             const pct2 = (parseFloat(document.getElementById('partner2-pct').value) || 50) / 100;
@@ -1948,9 +1998,8 @@
             document.getElementById('dash-stock-cost').innerText = `$${totalStockCost.toLocaleString('es-CO')}`;
             document.getElementById('dash-total-payables').innerText = `$${totalPayablesPending.toLocaleString('es-CO')}`;
 
-            document.getElementById('admin-total-historical-sales').innerText = `$${totalHistoricalSales.toLocaleString('es-CO')}`;
-            const totalExpected = bankSavings + Math.max(0, netProfit);
-            document.getElementById('admin-total-expected-money').innerText = `$${totalExpected.toLocaleString('es-CO')}`;
+            document.getElementById('admin-total-historical-sales').innerText = `$${totalAllCollectedSales.toLocaleString('es-CO')}`;
+            document.getElementById('admin-total-expected-money').innerText = `$${totalExpectedBank.toLocaleString('es-CO')}`;
 
             document.getElementById('partner1-earned').innerText = `$${earned1.toLocaleString('es-CO')}`;
             document.getElementById('partner1-withdrawn').innerText = `$${w1.toLocaleString('es-CO')}`;
