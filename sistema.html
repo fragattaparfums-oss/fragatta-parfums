@@ -257,21 +257,21 @@
                         </div>
                     </div>
 
-                    <!-- PANEL BANCARIO Y CONTROL DE FLUJO RESTAURADO -->
-                    <div class="admin-only hidden bg-gradient-to-r from-slate-900 to-purple-950 text-white rounded-3xl p-6 shadow-xl space-y-4">
+                    <!-- PANEL MORADO RESTAURADO COMPLETO -->
+                    <div class="admin-only hidden bg-gradient-to-r from-slate-900 to-purple-950 text-white rounded-3xl p-6 shadow-xl space-y-6">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                             <div class="flex items-center gap-3">
                                 <div class="p-2.5 bg-purple-600/30 border border-purple-500/40 rounded-xl text-purple-300">
                                     <i class="fa-solid fa-building-columns text-xl"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-base text-white">Panel de Arqueo Bancario y Control de Flujo (Administrador)</h3>
-                                    <p class="text-xs text-slate-400">Proyección real en banco = Saldo + Ventas Cobradas - Gastos - Pagos a Proveedores - Retiros.</p>
+                                    <h3 class="font-bold text-base text-white">Panel de Arqueo Bancario y Control de Base (Administrador)</h3>
+                                    <p class="text-xs text-slate-400">Control de cuenta de ahorros y seguimiento de dinero base gastado.</p>
                                 </div>
                             </div>
                             <div class="flex gap-2">
                                 <button onclick="openWithdrawalModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
-                                    <i class="fa-solid fa-hand-holding-dollar"></i> Registrar Retiro
+                                    <i class="fa-solid fa-hand-holding-dollar"></i> Registrar Retiro de Socio
                                 </button>
                                 <button onclick="openResetModal()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
                                     <i class="fa-solid fa-rotate-right"></i> Resetear Datos
@@ -279,15 +279,11 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+                        <!-- FILA 1: HISTÓRICO VENDIDO, SALDO REAL CUENTA DE AHORROS Y TOTAL ESPERADO -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Ventas Cobradas</p>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Histórico Vendido</p>
                                 <h4 id="admin-total-historical-sales" class="text-2xl font-black text-emerald-400 mt-1">$0</h4>
-                            </div>
-
-                            <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
-                                <p class="text-[10px] font-bold text-rose-300 uppercase tracking-wider">Total Retiros de Caja</p>
-                                <h4 id="admin-total-withdrawals" class="text-2xl font-black text-rose-400 mt-1">$0</h4>
                             </div>
 
                             <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
@@ -299,8 +295,81 @@
                             </div>
 
                             <div class="bg-purple-900/40 p-4 rounded-2xl border border-purple-500/50">
-                                <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Total Esperado en Banco (Flujo Real)</p>
+                                <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Total Esperado (Cuenta + Ganancias)</p>
                                 <h4 id="admin-total-expected-money" class="text-2xl font-black text-amber-400 mt-1">$0</h4>
+                            </div>
+                        </div>
+
+                        <!-- FILA 2: CONTROL DE FONDO BASE EN BANCO -->
+                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/60 space-y-3">
+                            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-vault"></i> Control de Fondo Base en Banco
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Fondo Base Objetivo ($)</label>
+                                    <input type="number" id="base-target-input" value="0" onchange="updateBaseControls()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Fondo Base Actual ($)</label>
+                                    <input type="number" id="base-current-input" value="0" onchange="updateBaseControls()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-rose-300 uppercase tracking-wider mb-1">Faltante para Meta Base</p>
+                                    <h5 id="base-missing-val" class="text-xl font-black text-rose-400 mt-1">$0</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FILA 3: REPARTO DE UTILIDADES & RETIROS -->
+                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/60 space-y-3">
+                            <h4 class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-users"></i> Reparto de Utilidades & Retiros
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                                <!-- SOCIO 1 -->
+                                <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-700/80 space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-bold text-xs text-white">Socio 1 (Propietario A)</span>
+                                        <span class="text-xs font-bold text-purple-400">50 %</span>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-2 text-center text-[10px] pt-1">
+                                        <div class="bg-slate-800 p-2 rounded-lg">
+                                            <p class="text-slate-400 font-bold">Ganado</p>
+                                            <p id="socio1-earned" class="font-bold text-emerald-400 text-xs mt-0.5">$0</p>
+                                        </div>
+                                        <div class="bg-slate-800 p-2 rounded-lg">
+                                            <p class="text-slate-400 font-bold">Retirado</p>
+                                            <p id="socio1-withdrawn" class="font-bold text-rose-400 text-xs mt-0.5">$0</p>
+                                        </div>
+                                        <div class="bg-slate-800 p-2 rounded-lg">
+                                            <p class="text-slate-400 font-bold">Disponible</p>
+                                            <p id="socio1-available" class="font-black text-amber-400 text-xs mt-0.5">$0</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- SOCIO 2 -->
+                                <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-700/80 space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-bold text-xs text-white">Socio 2 (Propietario B)</span>
+                                        <span class="text-xs font-bold text-purple-400">50 %</span>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-2 text-center text-[10px] pt-1">
+                                        <div class="bg-slate-800 p-2 rounded-lg">
+                                            <p class="text-slate-400 font-bold">Ganado</p>
+                                            <p id="socio2-earned" class="font-bold text-emerald-400 text-xs mt-0.5">$0</p>
+                                        </div>
+                                        <div class="bg-slate-800 p-2 rounded-lg">
+                                            <p class="text-slate-400 font-bold">Retirado</p>
+                                            <p id="socio2-withdrawn" class="font-bold text-rose-400 text-xs mt-0.5">$0</p>
+                                        </div>
+                                        <div class="bg-slate-800 p-2 rounded-lg">
+                                            <p class="text-slate-400 font-bold">Disponible</p>
+                                            <p id="socio2-available" class="font-black text-amber-400 text-xs mt-0.5">$0</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -483,7 +552,7 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Catálogo de Perfumes & Combos</h2>
-                            <p class="text-xs text-slate-500">Gestión rápida de stock respaldado en la Nube</p>
+                            <p class="text-xs text-slate-500">Gestión de stock independiente (Inicia en 0)</p>
                         </div>
                         <div class="flex items-center gap-2 flex-wrap">
                             <button onclick="triggerExcelImport()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-emerald-600/20">
@@ -654,30 +723,37 @@
         </div>
     </div>
 
-    <!-- MODAL REGISTRAR RETIRO DE CAJA -->
+    <!-- MODAL REGISTRAR RETIRO DE SOCIO -->
     <div id="withdrawal-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
             <h3 class="font-bold text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center gap-2">
-                <i class="fa-solid fa-hand-holding-dollar text-amber-600"></i> Registrar Retiro de Dinero
+                <i class="fa-solid fa-hand-holding-dollar text-amber-600"></i> Registrar Retiro de Socio
             </h3>
             <form onsubmit="saveWithdrawal(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Socio que retira:</label>
+                    <select id="withdrawal-partner" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-bold focus:outline-none">
+                        <option value="socio1">Socio 1 (Propietario A)</option>
+                        <option value="socio2">Socio 2 (Propietario B)</option>
+                    </select>
+                </div>
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">Monto del Retiro ($):</label>
                     <input type="number" id="withdrawal-amount" min="1" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">Concepto / Motivo:</label>
-                    <input type="text" id="withdrawal-concept" required placeholder="Ej: Pago de nómina / Retiro personal" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                    <input type="text" id="withdrawal-concept" required placeholder="Ej: Retiro de utilidades" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                 </div>
                 <div class="pt-2 flex justify-end gap-2">
                     <button type="button" onclick="closeWithdrawalModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold">Guardar Retiro</button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold">Guardar Retiro</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL RESET CON PISTA EN PANTALLA Y OJO DE CLAVE -->
+    <!-- MODAL RESET CON PISTA EN PANTALLA -->
     <div id="reset-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-rose-200 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
             <div class="flex items-center gap-3 text-rose-600">
@@ -1090,7 +1166,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CON PARSEO ROBUSTO DE NUMEROS E INVENTARIO EDITABLE -->
+    <!-- JAVASCRIPT COMPLETO CON SISTEMA DE CAJA, STOCK 0 E IMPRESIÓN -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -1101,11 +1177,11 @@
         let isFirebaseConnected = false;
 
         const INITIAL_PRODUCTS = [
-            { id: '1', sku: 'FRAG-1001', name: '1 MILLION RABANNE - PACO RABANNE', category: 'Caballero', cost: 45000, price: 115000, stock: 10 },
-            { id: '2', sku: 'FRAG-1002', name: '9 AM AFNAN', category: 'Árabes', cost: 55000, price: 135000, stock: 8 },
-            { id: '3', sku: 'FRAG-1003', name: 'ARI ARIANA GRANDE', category: 'Dama', cost: 45000, price: 110000, stock: 12 },
-            { id: '4', sku: 'FRAG-1004', name: 'CLUB DE NUIT INTENSE - ARMAF', category: 'Árabes', cost: 55000, price: 135000, stock: 15 },
-            { id: '5', sku: 'FRAG-1005', name: 'LATTAFA ASAD', category: 'Árabes', cost: 55000, price: 135000, stock: 10 }
+            { id: '1', sku: 'FRAG-1001', name: '1 MILLION RABANNE - PACO RABANNE', category: 'Caballero', cost: 45000, price: 115000, stock: 0 },
+            { id: '2', sku: 'FRAG-1002', name: '9 AM AFNAN', category: 'Árabes', cost: 55000, price: 135000, stock: 0 },
+            { id: '3', sku: 'FRAG-1003', name: 'ARI ARIANA GRANDE', category: 'Dama', cost: 45000, price: 110000, stock: 0 },
+            { id: '4', sku: 'FRAG-1004', name: 'CLUB DE NUIT INTENSE - ARMAF', category: 'Árabes', cost: 55000, price: 135000, stock: 0 },
+            { id: '5', sku: 'FRAG-1005', name: 'LATTAFA ASAD', category: 'Árabes', cost: 55000, price: 135000, stock: 0 }
         ];
 
         let products = JSON.parse(localStorage.getItem('fragatta_products')) || INITIAL_PRODUCTS;
@@ -1165,6 +1241,7 @@
 
         function saveWithdrawal(e) {
             e.preventDefault();
+            const partner = document.getElementById('withdrawal-partner').value;
             const amount = parseFloat(document.getElementById('withdrawal-amount').value) || 0;
             const concept = document.getElementById('withdrawal-concept').value.trim();
 
@@ -1175,6 +1252,7 @@
 
             withdrawals.push({
                 id: 'WIT-' + Date.now(),
+                partner: partner,
                 date: fullDateTime,
                 concept: concept,
                 amount: amount
@@ -1183,7 +1261,14 @@
             saveData();
             closeWithdrawalModal();
             updateDashboard();
-            showToast('Retiro de dinero registrado correctamente');
+            showToast('Retiro de socio registrado');
+        }
+
+        function updateBaseControls() {
+            baseTarget = parseFloat(document.getElementById('base-target-input').value) || 0;
+            baseCurrent = parseFloat(document.getElementById('base-current-input').value) || 0;
+            saveData();
+            updateDashboard();
         }
 
         function initFirebase() {
@@ -1262,7 +1347,7 @@
                             category: data.category || "Árabes",
                             cost: isNaN(parsedCost) ? 0 : parsedCost,
                             price: isNaN(parsedPrice) ? 0 : parsedPrice,
-                            stock: isNaN(parsedStock) ? 10 : parsedStock
+                            stock: isNaN(parsedStock) ? 0 : parsedStock
                         });
                     });
                     products = cloudProds;
@@ -1291,31 +1376,30 @@
 
         function importarDesdeWeb() {
             if (!db) return showToast("Firebase no está conectado", "error");
-            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Esta es una copia independiente y no afectará tu página web al editar o borrar.")) return;
+            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Todos se registrarán con stock en 0 para que ingreses el inventario manualmente sin afectar tu página web.")) return;
 
             db.collection("products").get().then((querySnapshot) => {
                 let cont = 0;
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    const parsedStock = parseInt(data.stock);
-                    const parsedCost = parseFloat(data.cost);
-                    const parsedPrice = parseFloat(data.price);
+                    const parsedPrice = parseFloat(data.price) || 0;
+                    const defaultCost = Math.round(parsedPrice * 0.45);
 
                     const newProd = {
                         id: String(doc.id),
                         sku: (data.sku && data.sku !== "undefined") ? data.sku : generateAutoSKU(),
                         name: data.name || data.title || "Perfume Importado",
                         category: data.category || "Árabes",
-                        cost: isNaN(parsedCost) ? 0 : parsedCost,
-                        price: isNaN(parsedPrice) ? 0 : parsedPrice,
-                        stock: isNaN(parsedStock) ? 10 : parsedStock
+                        cost: defaultCost,
+                        price: parsedPrice,
+                        stock: 0
                     };
                     
                     db.collection("pos_products").doc(String(newProd.id)).set(newProd, { merge: true });
                     cont++;
                 });
 
-                showToast(`¡Se importaron ${cont} perfumes de la web al POS!`);
+                showToast(`¡Se importaron ${cont} perfumes al POS con stock en 0!`);
                 setTimeout(() => syncWithFirebase(), 1200);
             }).catch(err => {
                 console.error("Error al importar de la web:", err);
@@ -1983,7 +2067,7 @@
                     sku: generateAutoSKU(),
                     name: `${p.name} - Por Mayor`,
                     category: 'Por Mayor',
-                    stock: isNaN(parseInt(p.stock)) ? 10 : parseInt(p.stock),
+                    stock: isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock),
                     cost: parseFloat(p.cost) || 0,
                     price: Math.round((parseFloat(p.price) || 0) * 0.75)
                 };
@@ -2000,7 +2084,7 @@
             document.getElementById('prod-sku').value = generateAutoSKU();
             document.getElementById('prod-name').value = '';
             document.getElementById('prod-category').value = 'Dama';
-            document.getElementById('prod-stock').value = '10';
+            document.getElementById('prod-stock').value = '0';
             document.getElementById('prod-cost').value = '45000';
             document.getElementById('prod-price').value = '115000';
             document.getElementById('product-modal-title').innerText = "Nuevo Perfume";
@@ -2015,7 +2099,7 @@
                 document.getElementById('prod-sku').value = p.sku;
                 document.getElementById('prod-name').value = p.name;
                 document.getElementById('prod-category').value = p.category;
-                document.getElementById('prod-stock').value = isNaN(parseInt(p.stock)) ? 10 : parseInt(p.stock);
+                document.getElementById('prod-stock').value = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
                 document.getElementById('prod-cost').value = parseFloat(p.cost) || 0;
                 document.getElementById('prod-price').value = parseFloat(p.price) || 0;
                 document.getElementById('product-modal-title').innerText = "Editar Perfume (Admin)";
@@ -2193,15 +2277,13 @@
                     if (name) {
                         const sku = row.SKU || generateAutoSKU();
                         const category = row.Categoria || row.CATEGORIA || row.Categoría || 'Árabes';
-                        
-                        let rawStock = row.STOCK !== undefined ? row.STOCK : (row.Stock !== undefined ? row.Stock : row.Cantidad);
-                        const stock = rawStock !== undefined && !isNaN(rawStock) ? parseInt(rawStock) : 10;
+                        const stock = 0;
                         
                         let rawCost = row.COSTO !== undefined ? row.COSTO : (row.Costo !== undefined ? row.Costo : row.PrecioCompra);
-                        const cost = rawCost !== undefined && !isNaN(rawCost) ? parseFloat(rawCost) : 0;
+                        const cost = rawCost !== undefined && !isNaN(rawCost) ? parseFloat(rawCost) : 45000;
 
                         let rawPrice = row.PRECIO !== undefined ? row.PRECIO : (row.Precio !== undefined ? row.Precio : row.PrecioVenta);
-                        const price = rawPrice !== undefined && !isNaN(rawPrice) ? parseFloat(rawPrice) : 0;
+                        const price = rawPrice !== undefined && !isNaN(rawPrice) ? parseFloat(rawPrice) : 115000;
 
                         products.push({ id: String(Date.now() + Math.random()), sku, name, category, stock, cost, price });
                         importedCount++;
@@ -2212,7 +2294,7 @@
                 renderInventoryTable();
                 renderPosProducts();
                 updateDashboard();
-                showToast(`¡Se importaron ${importedCount} perfumes al POS!`);
+                showToast(`¡Se importaron ${importedCount} perfumes al POS con stock en 0!`);
             };
             reader.readAsArrayBuffer(file);
         }
@@ -2478,7 +2560,6 @@
 
             let activeSales = sales;
             let activeExpenses = expenses;
-            let activePayables = payables;
 
             if (filterValue === 'CURRENT') {
                 activeSales = sales.filter(s => {
@@ -2488,15 +2569,6 @@
                 activeExpenses = expenses.filter(e => {
                     const d = new Date(e.date);
                     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === currentMonthYear;
-                });
-            } else if (filterValue !== 'ALL') {
-                activeSales = sales.filter(s => {
-                    const d = new Date(s.rawDate || Date.now());
-                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === filterValue;
-                });
-                activeExpenses = expenses.filter(e => {
-                    const d = new Date(e.date);
-                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === filterValue;
                 });
             }
 
@@ -2510,12 +2582,7 @@
                 return sum + (c * st);
             }, 0);
 
-            const totalPayablesPending = activePayables.reduce((sum, p) => {
-                const tot = parseFloat(p.total) || 0;
-                const pd = parseFloat(p.paid) || 0;
-                return sum + Math.max(0, tot - pd);
-            }, 0);
-
+            const totalPayablesPending = payables.reduce((sum, p) => sum + Math.max(0, (parseFloat(p.total) || 0) - (parseFloat(p.paid) || 0)), 0);
             const netProfit = totalGrossSales - totalProductCosts - totalExpenses;
 
             const totalAllCollectedSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
@@ -2531,61 +2598,20 @@
             document.getElementById('dash-total-payables').innerText = `$${totalPayablesPending.toLocaleString('es-CO')}`;
 
             document.getElementById('admin-total-historical-sales').innerText = `$${totalAllCollectedSales.toLocaleString('es-CO')}`;
-            document.getElementById('admin-total-withdrawals').innerText = `$${totalAllWithdrawals.toLocaleString('es-CO')}`;
             document.getElementById('admin-total-expected-money').innerText = `$${totalExpectedBank.toLocaleString('es-CO')}`;
 
-            const lowStockList = document.getElementById('dash-low-stock-list');
-            const lowProds = products.filter(p => {
-                const st = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
-                return st <= 3 && !['Promociones', 'Kits', 'Emprendedor'].includes(p.category);
-            });
+            // Actualización del panel de socios
+            const halfProfit = netProfit / 2;
+            const wSocio1 = withdrawals.filter(w => w.partner === 'socio1').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+            const wSocio2 = withdrawals.filter(w => w.partner === 'socio2').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
 
-            lowStockList.innerHTML = '';
-            if (lowProds.length === 0) {
-                lowStockList.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Sin alertas de stock bajo</p>`;
-            } else {
-                lowProds.forEach(p => {
-                    lowStockList.innerHTML += `
-                        <div class="flex items-center justify-between p-2.5 bg-amber-50 border border-amber-200/60 rounded-xl text-xs">
-                            <div>
-                                <p class="font-bold text-slate-800">${p.name}</p>
-                                <p class="text-[10px] text-slate-400 font-mono">${p.sku}</p>
-                            </div>
-                            <span class="font-bold text-amber-700">Stock: ${p.stock}</span>
-                        </div>
-                    `;
-                });
-            }
+            document.getElementById('socio1-earned').innerText = `$${halfProfit.toLocaleString('es-CO')}`;
+            document.getElementById('socio1-withdrawn').innerText = `$${wSocio1.toLocaleString('es-CO')}`;
+            document.getElementById('socio1-available').innerText = `$${(halfProfit - wSocio1).toLocaleString('es-CO')}`;
 
-            renderChart(totalGrossSales, totalExpenses, Math.max(0, netProfit));
-        }
+            document.getElementById('socio2-earned').innerText = `$${halfProfit.toLocaleString('es-CO')}`;
+            document.getElementById('socio2-withdrawn').innerText = `$${wSocio2.toLocaleString('es-CO')}`;
+            document.getElementById('socio2-available').innerText = `$${(halfProfit - wSocio2).toLocaleString('es-CO')}`;
 
-        function renderChart(salesVal, expensesVal, profitVal) {
-            const ctx = document.getElementById('financeChart').getContext('2d');
-            if (financeChart) financeChart.destroy();
-
-            financeChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Ventas Brutas', 'Gastos Operativos', 'Ganancia Neta'],
-                    datasets: [{
-                        label: 'Monto ($)',
-                        data: [salesVal, expensesVal, profitVal],
-                        backgroundColor: ['rgba(16, 185, 129, 0.85)', 'rgba(244, 63, 94, 0.85)', 'rgba(192, 38, 211, 0.85)'],
-                        borderRadius: 12
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { ticks: { color: '#64748b' }, grid: { color: '#f1f5f9' } },
-                        x: { ticks: { color: '#64748b' }, grid: { display: false } }
-                    }
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+            // Control de fondo base
+            const missingBase = Math.max(0, baseTarget - baseCurrent);
