@@ -1180,7 +1180,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CON VERIFICACIÓN SEGURO Y CONTROL DE SOCIOS -->
+    <!-- JAVASCRIPT CORREGIDO Y COMPLETO -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -1300,22 +1300,33 @@
             if (savedConfig) {
                 try {
                     const cfg = JSON.parse(savedConfig);
-                    if (!firebase.apps.length) {
+                    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
                         firebase.initializeApp(cfg);
                     }
-                    db = firebase.firestore();
-                    isFirebaseConnected = true;
-                    document.getElementById('cloud-status-badge').innerText = "Nube Firebase Activa";
-                    document.getElementById('cloud-status-badge').className = "text-[10px] font-bold uppercase tracking-wider text-emerald-600";
-                    syncWithFirebase();
+                    if (typeof firebase !== 'undefined') {
+                        db = firebase.firestore();
+                        isFirebaseConnected = true;
+                        const badge = document.getElementById('cloud-status-badge');
+                        if (badge) {
+                            badge.innerText = "Nube Firebase Activa";
+                            badge.className = "text-[10px] font-bold uppercase tracking-wider text-emerald-600";
+                        }
+                        syncWithFirebase();
+                    }
                 } catch (err) {
                     console.error("Error Firebase:", err);
-                    document.getElementById('cloud-status-badge').innerText = "Modo Local";
-                    document.getElementById('cloud-status-badge').className = "text-[10px] font-bold uppercase tracking-wider text-amber-600";
+                    const badge = document.getElementById('cloud-status-badge');
+                    if (badge) {
+                        badge.innerText = "Modo Local";
+                        badge.className = "text-[10px] font-bold uppercase tracking-wider text-amber-600";
+                    }
                 }
             } else {
-                document.getElementById('cloud-status-badge').innerText = "Modo Local (Sin Llaves)";
-                document.getElementById('cloud-status-badge').className = "text-[10px] font-bold uppercase tracking-wider text-amber-600";
+                const badge = document.getElementById('cloud-status-badge');
+                if (badge) {
+                    badge.innerText = "Modo Local (Sin Llaves)";
+                    badge.className = "text-[10px] font-bold uppercase tracking-wider text-amber-600";
+                }
             }
         }
 
@@ -1463,11 +1474,7 @@
             const pass = inputField ? inputField.value.trim() : '';
 
             if (pass === SYSTEM_PASS || pass === ADMIN_PASS) {
-                if (pass === ADMIN_PASS) {
-                    isAdmin = true;
-                } else {
-                    isAdmin = false;
-                }
+                isAdmin = (pass === ADMIN_PASS);
                 
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
@@ -1517,11 +1524,17 @@
         function updateAdminUI() {
             document.querySelectorAll('.admin-only').forEach(el => isAdmin ? el.classList.remove('hidden') : el.classList.add('hidden'));
             document.querySelectorAll('.admin-only-cell').forEach(el => el.style.display = isAdmin ? '' : 'none');
-            document.getElementById('lock-btn-text').innerText = isAdmin ? 'Bloquear Admin' : 'Desbloquear Modo Admin';
+            const lockText = document.getElementById('lock-btn-text');
+            if (lockText) lockText.innerText = isAdmin ? 'Bloquear Admin' : 'Desbloquear Modo Admin';
             
-            document.getElementById('admin-bank-savings').value = bankSavings;
-            document.getElementById('base-target-input').value = baseTarget;
-            document.getElementById('base-current-input').value = baseCurrent;
+            const bankSavingsEl = document.getElementById('admin-bank-savings');
+            if (bankSavingsEl) bankSavingsEl.value = bankSavings;
+            
+            const targetEl = document.getElementById('base-target-input');
+            if (targetEl) targetEl.value = baseTarget;
+            
+            const currentEl = document.getElementById('base-current-input');
+            if (currentEl) currentEl.value = baseCurrent;
             
             renderInventoryTable();
             renderTablesViews();
@@ -1533,6 +1546,8 @@
 
         function populateMonthFilterOptions() {
             const select = document.getElementById('dash-month-filter');
+            if (!select) return;
+            
             select.innerHTML = `
                 <option value="CURRENT">Mes Actual</option>
                 <option value="ALL">Histórico Completo (A la fecha)</option>
@@ -1556,17 +1571,23 @@
         function initApp() {
             initFirebase();
 
-            document.getElementById('pos-payment-status').addEventListener('change', (e) => {
-                const container = document.getElementById('pos-abono-input-container');
-                if (e.target.value === 'ABONO') {
-                    container.classList.remove('hidden');
-                } else {
-                    container.classList.add('hidden');
-                }
-            });
+            const statusSelect = document.getElementById('pos-payment-status');
+            if (statusSelect) {
+                statusSelect.addEventListener('change', (e) => {
+                    const container = document.getElementById('pos-abono-input-container');
+                    if (e.target.value === 'ABONO') {
+                        container.classList.remove('hidden');
+                    } else {
+                        container.classList.add('hidden');
+                    }
+                });
+            }
 
-            document.getElementById('pos-sale-date').valueAsDate = new Date();
-            document.getElementById('admin-bank-savings').value = bankSavings;
+            const saleDateInput = document.getElementById('pos-sale-date');
+            if (saleDateInput) saleDateInput.valueAsDate = new Date();
+
+            const bankSavingsInput = document.getElementById('admin-bank-savings');
+            if (bankSavingsInput) bankSavingsInput.value = bankSavings;
 
             populateMonthFilterOptions();
             renderPosProducts();
@@ -1606,7 +1627,9 @@
                 btn.classList.add('text-slate-600', 'hover:bg-purple-50');
             });
 
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) targetTab.classList.remove('hidden');
+            
             const activeNav = document.getElementById(`nav-${tabId}`);
             if (activeNav) {
                 activeNav.classList.add('bg-purple-600', 'text-white', 'shadow-md', 'shadow-purple-600/20');
@@ -1625,19 +1648,26 @@
             const toastMsg = document.getElementById('toast-message');
             const toastIcon = document.getElementById('toast-icon');
 
-            toastMsg.innerText = message;
-            toastIcon.className = type === 'error' ? 'fa-solid fa-circle-xmark text-rose-400 text-lg' : 'fa-solid fa-circle-check text-emerald-400 text-lg';
+            if (toastMsg) toastMsg.innerText = message;
+            if (toastIcon) toastIcon.className = type === 'error' ? 'fa-solid fa-circle-xmark text-rose-400 text-lg' : 'fa-solid fa-circle-check text-emerald-400 text-lg';
 
-            toast.classList.remove('translate-y-[-100px]', 'opacity-0', 'pointer-events-none');
-            setTimeout(() => {
-                toast.classList.add('translate-y-[-100px]', 'opacity-0', 'pointer-events-none');
-            }, 3000);
+            if (toast) {
+                toast.classList.remove('translate-y-[-100px]', 'opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-[-100px]', 'opacity-0', 'pointer-events-none');
+                }, 3000);
+            }
         }
 
         function renderPosProducts() {
-            const search = document.getElementById('pos-search').value.toLowerCase();
-            const category = document.getElementById('pos-category-filter').value;
+            const searchInput = document.getElementById('pos-search');
+            const categorySelect = document.getElementById('pos-category-filter');
             const container = document.getElementById('pos-products-grid');
+
+            if (!container) return;
+
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+            const category = categorySelect ? categorySelect.value : '';
 
             const filtered = products.filter(p => {
                 const matchesSearch = (p.name || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search);
@@ -1691,13 +1721,16 @@
 
         function renderCart() {
             const container = document.getElementById('pos-cart-items');
+            if (!container) return;
+
             container.innerHTML = '';
-            const shippingCost = parseFloat(document.getElementById('pos-shipping-cost').value) || 0;
-            const discountAmount = parseFloat(document.getElementById('pos-discount-amount').value) || 0;
+            const shippingCost = parseFloat(document.getElementById('pos-shipping-cost')?.value) || 0;
+            const discountAmount = parseFloat(document.getElementById('pos-discount-amount')?.value) || 0;
 
             if (cart.length === 0 && shippingCost === 0) {
                 container.innerHTML = `<p class="text-center text-slate-400 text-xs py-6">Sin perfumes seleccionados</p>`;
-                document.getElementById('pos-total').innerText = "$0";
+                const totalEl = document.getElementById('pos-total');
+                if (totalEl) totalEl.innerText = "$0";
                 return;
             }
 
@@ -1738,28 +1771,31 @@
             }
 
             const grandTotal = Math.max(0, totalProds + shippingCost - discountAmount);
-            document.getElementById('pos-total').innerText = `$${grandTotal.toLocaleString('es-CO')}`;
+            const totalEl = document.getElementById('pos-total');
+            if (totalEl) totalEl.innerText = `$${grandTotal.toLocaleString('es-CO')}`;
         }
 
         function clearCart() {
             cart = [];
-            document.getElementById('pos-shipping-cost').value = "0";
-            document.getElementById('pos-discount-amount').value = "0";
+            const ship = document.getElementById('pos-shipping-cost');
+            const disc = document.getElementById('pos-discount-amount');
+            if (ship) ship.value = "0";
+            if (disc) disc.value = "0";
             renderCart();
         }
 
         function processSale(mode) {
-            const shippingCost = parseFloat(document.getElementById('pos-shipping-cost').value) || 0;
-            const discountAmount = parseFloat(document.getElementById('pos-discount-amount').value) || 0;
+            const shippingCost = parseFloat(document.getElementById('pos-shipping-cost')?.value) || 0;
+            const discountAmount = parseFloat(document.getElementById('pos-discount-amount')?.value) || 0;
             
             if (cart.length === 0 && shippingCost === 0) return showToast('Agrega productos al carrito', 'error');
 
-            const client = document.getElementById('pos-client-name').value.trim() || "Cliente General";
-            const phone = document.getElementById('pos-client-phone').value.trim() || "N/A";
-            const addr = document.getElementById('pos-client-address').value.trim() || "N/A";
-            const status = document.getElementById('pos-payment-status').value;
-            const abonoInput = parseFloat(document.getElementById('pos-abono-amount').value) || 0;
-            const customDate = document.getElementById('pos-sale-date').value;
+            const client = document.getElementById('pos-client-name')?.value.trim() || "Cliente General";
+            const phone = document.getElementById('pos-client-phone')?.value.trim() || "N/A";
+            const addr = document.getElementById('pos-client-address')?.value.trim() || "N/A";
+            const status = document.getElementById('pos-payment-status')?.value || 'PAGADO';
+            const abonoInput = parseFloat(document.getElementById('pos-abono-amount')?.value) || 0;
+            const customDate = document.getElementById('pos-sale-date')?.value;
 
             const totalProds = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * item.qty), 0);
             const totalCost = cart.reduce((sum, item) => sum + ((parseFloat(item.cost) || 0) * item.qty), 0);
@@ -1828,8 +1864,11 @@
             }
 
             cart = [];
-            document.getElementById('pos-shipping-cost').value = "0";
-            document.getElementById('pos-discount-amount').value = "0";
+            const ship = document.getElementById('pos-shipping-cost');
+            const disc = document.getElementById('pos-discount-amount');
+            if (ship) ship.value = "0";
+            if (disc) disc.value = "0";
+            
             renderCart();
             renderPosProducts();
             renderInventoryTable();
@@ -1916,8 +1955,11 @@
                 return (d.getMonth() + "-" + d.getFullYear()) === currentMonthYear;
             });
 
-            document.getElementById('mes-actual-body').innerHTML = generateSalesTableRows(mesSales);
-            document.getElementById('historico-completo-body').innerHTML = generateSalesTableRows(sales);
+            const mesBody = document.getElementById('mes-actual-body');
+            if (mesBody) mesBody.innerHTML = generateSalesTableRows(mesSales);
+            
+            const histBody = document.getElementById('historico-completo-body');
+            if (histBody) histBody.innerHTML = generateSalesTableRows(sales);
 
             const monthsMap = {};
             sales.forEach(s => {
@@ -1954,7 +1996,8 @@
                 `;
             });
             gHTML += `</tbody></table>`;
-            document.getElementById('table-ganancias-monthly').innerHTML = gHTML;
+            const tableGan = document.getElementById('table-ganancias-monthly');
+            if (tableGan) tableGan.innerHTML = gHTML;
         }
 
         function generateSalesTableRows(salesArr) {
@@ -2045,9 +2088,14 @@
         }
 
         function renderInventoryTable() {
-            const search = document.getElementById('inv-search').value.toLowerCase();
-            const cat = document.getElementById('inv-filter-cat').value;
+            const searchInput = document.getElementById('inv-search');
+            const catSelect = document.getElementById('inv-filter-cat');
             const tbody = document.getElementById('inventory-table-body');
+
+            if (!tbody) return;
+
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+            const cat = catSelect ? catSelect.value : 'all';
             tbody.innerHTML = '';
 
             const filtered = products.filter(p => (cat === 'all' || p.category === cat) && ((p.name || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search)));
@@ -2225,9 +2273,11 @@
         function updateComboLimitsInfo() {
             const cat = document.getElementById('combo-category').value;
             const label = document.getElementById('combo-limit-text');
-            if (cat === 'Promociones') label.innerText = 'Límite: Máx 3 productos';
-            else if (cat === 'Emprendedor') label.innerText = 'Límite: Máx 20 productos';
-            else label.innerText = 'Kit sin límite estructurado';
+            if (label) {
+                if (cat === 'Promociones') label.innerText = 'Límite: Máx 3 productos';
+                else if (cat === 'Emprendedor') label.innerText = 'Límite: Máx 20 productos';
+                else label.innerText = 'Kit sin límite estructurado';
+            }
         }
 
         function addComboProductRow() {
@@ -2350,6 +2400,8 @@
 
         function renderDebtsTable() {
             const tbody = document.getElementById('debts-table-body');
+            if (!tbody) return;
+
             tbody.innerHTML = '';
             debts.slice().reverse().forEach(d => {
                 const amountVal = parseFloat(d.amount) || 0;
@@ -2370,12 +2422,14 @@
 
         function openDebtModal() {
             const select = document.getElementById('debt-sale-select');
-            select.innerHTML = '<option value="">Abono General</option>';
-            const pendingSales = sales.filter(s => s.status === 'ABONO' || s.paid < s.total);
-            pendingSales.forEach(s => {
-                const pend = (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0);
-                select.innerHTML += `<option value="${s.id}">${s.id} - ${s.clientName} (Pendiente: $${pend.toLocaleString('es-CO')})</option>`;
-            });
+            if (select) {
+                select.innerHTML = '<option value="">Abono General</option>';
+                const pendingSales = sales.filter(s => s.status === 'ABONO' || s.paid < s.total);
+                pendingSales.forEach(s => {
+                    const pend = (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0);
+                    select.innerHTML += `<option value="${s.id}">${s.id} - ${s.clientName} (Pendiente: $${pend.toLocaleString('es-CO')})</option>`;
+                });
+            }
             document.getElementById('debt-modal').classList.remove('hidden');
         }
 
@@ -2434,6 +2488,8 @@
 
         function renderPayablesTable() {
             const tbody = document.getElementById('payables-table-body');
+            if (!tbody) return;
+
             tbody.innerHTML = '';
             payables.forEach(p => {
                 const totalVal = parseFloat(p.total) || 0;
@@ -2482,3 +2538,270 @@
         }
 
         function savePayable(e) {
+            e.preventDefault();
+            const id = document.getElementById('pay-id').value;
+            const supplier = document.getElementById('pay-supplier').value.trim();
+            const invoiceNum = document.getElementById('pay-invoice-num').value.trim();
+            const total = parseFloat(document.getElementById('pay-total').value) || 0;
+            const abono = parseFloat(document.getElementById('pay-abono').value) || 0;
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('es-CO');
+
+            if (id) {
+                const p = payables.find(item => item.id === id);
+                if (p) {
+                    p.supplier = supplier;
+                    p.invoiceNum = invoiceNum;
+                    p.total = total;
+                    p.paid = abono;
+                }
+            } else {
+                payables.push({
+                    id: 'PAY-' + Date.now(),
+                    date: dateStr,
+                    supplier,
+                    invoiceNum,
+                    total,
+                    paid: abono
+                });
+            }
+
+            saveData();
+            closePayableModal();
+            renderPayablesTable();
+            updateDashboard();
+            showToast('Factura de proveedor guardada');
+        }
+
+        function openPayableAbonoModal(id) {
+            const p = payables.find(item => item.id === id);
+            if (p) {
+                document.getElementById('pay-abono-id').value = p.id;
+                document.getElementById('pay-abono-info').value = `${p.supplier} (${p.invoiceNum})`;
+                document.getElementById('pay-abono-amount').value = '';
+                document.getElementById('payable-abono-modal').classList.remove('hidden');
+            }
+        }
+
+        function closePayableAbonoModal() {
+            document.getElementById('payable-abono-modal').classList.add('hidden');
+        }
+
+        function savePayableAbono(e) {
+            e.preventDefault();
+            const id = document.getElementById('pay-abono-id').value;
+            const amount = parseFloat(document.getElementById('pay-abono-amount').value) || 0;
+
+            const p = payables.find(item => item.id === id);
+            if (p && amount > 0) {
+                p.paid = (parseFloat(p.paid) || 0) + amount;
+                saveData();
+                closePayableAbonoModal();
+                renderPayablesTable();
+                updateDashboard();
+                showToast('Abono a proveedor procesado');
+            }
+        }
+
+        function deletePayable(id) {
+            if (!isAdmin) return alert("Solo el Administrador puede eliminar deudas a proveedores.");
+            if (!confirm("¿Deseas eliminar esta factura por pagar?")) return;
+            payables = payables.filter(p => p.id !== id);
+            saveData();
+            renderPayablesTable();
+            updateDashboard();
+            showToast('Deuda a proveedor eliminada');
+        }
+
+        function renderExpensesTable() {
+            const tbody = document.getElementById('expenses-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            expenses.slice().reverse().forEach(exp => {
+                const amountVal = parseFloat(exp.amount) || 0;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-4 text-slate-500 font-mono">${exp.date}</td>
+                        <td class="p-4 font-bold text-slate-800">${exp.desc}</td>
+                        <td class="p-4 font-black text-rose-600">$${amountVal.toLocaleString('es-CO')}</td>
+                        <td class="p-4 text-center">
+                            ${isAdmin ? `<button onclick="deleteExpense('${exp.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Gasto (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openExpenseModal() {
+            document.getElementById('exp-desc').value = '';
+            document.getElementById('exp-amount').value = '';
+            document.getElementById('expense-modal').classList.remove('hidden');
+        }
+
+        function closeExpenseModal() {
+            document.getElementById('expense-modal').classList.add('hidden');
+        }
+
+        function saveExpense(e) {
+            e.preventDefault();
+            const desc = document.getElementById('exp-desc').value.trim();
+            const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
+
+            const now = new Date();
+            const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
+
+            expenses.push({
+                id: 'EXP-' + Date.now(),
+                date: fullDateTime,
+                desc,
+                amount
+            });
+
+            saveData();
+            closeExpenseModal();
+            renderExpensesTable();
+            updateDashboard();
+            showToast('Gasto operativo registrado');
+        }
+
+        function deleteExpense(id) {
+            if (!isAdmin) return alert("Solo el Administrador puede eliminar gastos.");
+            if (!confirm("¿Deseas eliminar este gasto?")) return;
+            expenses = expenses.filter(exp => exp.id !== id);
+            saveData();
+            renderExpensesTable();
+            updateDashboard();
+            showToast('Gasto eliminado');
+        }
+
+        function updateDashboard() {
+            const filter = document.getElementById('dash-month-filter')?.value || 'CURRENT';
+            const now = new Date();
+            const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+            let filteredSales = sales;
+            if (filter === 'CURRENT') {
+                filteredSales = sales.filter(s => {
+                    const d = new Date(s.rawDate || Date.now());
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === currentMonthKey;
+                });
+            } else if (filter !== 'ALL') {
+                filteredSales = sales.filter(s => {
+                    const d = new Date(s.rawDate || Date.now());
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === filter;
+                });
+            }
+
+            const totalSalesVal = filteredSales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
+            const totalCostVal = filteredSales.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
+            const netProfitVal = totalSalesVal - totalCostVal;
+
+            const customerDebtsVal = sales.reduce((sum, s) => {
+                const pend = (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0);
+                return sum + Math.max(0, pend);
+            }, 0);
+
+            const stockCostVal = products.reduce((sum, p) => {
+                const stock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
+                const cost = parseFloat(p.cost) || 0;
+                return sum + (stock * cost);
+            }, 0);
+
+            const payablesVal = payables.reduce((sum, p) => {
+                const pend = (parseFloat(p.total) || 0) - (parseFloat(p.paid) || 0);
+                return sum + Math.max(0, pend);
+            }, 0);
+
+            if (document.getElementById('dash-total-sales')) document.getElementById('dash-total-sales').innerText = `$${totalSalesVal.toLocaleString('es-CO')}`;
+            if (document.getElementById('dash-net-profit')) document.getElementById('dash-net-profit').innerText = `$${netProfitVal.toLocaleString('es-CO')}`;
+            if (document.getElementById('dash-total-customer-debts')) document.getElementById('dash-total-customer-debts').innerText = `$${customerDebtsVal.toLocaleString('es-CO')}`;
+            if (document.getElementById('dash-stock-cost')) document.getElementById('dash-stock-cost').innerText = `$${stockCostVal.toLocaleString('es-CO')}`;
+            if (document.getElementById('dash-total-payables')) document.getElementById('dash-total-payables').innerText = `$${payablesVal.toLocaleString('es-CO')}`;
+
+            // CONTROL FINANCIERO ADMIN
+            const historicalPaidSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
+            const totalWithdrawals = withdrawals.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+            const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+            const totalPayablesPaid = payables.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
+
+            const totalExpected = bankSavings + historicalPaidSales - totalExpenses - totalPayablesPaid - totalWithdrawals;
+
+            if (document.getElementById('admin-total-historical-sales')) document.getElementById('admin-total-historical-sales').innerText = `$${historicalPaidSales.toLocaleString('es-CO')}`;
+            if (document.getElementById('admin-total-withdrawals')) document.getElementById('admin-total-withdrawals').innerText = `$${totalWithdrawals.toLocaleString('es-CO')}`;
+            if (document.getElementById('admin-total-expected-money')) document.getElementById('admin-total-expected-money').innerText = `$${totalExpected.toLocaleString('es-CO')}`;
+
+            const baseMissing = Math.max(0, baseTarget - baseCurrent);
+            if (document.getElementById('base-missing-val')) document.getElementById('base-missing-val').innerText = `$${baseMissing.toLocaleString('es-CO')}`;
+
+            // REPARTO DE SOCIOS
+            const historicalProfit = sales.reduce((sum, s) => sum + ((parseFloat(s.total) || 0) - (parseFloat(s.cost) || 0)), 0) - totalExpenses;
+            const socioHalfProfit = Math.max(0, historicalProfit / 2);
+
+            const wSocio1 = withdrawals.filter(w => w.partner === 'socio1').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+            const wSocio2 = withdrawals.filter(w => w.partner === 'socio2').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+
+            if (document.getElementById('socio1-earned')) document.getElementById('socio1-earned').innerText = `$${socioHalfProfit.toLocaleString('es-CO')}`;
+            if (document.getElementById('socio1-withdrawn')) document.getElementById('socio1-withdrawn').innerText = `$${wSocio1.toLocaleString('es-CO')}`;
+            if (document.getElementById('socio1-available')) document.getElementById('socio1-available').innerText = `$${(socioHalfProfit - wSocio1).toLocaleString('es-CO')}`;
+
+            if (document.getElementById('socio2-earned')) document.getElementById('socio2-earned').innerText = `$${socioHalfProfit.toLocaleString('es-CO')}`;
+            if (document.getElementById('socio2-withdrawn')) document.getElementById('socio2-withdrawn').innerText = `$${wSocio2.toLocaleString('es-CO')}`;
+            if (document.getElementById('socio2-available')) document.getElementById('socio2-available').innerText = `$${(socioHalfProfit - wSocio2).toLocaleString('es-CO')}`;
+
+            // ALERTA STOCK BAJO
+            const lowStockList = document.getElementById('dash-low-stock-list');
+            if (lowStockList) {
+                lowStockList.innerHTML = '';
+                const lowItems = products.filter(p => !['Promociones', 'Kits', 'Emprendedor'].includes(p.category) && (isNaN(parseInt(p.stock)) || parseInt(p.stock) <= 3));
+                
+                if (lowItems.length === 0) {
+                    lowStockList.innerHTML = `<p class="text-xs text-slate-400 italic">Todo el stock en niveles óptimos</p>`;
+                } else {
+                    lowItems.forEach(p => {
+                        lowStockList.innerHTML += `
+                            <div class="flex items-center justify-between p-2 bg-amber-50 rounded-xl border border-amber-200/60 text-xs">
+                                <span class="font-bold text-amber-900 truncate max-w-[150px]">${p.name}</span>
+                                <span class="font-extrabold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full">${p.stock} unid.</span>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            renderChart(totalSalesVal, totalCostVal, netProfitVal);
+        }
+
+        function renderChart(salesVal, costVal, profitVal) {
+            const ctx = document.getElementById('financeChart');
+            if (!ctx) return;
+
+            if (financeChart) financeChart.destroy();
+
+            financeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Ventas Brutas', 'Costo Mercancía', 'Ganancia Neta'],
+                    datasets: [{
+                        data: [salesVal, costVal, profitVal],
+                        backgroundColor: ['#10b981', '#f59e0b', '#a855f7'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // AUTO-INIT AL CARGAR PÁGINA
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMemory();
+        });
+    </script>
+</body>
+</html>
