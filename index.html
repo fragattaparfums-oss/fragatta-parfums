@@ -592,7 +592,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
-                if (window.db) {
+                if (window.db && window.collection) {
                     clearInterval(checkFirebase);
                     initFirebaseListener();
                     initAppConfigListener();
@@ -611,13 +611,13 @@
                     const data = docSnap.data();
                     return {
                         id: docSnap.id,
+                        title: data.title || data.name || 'FRAGANCIA',
                         brand: data.brand || 'LUXURY',
-                        title: data.name || data.title || 'FRAGANCIA',
-                        gender: data.gender || 'Unisex',
                         category: data.category || 'Árabe',
                         price: Number(data.price) || 0,
-                        oldPrice: data.originalPrice ? Number(data.originalPrice) : (data.oldPrice ? Number(data.oldPrice) : null),
-                        priority: data.featured ? 'TOP VIRAL' : (data.priority || 'NINGUNA'),
+                        oldPrice: data.oldPrice ? Number(data.oldPrice) : (data.originalPrice ? Number(data.originalPrice) : null),
+                        gender: data.gender || 'Unisex',
+                        priority: data.priority || (data.featured ? 'TOP VIRAL' : 'NINGUNA'),
                         image: data.image || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
                         notes: data.notes || '',
                         description: data.description || ''
@@ -774,8 +774,8 @@
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col justify-between relative group">
                     ${isAdmin ? `
                         <div class="absolute top-2 right-2 z-20 flex gap-1 bg-white/90 p-1 rounded-lg shadow border border-gray-200">
-                            <button onclick="editProduct('${p.id}')" class="text-amber-600 hover:text-amber-800 p-1 text-xs"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteProduct('${p.id}')" class="text-rose-600 hover:text-rose-800 p-1 text-xs"><i class="fas fa-trash"></i></button>
+                            <button onclick="editProduct('${p.id}')" class="text-amber-600 hover:text-amber-800 p-1 text-xs" title="Editar"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteProduct('${p.id}')" class="text-rose-600 hover:text-rose-800 p-1 text-xs" title="Eliminar"><i class="fas fa-trash"></i></button>
                         </div>
                     ` : ''}
                     <div class="cursor-pointer" onclick="openDetailModal('${p.id}')">
@@ -1000,7 +1000,7 @@
             updateCartUI();
         }
 
-        // --- FUNCIONES COMPLETAS DE ADMINISTRADOR ---
+        // --- FUNCIONES CORREGIDAS DE ADMINISTRADOR (FIREBASE COMPATIBLES) ---
         function handleAdminToggle() {
             if (isAdmin) {
                 isAdmin = false;
@@ -1043,6 +1043,7 @@
             e.preventDefault();
             const id = document.getElementById('prod-id').value;
             const data = {
+                title: document.getElementById('prod-name').value.trim(),
                 name: document.getElementById('prod-name').value.trim(),
                 brand: document.getElementById('prod-brand').value.trim(),
                 category: document.getElementById('prod-category').value,
@@ -1058,15 +1059,15 @@
             try {
                 if (id) {
                     await window.updateDoc(window.doc(window.db, "products", id), data);
-                    showToast("Producto actualizado");
+                    showToast("Producto actualizado correctamente");
                 } else {
                     await window.addDoc(window.collection(window.db, "products"), data);
-                    showToast("Producto agregado");
+                    showToast("Producto agregado a la tienda");
                 }
                 closeAdminModal();
             } catch (err) {
                 console.error("Error al guardar producto:", err);
-                alert("Error al guardar en Firebase.");
+                alert("Ocurrió un error al guardar en la base de datos de Firebase.");
             }
         }
 
@@ -1122,6 +1123,7 @@
                         if (!name || !price) continue;
 
                         const prodDoc = {
+                            title: String(name).trim(),
                             name: String(name).trim(),
                             brand: String(row.Marca || row.marca || 'LUXURY').trim(),
                             category: String(row.Categoria || row.categoria || 'Árabe').trim(),
