@@ -471,9 +471,8 @@
         const ADMIN_PASSWORD = "J.p12022013";
         let WHATSAPP_NUMBER = "573105390115";
         
-        // CLAVES DE WOMPI INTEGRADAS
+        // LLAVE PÚBLICA DE WOMPI
         const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYWPwSVP2yidk0s1ULSHh6";
-        const WOMPI_INTEGRITY_SECRET = "prod_integrity_9QPykHUQT2g8dTwNJzrKraJAABsNGReM"; 
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
@@ -487,17 +486,6 @@
 
             updateCartUI();
         });
-
-        // FUNCIÓN CRIPTOGRÁFICA PARA CALCULAR LA FIRMA SHA-256 EXIGIDA POR WOMPI
-        async function generateWompiSignature(reference, amountInCents, currency) {
-            const chain = `${reference}${amountInCents}${currency}${WOMPI_INTEGRITY_SECRET}`;
-            const encoder = new TextEncoder();
-            const data = encoder.encode(chain);
-            
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
 
         function initFirebaseListener() {
             const productsRef = window.collection(window.db, "products");
@@ -846,19 +834,39 @@
 
             if (method === 'wompi') {
                 try {
-                    // Generar Hash de la firma dinámicamente con crypto.subtle
-                    const signatureHex = await generateWompiSignature(reference, totalInCents, 'COP');
+                    // Petición a tu API en Vercel para obtener la firma SHA-256 segura
+                    const response = await fetch('https://wompi-backend-eta.vercel.app/api/sign', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            reference: reference,
+                            amountInCents: totalInCents,
+                            currency: 'COP'
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!data.signature) {
+                        throw new Error("No se pudo generar la firma de seguridad.");
+                    }
 
                     if (typeof WidgetCheckout !== 'undefined') {
+                        // Se valida que la URL sea válida y empiece por http(s)
+                        const currentUrl = window.location.href;
+                        const validRedirectUrl = currentUrl.startsWith('http') 
+                            ? currentUrl 
+                            : 'https://fragattaparfums-oss.github.io/fragatta-parfums/';
+
                         const checkout = new WidgetCheckout({
                             currency: 'COP',
                             amountInCents: totalInCents,
                             reference: reference,
                             publicKey: WOMPI_PUB_KEY,
                             signature: {
-                                integrity: signatureHex // <--- FIRMA ENCRIPTADA VALIDADA CON TU SECRETO REAL
+                                integrity: data.signature // Firma generada por Vercel
                             },
-                            redirectUrl: window.location.href,
+                            redirectUrl: validRedirectUrl,
                             customerData: {
                                 email: `${phone}@parfums.co`,
                                 fullName: name,
@@ -868,6 +876,7 @@
                                 legalIdType: 'CC'
                             }
                         });
+
                         checkout.open(function (result) {
                             console.log('Resultado de la transacción: ', result.transaction);
                         });
@@ -875,8 +884,8 @@
                         alert("Cargando la pasarela de pago Wompi... Por favor presiona 'Confirmar' en unos segundos.");
                     }
                 } catch (err) {
-                    console.error("Error al generar firma de Wompi:", err);
-                    alert("Ocurrió un problema calculando la seguridad de la transacción.");
+                    console.error("Error al conectar con el servidor de pagos:", err);
+                    alert("Ocurrió un error al procesar el pago con Wompi. Intenta de nuevo.");
                 }
             } else {
                 let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
