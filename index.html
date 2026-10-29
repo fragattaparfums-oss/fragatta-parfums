@@ -15,6 +15,9 @@
     <!-- SheetJS (XLSX) para lectura de Excel y CSV -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+    <!-- SCRIPT OFICIAL DEL CHECKOUT DE WOMPI -->
+    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
+
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -159,7 +162,7 @@
             </div>
         </section>
 
-        <!-- CARRUSEL PROMOCIONAL CON CRONÓMETRO OPTIMIZADO PARA MÓVILES -->
+        <!-- CARRUSEL PROMOCIONAL CON CRONÓMETRO -->
         <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-6 bg-slate-900 group">
             <div id="carousel-track" class="flex transition-transform duration-500 ease-out h-52 sm:h-64 md:h-72 w-full"></div>
 
@@ -450,157 +453,6 @@
         </div>
     </div>
 
-    <!-- MODAL EDITAR SLIDE PROMO -->
-    <div id="promo-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 relative text-gray-800 shadow-2xl">
-            <button onclick="closePromoModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
-            <h3 class="font-cinzel text-base font-bold text-gray-900 mb-3 border-b pb-2 flex items-center gap-2">
-                <i class="fas fa-images text-amber-600"></i> Diapositiva Promocional
-            </h3>
-            <form id="promo-form" onsubmit="handlePromoSubmit(event)" class="space-y-3 text-xs">
-                <input type="hidden" id="promo-id">
-                <div>
-                    <label class="block font-semibold mb-1">Título / Frase Promo</label>
-                    <input type="text" id="promo-title" required placeholder="Descuentos de Temporada 20% OFF" class="w-full p-2 border rounded-lg">
-                </div>
-                <div>
-                    <label class="block font-semibold mb-1">Imagen Promocional (Subir o URL)</label>
-                    <div class="space-y-1">
-                        <label class="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-1.5 rounded-lg text-center block transition">
-                            <i class="fas fa-upload mr-1"></i> Subir de Galería
-                            <input type="file" accept="image/*" onchange="uploadPromoImageBase64(event)" class="hidden">
-                        </label>
-                        <input type="text" id="promo-image" required placeholder="O pega la URL de la foto" class="w-full p-2 border rounded-lg text-[11px]">
-                    </div>
-                </div>
-                <div>
-                    <label class="block font-semibold mb-1">Vincular a Categoría</label>
-                    <select id="promo-category" class="w-full p-2 border rounded-lg bg-white">
-                        <option value="Promociones">Promociones 🏷️</option>
-                        <option value="Árabe">Árabe</option>
-                        <option value="Diseñador">Diseñador</option>
-                        <option value="Nicho">Nicho</option>
-                        <option value="Body Spray">Body Spray</option>
-                        <option value="Kids">Kids</option>
-                        <option value="Emprendedores">Emprendedores 🚀</option>
-                    </select>
-                </div>
-
-                <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200/80 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <label class="font-bold text-amber-900 text-xs flex items-center gap-1.5">
-                            <i class="fas fa-clock text-amber-600"></i> ¿Activar Cronómetro Límite?
-                        </label>
-                        <input type="checkbox" id="promo-timer-enable" class="w-4 h-4 text-amber-600 rounded">
-                    </div>
-                    <div>
-                        <label class="block text-gray-600 mb-0.5">Fecha Límite:</label>
-                        <input type="datetime-local" id="promo-timer-date" class="w-full p-2 border rounded-lg bg-white font-mono text-xs">
-                    </div>
-                </div>
-
-                <div class="pt-2 flex justify-end gap-2">
-                    <button type="button" onclick="closePromoModal()" class="px-3 py-1.5 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
-                    <button type="submit" class="px-4 py-1.5 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL ADMIN PRODUCTO -->
-    <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative text-gray-800">
-            <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
-            <h3 class="font-cinzel text-lg font-bold text-gray-900 mb-4 border-b pb-2 flex items-center gap-2">
-                <i class="fas fa-tasks text-amber-600"></i> Administrar Producto en Firebase
-            </h3>
-
-            <form id="product-form" onsubmit="handleProductSubmit(event)" class="space-y-3 text-xs">
-                <input type="hidden" id="prod-id">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">Marca</label>
-                        <input type="text" id="prod-brand" required placeholder="LATTAFA" class="w-full p-2 border rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Nombre Fragancia</label>
-                        <input type="text" id="prod-title" required placeholder="YARA 100ML" class="w-full p-2 border rounded-lg">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">Género</label>
-                        <select id="prod-gender" class="w-full p-2 border rounded-lg bg-white">
-                            <option value="Hombre">Hombre</option>
-                            <option value="Mujer">Mujer</option>
-                            <option value="Unisex">Unisex</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Categoría</label>
-                        <select id="prod-category" class="w-full p-2 border rounded-lg bg-white">
-                            <option value="Árabe">Árabe</option>
-                            <option value="Diseñador">Diseñador</option>
-                            <option value="Nicho">Nicho</option>
-                            <option value="Body Spray">Body Spray</option>
-                            <option value="Kids">Kids</option>
-                            <option value="Emprendedores">Emprendedores</option>
-                            <option value="Promociones">Promociones</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">Precio Normal ($)</label>
-                        <input type="number" id="prod-old-price" placeholder="210000" class="w-full p-2 border rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Precio Oferta Venta ($)</label>
-                        <input type="number" id="prod-price" required placeholder="175000" class="w-full p-2 border rounded-lg">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">Etiqueta Prioridad</label>
-                        <select id="prod-priority" class="w-full p-2 border rounded-lg bg-white">
-                            <option value="LO NUEVO">🔥 LO NUEVO</option>
-                            <option value="TOP VIRAL">⚡ TOP VIRAL</option>
-                            <option value="NINGUNA">Sin Etiqueta</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Imagen del Producto</label>
-                        <div class="space-y-1.5">
-                            <label class="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-1.5 rounded-lg text-center block transition">
-                                <i class="fas fa-upload mr-1"></i> Subir de Galería
-                                <input type="file" id="prod-image-file" accept="image/*" onchange="uploadImageBase64(event)" class="hidden">
-                            </label>
-                            <input type="text" id="prod-image" placeholder="O pega la URL de la foto" class="w-full p-2 border rounded-lg text-[11px]">
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block font-semibold mb-1">Notas Olfativas</label>
-                    <input type="text" id="prod-notes" placeholder="Vainilla, Caramelo, Fresa" class="w-full p-2 border rounded-lg">
-                </div>
-
-                <div>
-                    <label class="block font-semibold mb-1">Descripción Breve</label>
-                    <textarea id="prod-desc" rows="2" placeholder="Set gourmand dulce y cremoso." class="w-full p-2 border rounded-lg"></textarea>
-                </div>
-
-                <div class="pt-3 flex justify-end gap-2">
-                    <button type="button" onclick="closeAdminModal()" class="px-4 py-2 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
-                    <button type="submit" class="px-5 py-2 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar en Firebase</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- JAVASCRIPT Y LÓGICA INTEGRADA COMPLETA -->
     <script>
         let products = [];
@@ -618,7 +470,10 @@
 
         const ADMIN_PASSWORD = "J.p12022013";
         let WHATSAPP_NUMBER = "573105390115";
+        
+        // CLAVES DE WOMPI INTEGRADAS
         const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYWPwSVP2yidk0s1ULSHh6";
+        const WOMPI_INTEGRITY_SECRET = "prod_integrity_9QPykHUQT2g8dTwNJzrKraJAABsNGReM"; 
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
@@ -632,6 +487,17 @@
 
             updateCartUI();
         });
+
+        // FUNCIÓN CRIPTOGRÁFICA PARA CALCULAR LA FIRMA SHA-256 EXIGIDA POR WOMPI
+        async function generateWompiSignature(reference, amountInCents, currency) {
+            const chain = `${reference}${amountInCents}${currency}${WOMPI_INTEGRITY_SECRET}`;
+            const encoder = new TextEncoder();
+            const data = encoder.encode(chain);
+            
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
         function initFirebaseListener() {
             const productsRef = window.collection(window.db, "products");
@@ -959,7 +825,7 @@
             else btnText.innerText = `Finalizar por WhatsApp (${formatPrice(grandTotal)})`;
         }
 
-        function processFinalOrder() {
+        async function processFinalOrder() {
             const name = document.getElementById('ship-name').value.trim();
             const phone = document.getElementById('ship-phone').value.trim();
             const doc = document.getElementById('ship-doc').value.trim();
@@ -979,18 +845,39 @@
             const reference = "PL-" + Date.now();
 
             if (method === 'wompi') {
-                // REDIRECCIÓN 100% AUTOMÁTICA Y SEGURA (MONTO CIFRADO EN LA URL)
-                const baseUrl = "https://checkout.wompi.co/p/";
-                const params = new URLSearchParams();
-                
-                params.append("public_key", WOMPI_PUB_KEY);
-                params.append("currency", "COP");
-                params.append("amount-in-cents", totalInCents.toString());
-                params.append("reference", reference);
-                params.append("redirect-url", window.location.origin + window.location.pathname);
+                try {
+                    // Generar Hash de la firma dinámicamente con crypto.subtle
+                    const signatureHex = await generateWompiSignature(reference, totalInCents, 'COP');
 
-                // REDIRIGIR AUTOMÁTICAMENTE AL CHECKOUT INALTERABLE
-                window.location.href = baseUrl + "?" + params.toString();
+                    if (typeof WidgetCheckout !== 'undefined') {
+                        const checkout = new WidgetCheckout({
+                            currency: 'COP',
+                            amountInCents: totalInCents,
+                            reference: reference,
+                            publicKey: WOMPI_PUB_KEY,
+                            signature: {
+                                integrity: signatureHex // <--- FIRMA ENCRIPTADA VALIDADA CON TU SECRETO REAL
+                            },
+                            redirectUrl: window.location.href,
+                            customerData: {
+                                email: `${phone}@parfums.co`,
+                                fullName: name,
+                                phoneNumber: phone,
+                                phoneNumberPrefix: '+57',
+                                legalId: doc,
+                                legalIdType: 'CC'
+                            }
+                        });
+                        checkout.open(function (result) {
+                            console.log('Resultado de la transacción: ', result.transaction);
+                        });
+                    } else {
+                        alert("Cargando la pasarela de pago Wompi... Por favor presiona 'Confirmar' en unos segundos.");
+                    }
+                } catch (err) {
+                    console.error("Error al generar firma de Wompi:", err);
+                    alert("Ocurrió un problema calculando la seguridad de la transacción.");
+                }
             } else {
                 let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
                 msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Tel:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
