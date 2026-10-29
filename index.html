@@ -252,7 +252,7 @@
             </div>
         </section>
 
-        <!-- Rejilla de Productos (SOLO BOTÓN GRIS + CARRITO) -->
+        <!-- Rejilla de Productos -->
         <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             <div class="col-span-full text-center py-12 text-gray-500 text-sm">
                 <i class="fas fa-spinner fa-spin text-amber-500 text-2xl mb-2"></i>
@@ -286,6 +286,15 @@
             </div>
         </div>
     </footer>
+
+    <!-- FORMULARIO DIRECTO E INVISIBLE PARA PASARELA OFICIAL WOMPI -->
+    <form id="wompi-form" method="GET" action="https://checkout.wompi.co/p/" class="hidden">
+        <input type="hidden" name="public-key" id="wompi-pk">
+        <input type="hidden" name="currency" value="COP">
+        <input type="hidden" name="amount-in-cents" id="wompi-amount">
+        <input type="hidden" name="reference" id="wompi-ref">
+        <input type="hidden" name="redirect-url" id="wompi-redirect">
+    </form>
 
     <!-- MODAL DETALLE PRODUCTO -->
     <div id="detail-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
@@ -615,11 +624,9 @@
         let currentGender = 'Todos';
 
         let calculatedShippingCost = 0;
-        let selectedCarrierName = "Por Cotizar";
 
         const ADMIN_PASSWORD = "J.p12022013";
         let WHATSAPP_NUMBER = "573105390115";
-        const NOTIFICATION_EMAIL = "fragattaparfums@gmail.com";
         const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYWPwSVP2yidk0s1ULSHh6";
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -981,15 +988,13 @@
             const reference = "PL-" + Date.now();
 
             if (method === 'wompi') {
-                // REDIRECCIÓN LIMPIA Y COMPATIBLE CON URLSearchParams
-                const params = new URLSearchParams({
-                    'public-key': WOMPI_PUB_KEY,
-                    'currency': 'COP',
-                    'amount-in-cents': totalInCents,
-                    'reference': reference,
-                    'redirect-url': window.location.href
-                });
-                window.location.href = `https://checkout.wompi.co/p/?${params.toString()}`;
+                // ENVÍO DE FORMULARIO NATIVO A WOMPI
+                document.getElementById('wompi-pk').value = WOMPI_PUB_KEY;
+                document.getElementById('wompi-amount').value = totalInCents;
+                document.getElementById('wompi-ref').value = reference;
+                document.getElementById('wompi-redirect').value = window.location.href;
+                
+                document.getElementById('wompi-form').submit();
             } else {
                 let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
                 msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Tel:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
