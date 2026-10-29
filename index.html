@@ -471,7 +471,7 @@
         const ADMIN_PASSWORD = "J.p12022013";
         let WHATSAPP_NUMBER = "573105390115";
         
-        // LLAVE PÚBLICA DE WOMPI
+        // CLAVE PÚBLICA DE WOMPI
         const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYWPwSVP2yidk0s1ULSHh6";
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -834,13 +834,13 @@
 
             if (method === 'wompi') {
                 try {
-                    // Petición a tu API en Vercel para obtener la firma SHA-256 segura
+                    // Petición al backend en Vercel para obtener la firma Hash
                     const response = await fetch('https://wompi-backend-eta.vercel.app/api/sign', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            reference: reference,
-                            amountInCents: totalInCents,
+                            reference: String(reference),
+                            amountInCents: Number(totalInCents),
                             currency: 'COP'
                         })
                     });
@@ -848,44 +848,36 @@
                     const data = await response.json();
 
                     if (!data.signature) {
-                        throw new Error("No se pudo generar la firma de seguridad.");
+                        throw new Error("No se obtuvo la firma de seguridad.");
                     }
 
-                    if (typeof WidgetCheckout !== 'undefined') {
-                        // Se valida que la URL sea válida y empiece por http(s)
-                        const currentUrl = window.location.href;
-                        const validRedirectUrl = currentUrl.startsWith('http') 
-                            ? currentUrl 
-                            : 'https://fragattaparfums-oss.github.io/fragatta-parfums/';
+                    // Despliegue del checkout de Wompi
+                    const checkout = new WidgetCheckout({
+                        currency: 'COP',
+                        amountInCents: Number(totalInCents),
+                        reference: String(reference),
+                        publicKey: WOMPI_PUB_KEY,
+                        signature: {
+                            integrity: data.signature
+                        },
+                        redirectUrl: 'https://fragattaparfums-oss.github.io/fragatta-parfums/',
+                        customerData: {
+                            email: `${phone}@fragattaparfums.com`,
+                            fullName: name,
+                            phoneNumber: phone,
+                            phoneNumberPrefix: '+57',
+                            legalId: doc,
+                            legalIdType: 'CC'
+                        }
+                    });
 
-                        const checkout = new WidgetCheckout({
-                            currency: 'COP',
-                            amountInCents: totalInCents,
-                            reference: reference,
-                            publicKey: WOMPI_PUB_KEY,
-                            signature: {
-                                integrity: data.signature // Firma generada por Vercel
-                            },
-                            redirectUrl: validRedirectUrl,
-                            customerData: {
-                                email: `${phone}@parfums.co`,
-                                fullName: name,
-                                phoneNumber: phone,
-                                phoneNumberPrefix: '+57',
-                                legalId: doc,
-                                legalIdType: 'CC'
-                            }
-                        });
+                    checkout.open(function (result) {
+                        console.log('Resultado de la transacción:', result.transaction);
+                    });
 
-                        checkout.open(function (result) {
-                            console.log('Resultado de la transacción: ', result.transaction);
-                        });
-                    } else {
-                        alert("Cargando la pasarela de pago Wompi... Por favor presiona 'Confirmar' en unos segundos.");
-                    }
                 } catch (err) {
-                    console.error("Error al conectar con el servidor de pagos:", err);
-                    alert("Ocurrió un error al procesar el pago con Wompi. Intenta de nuevo.");
+                    console.error("Error al conectar con el backend:", err);
+                    alert("Error al validar la seguridad del pago. Por favor intenta de nuevo.");
                 }
             } else {
                 let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
