@@ -401,7 +401,7 @@
                                 <input type="radio" name="payment_method" value="wompi" checked onchange="updatePaymentCalculations()" class="text-amber-600">
                                 <div class="ml-2.5">
                                     <span class="font-bold text-gray-900 block">Wompi Pasarela Segura (Tarjetas, PSE, Nequi)</span>
-                                    <span class="text-[10px] text-gray-500">Pago directo o con enlace de cobro enviado a tu WhatsApp.</span>
+                                    <span class="text-[10px] text-gray-500">Pago en línea directo y seguro con confirmación por correo.</span>
                                 </div>
                             </label>
 
@@ -975,20 +975,22 @@
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + calculatedShippingCost) * 0.05) : 0;
             const grandTotal = subtotal + calculatedShippingCost + codFee;
+            const totalInCents = Math.round(grandTotal) * 100;
+            const reference = "PL-" + Date.now();
 
             if (method === 'wompi') {
-                // REDIRECCIÓN ASISTIDA DE ORDEN
-                let msg = `*SOLICITUD DE ENLACE DE PAGO WOMPI*\n\n`;
-                msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Tel:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
-                msg += `*Productos:*\n`;
-                cart.forEach(i => { msg += `• ${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
-                msg += `\n*Envío:* ${formatPrice(calculatedShippingCost)}`;
-                msg += `\n*TOTAL A PAGAR:* ${formatPrice(grandTotal)}`;
-                msg += `\n\n_Por favor envíenme el link directo de cobro Wompi/Bancolombia para pagar con PSE, Nequi o Tarjeta._`;
+                // REDIRECCIÓN 100% AUTOMÁTICA Y SEGURA (MONTO CIFRADO EN LA URL)
+                const baseUrl = "https://checkout.wompi.co/p/";
+                const params = new URLSearchParams();
+                
+                params.append("public_key", WOMPI_PUB_KEY);
+                params.append("currency", "COP");
+                params.append("amount-in-cents", totalInCents.toString());
+                params.append("reference", reference);
+                params.append("redirect-url", window.location.origin + window.location.pathname);
 
-                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
-                toggleCartModal();
-                cart = []; saveCart(); updateCartUI();
+                // REDIRIGIR AUTOMÁTICAMENTE AL CHECKOUT INALTERABLE
+                window.location.href = baseUrl + "?" + params.toString();
             } else {
                 let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
                 msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Tel:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
