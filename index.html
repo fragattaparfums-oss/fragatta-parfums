@@ -297,6 +297,117 @@
         </div>
     </div>
 
+    <!-- MODAL ADMINISTRACIÓN (CREAR / EDITAR PRODUCTO) -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl relative text-gray-800 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeAdminModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-lg"><i class="fas fa-times"></i></button>
+            <h3 id="admin-modal-title" class="font-cinzel text-lg font-bold text-gray-900 mb-4 border-b pb-2">Agregar Nuevo Producto</h3>
+            <form id="product-form" onsubmit="handleProductFormSubmit(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="prod-id">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Nombre / Título *</label>
+                    <input type="text" id="prod-name" required placeholder="Ej: Club de Nuit Intense" class="w-full p-2 border border-gray-300 rounded-lg">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Marca *</label>
+                        <input type="text" id="prod-brand" required placeholder="Ej: Armaf" class="w-full p-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Categoría *</label>
+                        <select id="prod-category" class="w-full p-2 border border-gray-300 rounded-lg bg-white">
+                            <option value="Árabe">Árabe</option>
+                            <option value="Diseñador">Diseñador</option>
+                            <option value="Nicho">Nicho</option>
+                            <option value="Body Spray">Body Spray</option>
+                            <option value="Kids">Kids</option>
+                            <option value="Emprendedores">Emprendedores 🚀</option>
+                            <option value="Promociones">Promociones 🏷️</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Precio Actual ($) *</label>
+                        <input type="number" id="prod-price" required placeholder="120000" class="w-full p-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Precio Anterior ($)</label>
+                        <input type="number" id="prod-oldprice" placeholder="150000 (Opcional)" class="w-full p-2 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Género</label>
+                        <select id="prod-gender" class="w-full p-2 border border-gray-300 rounded-lg bg-white">
+                            <option value="Unisex">Unisex</option>
+                            <option value="Hombre">Hombre</option>
+                            <option value="Mujer">Mujer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Prioridad / Etiqueta</label>
+                        <select id="prod-priority" class="w-full p-2 border border-gray-300 rounded-lg bg-white">
+                            <option value="NINGUNA">Normal</option>
+                            <option value="LO NUEVO">🔥 LO NUEVO</option>
+                            <option value="TOP VIRAL">⚡ TOP VIRAL</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">URL Imagen *</label>
+                    <input type="url" id="prod-image" required placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Notas Olfativas</label>
+                    <input type="text" id="prod-notes" placeholder="Ej: Limón, Grosellas negras, Manzana" class="w-full p-2 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Descripción</label>
+                    <textarea id="prod-description" rows="2" placeholder="Detalles adicionals de la fragancia..." class="w-full p-2 border border-gray-300 rounded-lg"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition text-xs shadow">
+                    Guardar Producto
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL GESTIÓN DE BANNER Y PROMOS -->
+    <div id="promo-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl relative text-gray-800">
+            <button onclick="closePromoModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-lg"><i class="fas fa-times"></i></button>
+            <h3 class="font-cinzel text-lg font-bold text-gray-900 mb-3 border-b pb-2">Agregar Banner Promocional</h3>
+            <form id="promo-form" onsubmit="handlePromoSubmit(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Título de la Promo *</label>
+                    <input type="text" id="promo-title" required placeholder="Ej: DESCUENTO ESPECIAL ÁRABES" class="w-full p-2 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">URL Imagen del Banner *</label>
+                    <input type="url" id="promo-image" required placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Categoría Destino</label>
+                    <select id="promo-category" class="w-full p-2 border border-gray-300 rounded-lg bg-white">
+                        <option value="Promociones">Promociones 🏷️</option>
+                        <option value="Árabe">Árabe</option>
+                        <option value="Diseñador">Diseñador</option>
+                        <option value="Nicho">Nicho</option>
+                        <option value="Body Spray">Body Spray</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" id="promo-timer-chk" class="w-4 h-4 text-amber-600 rounded">
+                    <label for="promo-timer-chk" class="font-bold text-gray-700">Incluir Cronómetro de Oferta (72 horas)</label>
+                </div>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-2.5 rounded-lg transition text-xs shadow">
+                    Guardar Promo
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL CARRITO & CHECKOUT EN 2 PASOS -->
     <div id="cart-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-end hidden">
         <div class="bg-white w-full max-w-lg h-full flex flex-col shadow-2xl relative">
@@ -342,7 +453,7 @@
                 </div>
             </div>
 
-            <!-- PASO 2: DATOS DEL COMPRADOR Y PAGO CON AVISO DE CONFIRMACIÓN -->
+            <!-- PASO 2: DATOS DEL COMPRADOR Y PAGO VIA WHATSAPP -->
             <div id="checkout-step-2" class="flex-grow overflow-y-auto p-4 hidden flex-col justify-between space-y-4">
                 <div>
                     <button onclick="goToStep1()" class="inline-flex items-center text-xs font-bold text-amber-700 hover:underline mb-3">
@@ -397,13 +508,13 @@
                             <i class="fas fa-credit-card text-emerald-600"></i> 3. Método de Pago
                         </h4>
 
-                        <!-- RECUADRO INFORMATIVO SOBRE CONFIRMACIÓN VÍA WHATSAPP -->
+                        <!-- RECUADRO INFORMATIVO DE CONFIRMACIÓN -->
                         <div class="p-3 bg-amber-50 border border-amber-300 rounded-xl text-[11px] text-amber-900 space-y-1">
                             <div class="font-bold flex items-center gap-1.5 text-amber-800">
-                                <i class="fas fa-info-circle text-amber-600"></i> ¿Cómo funciona el pago?
+                                <i class="fas fa-info-circle text-amber-600"></i> Confirmación de disponibilidad
                             </div>
                             <p class="leading-relaxed">
-                                Al hacer clic en <strong>"Enviar Pedido por WhatsApp"</strong> se abrirá tu WhatsApp con la orden. Un asesor confirmará la <strong>disponibilidad inmediata</strong> de tus fragancias y te suministrará el enlace de pago seguro Wompi o cuenta bancaria.
+                                Al hacer clic en <strong>"Enviar Pedido por WhatsApp"</strong> se enviará la solicitud. Un asesor verificará la <strong>disponibilidad inmediata</strong> de tus fragancias y te suministrará el enlace Wompi o los datos de pago.
                             </p>
                         </div>
 
@@ -492,6 +603,7 @@
             updateCartUI();
         });
 
+        // --- LISTENERS DE FIREBASE ---
         function initFirebaseListener() {
             const productsRef = window.collection(window.db, "products");
             window.onSnapshot(productsRef, (snapshot) => {
@@ -545,6 +657,7 @@
             });
         }
 
+        // --- CARRUSEL Y CRONÓMETROS ---
         function renderPromoCarousel() {
             const track = document.getElementById('carousel-track');
             const dots = document.getElementById('carousel-dots');
@@ -633,6 +746,7 @@
         function nextSlide() { goToSlide(currentSlide + 1); }
         function prevSlide() { goToSlide(currentSlide - 1); }
 
+        // --- RENDERIZADO Y FILTROS DE PRODUCTOS ---
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             const emptyState = document.getElementById('empty-state');
@@ -657,7 +771,13 @@
             emptyState.classList.add('hidden');
 
             grid.innerHTML = filtered.map(p => `
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col justify-between">
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col justify-between relative group">
+                    ${isAdmin ? `
+                        <div class="absolute top-2 right-2 z-20 flex gap-1 bg-white/90 p-1 rounded-lg shadow border border-gray-200">
+                            <button onclick="editProduct('${p.id}')" class="text-amber-600 hover:text-amber-800 p-1 text-xs"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteProduct('${p.id}')" class="text-rose-600 hover:text-rose-800 p-1 text-xs"><i class="fas fa-trash"></i></button>
+                        </div>
+                    ` : ''}
                     <div class="cursor-pointer" onclick="openDetailModal('${p.id}')">
                         <img src="${p.image}" alt="${p.title}" class="h-36 sm:h-48 w-full object-cover rounded-xl mb-2">
                         <span class="text-[10px] font-bold text-amber-600 block uppercase">${p.brand}</span>
@@ -672,6 +792,7 @@
             `).join('');
         }
 
+        // --- CARRITO DE COMPRAS ---
         function addToCart(id) {
             const prod = products.find(p => p.id === id);
             if (!prod) return;
@@ -834,7 +955,6 @@
             const grandTotal = subtotal + calculatedShippingCost + codFee;
             const orderRef = "PL-" + Date.now().toString().slice(-6);
 
-            // Estructura formal tipo Ficha de Orden para evitar ediciones manuales
             let msg = `Hola Parfums Luxury 👋, deseo solicitar disponibilidad para la siguiente orden:\n\n`;
             msg += `═════════════════════\n`;
             msg += `  📋 *ORDEN DE COMPRA #${orderRef}*\n`;
@@ -869,7 +989,6 @@
                 msg += `*(Pago en efectivo al recibir el pedido)*`;
             }
 
-            // Redirección directa
             const targetNumber = WHATSAPP_NUMBER.replace(/\D/g, '');
             const waUrl = `https://wa.me/${targetNumber}?text=${encodeURIComponent(msg)}`;
 
@@ -881,21 +1000,251 @@
             updateCartUI();
         }
 
+        // --- FUNCIONES COMPLETAS DE ADMINISTRADOR ---
         function handleAdminToggle() {
             if (isAdmin) {
                 isAdmin = false;
                 document.getElementById('admin-toolbar').classList.add('hidden');
-                showToast("Sesión cerrada");
+                document.getElementById('admin-logo-box').classList.add('hidden');
+                document.getElementById('buyer-logo-box').classList.remove('hidden');
+                document.getElementById('admin-banner-controls').classList.add('hidden');
+                document.getElementById('admin-carousel-controls').classList.add('hidden');
+                document.getElementById('admin-social-btn').classList.add('hidden');
+                showToast("Sesión de Administrador cerrada");
+                renderProducts();
             } else {
                 const pass = prompt("Ingrese contraseña de Administrador:");
                 if (pass === ADMIN_PASSWORD) {
                     isAdmin = true;
                     document.getElementById('admin-toolbar').classList.remove('hidden');
+                    document.getElementById('admin-logo-box').classList.remove('hidden');
+                    document.getElementById('buyer-logo-box').classList.add('hidden');
+                    document.getElementById('admin-banner-controls').classList.remove('hidden');
+                    document.getElementById('admin-carousel-controls').classList.remove('hidden');
+                    document.getElementById('admin-social-btn').classList.remove('hidden');
                     showToast("¡Modo Administrador Activo!");
+                    renderProducts();
+                } else if (pass) {
+                    alert("Contraseña incorrecta.");
                 }
             }
         }
 
+        function openAdminModal() {
+            document.getElementById('admin-modal-title').innerText = "Agregar Nuevo Producto";
+            document.getElementById('product-form').reset();
+            document.getElementById('prod-id').value = "";
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
+
+        async function handleProductFormSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('prod-id').value;
+            const data = {
+                name: document.getElementById('prod-name').value.trim(),
+                brand: document.getElementById('prod-brand').value.trim(),
+                category: document.getElementById('prod-category').value,
+                price: Number(document.getElementById('prod-price').value),
+                oldPrice: document.getElementById('prod-oldprice').value ? Number(document.getElementById('prod-oldprice').value) : null,
+                gender: document.getElementById('prod-gender').value,
+                priority: document.getElementById('prod-priority').value,
+                image: document.getElementById('prod-image').value.trim(),
+                notes: document.getElementById('prod-notes').value.trim(),
+                description: document.getElementById('prod-description').value.trim()
+            };
+
+            try {
+                if (id) {
+                    await window.updateDoc(window.doc(window.db, "products", id), data);
+                    showToast("Producto actualizado");
+                } else {
+                    await window.addDoc(window.collection(window.db, "products"), data);
+                    showToast("Producto agregado");
+                }
+                closeAdminModal();
+            } catch (err) {
+                console.error("Error al guardar producto:", err);
+                alert("Error al guardar en Firebase.");
+            }
+        }
+
+        function editProduct(id) {
+            const p = products.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('admin-modal-title').innerText = "Editar Producto";
+            document.getElementById('prod-id').value = p.id;
+            document.getElementById('prod-name').value = p.title;
+            document.getElementById('prod-brand').value = p.brand;
+            document.getElementById('prod-category').value = p.category;
+            document.getElementById('prod-price').value = p.price;
+            document.getElementById('prod-oldprice').value = p.oldPrice || '';
+            document.getElementById('prod-gender').value = p.gender;
+            document.getElementById('prod-priority').value = p.priority;
+            document.getElementById('prod-image').value = p.image;
+            document.getElementById('prod-notes').value = p.notes;
+            document.getElementById('prod-description').value = p.description;
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        async function deleteProduct(id) {
+            if (confirm("¿Estás seguro de eliminar este producto de la tienda?")) {
+                try {
+                    await window.deleteDoc(window.doc(window.db, "products", id));
+                    showToast("Producto eliminado");
+                } catch (err) {
+                    alert("Error al eliminar el producto.");
+                }
+            }
+        }
+
+        // --- IMPORTACIÓN MASIVA DESDE EXCEL / CSV ---
+        function handleExcelImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    if (json.length === 0) return alert("El archivo está vacío.");
+
+                    let addedCount = 0;
+                    for (const row of json) {
+                        const name = row.Nombre || row.nombre || row.Title || row.title || row.PRODUCTO;
+                        const price = row.Precio || row.precio || row.PRICE || row.VALOR;
+                        if (!name || !price) continue;
+
+                        const prodDoc = {
+                            name: String(name).trim(),
+                            brand: String(row.Marca || row.marca || 'LUXURY').trim(),
+                            category: String(row.Categoria || row.categoria || 'Árabe').trim(),
+                            price: Number(price),
+                            oldPrice: row.PrecioAnterior ? Number(row.PrecioAnterior) : null,
+                            gender: String(row.Genero || row.genero || 'Unisex').trim(),
+                            priority: String(row.Prioridad || row.prioridad || 'NINGUNA').trim(),
+                            image: String(row.Imagen || row.imagen || row.URL || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS').trim(),
+                            notes: String(row.Notas || row.notas || '').trim(),
+                            description: String(row.Descripcion || row.descripcion || '').trim()
+                        };
+
+                        await window.addDoc(window.collection(window.db, "products"), prodDoc);
+                        addedCount++;
+                    }
+
+                    showToast(`¡Se cargaron ${addedCount} productos desde Excel!`);
+                } catch (err) {
+                    console.error("Error al procesar Excel:", err);
+                    alert("Hubo un error al procesar el archivo Excel. Verifica el formato.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- GESTIÓN DE LOGO, BANNER Y CONFIGURACIÓN ---
+        function triggerLogoSelect() { document.getElementById('logo-file-input').click(); }
+
+        function handleLogoUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const logoUrl = event.target.result;
+                applyCustomLogo(logoUrl);
+                await window.setDoc(window.doc(window.db, "settings", "app_config"), { logoUrl }, { merge: true });
+                showToast("Logo actualizado");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function applyCustomLogo(url) {
+            document.getElementById('buyer-logo-img').src = url;
+            document.getElementById('admin-logo-img').src = url;
+        }
+
+        function promptBannerUrl() {
+            const url = prompt("Ingresa la URL pública de la imagen de Banner:");
+            if (url) updateBannerImage(url);
+        }
+
+        function handleBannerUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => updateBannerImage(event.target.result);
+            reader.readAsDataURL(file);
+        }
+
+        async function updateBannerImage(url) {
+            applyCustomBannerBlur(url);
+            await window.setDoc(window.doc(window.db, "settings", "app_config"), { bannerUrl: url }, { merge: true });
+            showToast("Banner actualizado");
+        }
+
+        function applyCustomBannerBlur(url) {
+            document.getElementById('banner-bg-blur').style.backgroundImage = `url('${url}')`;
+        }
+
+        function promptSocialLinks() {
+            const num = prompt("Número de WhatsApp (con código de país ej: 573105390115):", WHATSAPP_NUMBER);
+            if (num) {
+                WHATSAPP_NUMBER = num.trim();
+                document.getElementById('link-whatsapp').href = `https://wa.me/${WHATSAPP_NUMBER}`;
+                window.setDoc(window.doc(window.db, "settings", "app_config"), { whatsappNumber: WHATSAPP_NUMBER }, { merge: true });
+                showToast("WhatsApp de contacto actualizado");
+            }
+        }
+
+        function openPromoModal() { document.getElementById('promo-modal').classList.remove('hidden'); }
+        function closePromoModal() { document.getElementById('promo-modal').classList.add('hidden'); }
+
+        async function handlePromoSubmit(e) {
+            e.preventDefault();
+            const promo = {
+                title: document.getElementById('promo-title').value.trim(),
+                image: document.getElementById('promo-image').value.trim(),
+                category: document.getElementById('promo-category').value,
+                hasTimer: document.getElementById('promo-timer-chk').checked,
+                endTime: Date.now() + (3 * 86400000)
+            };
+
+            await window.addDoc(window.collection(window.db, "promo_slides"), promo);
+            showToast("Banner promocional guardado");
+            closePromoModal();
+        }
+
+        // --- DETALLE DE PRODUCTO ---
+        function openDetailModal(id) {
+            const p = products.find(x => x.id === id);
+            if (!p) return;
+            const content = document.getElementById('detail-content');
+            content.innerHTML = `
+                <div class="p-6 space-y-4">
+                    <img src="${p.image}" class="w-full h-64 object-cover rounded-2xl shadow-md">
+                    <div>
+                        <span class="text-xs font-bold text-amber-600 tracking-wider uppercase">${p.brand} · ${p.gender}</span>
+                        <h2 class="font-cinzel text-xl font-bold text-gray-900">${p.title}</h2>
+                        <div class="text-2xl font-extrabold text-rose-600 mt-1">${formatPrice(p.price)}</div>
+                    </div>
+                    ${p.notes ? `<div><h4 class="text-xs font-bold text-gray-500 uppercase">Notas Olfativas</h4><p class="text-xs text-gray-700 font-medium">${p.notes}</p></div>` : ''}
+                    ${p.description ? `<div><h4 class="text-xs font-bold text-gray-500 uppercase">Descripción</h4><p class="text-xs text-gray-600 leading-relaxed">${p.description}</p></div>` : ''}
+                    <button onclick="addToCart('${p.id}'); closeDetailModal();" class="w-full bg-luxury-dark hover:bg-black text-white font-bold py-3 rounded-xl transition text-xs shadow-lg">
+                        + Añadir al Carrito
+                    </button>
+                </div>
+            `;
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
+
+        // --- AUXILIARES ---
         function setCategoryFilter(cat) { currentCategory = cat; renderProducts(); }
         function setPriorityFilter(prio) { currentPriority = (currentPriority === prio) ? 'Todas' : prio; renderProducts(); }
         function setGenderFilter(gen) { currentGender = gen; renderProducts(); }
@@ -906,7 +1255,7 @@
         function showToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold border border-amber-500/30`;
+            toast.className = `bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold border border-amber-500/30 shadow-lg`;
             toast.innerText = msg;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 2500);
