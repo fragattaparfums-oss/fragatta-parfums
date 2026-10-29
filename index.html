@@ -15,7 +15,7 @@
     <!-- SheetJS (XLSX) para lectura de Excel y CSV -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    <!-- Script Oficial del Widget Checkout de Wompi -->
+    <!-- SCRIPT OFICIAL DEL CHECKOUT DE WOMPI -->
     <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
 
     <!-- Firebase SDK -->
@@ -162,7 +162,7 @@
             </div>
         </section>
 
-        <!-- CARRUSEL PROMOCIONAL CON CRONÓMETRO OPTIMIZADO PARA MÓVILES -->
+        <!-- CARRUSEL PROMOCIONAL CON CRONÓMETRO -->
         <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-6 bg-slate-900 group">
             <div id="carousel-track" class="flex transition-transform duration-500 ease-out h-52 sm:h-64 md:h-72 w-full"></div>
 
@@ -622,16 +622,6 @@
         const ADMIN_PASSWORD = "J.p12022013";
         let WHATSAPP_NUMBER = "573105390115";
         const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYWPwSVP2yidk0s1ULSHh6";
-        // Secreto de INTEGRIDAD de Wompi (Dashboard > Desarrolladores > Secretos para integración técnica).
-        // Empieza por "prod_integrity_". NO es la llave de eventos ni la privada.
-        const WOMPI_INTEGRITY_SECRET = "prod_integrity_9QPykHUQT2g8dTwNJzrKraJAABsNGReM";
-
-        // Firma SHA-256: referencia + monto en centavos + moneda + secreto
-        async function wompiIntegritySignature(reference, amountInCents, currency) {
-            const data = `${reference}${amountInCents}${currency}${WOMPI_INTEGRITY_SECRET}`;
-            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data));
-            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-        }
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
@@ -972,7 +962,7 @@
             else btnText.innerText = `Finalizar por WhatsApp (${formatPrice(grandTotal)})`;
         }
 
-        async function processFinalOrder() {
+        function processFinalOrder() {
             const name = document.getElementById('ship-name').value.trim();
             const phone = document.getElementById('ship-phone').value.trim();
             const doc = document.getElementById('ship-doc').value.trim();
@@ -988,23 +978,17 @@
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + calculatedShippingCost) * 0.05) : 0;
             const grandTotal = subtotal + calculatedShippingCost + codFee;
-            const totalInCents = Math.round(grandTotal * 100);
+            const totalInCents = grandTotal * 100;
             const reference = "PL-" + Date.now();
 
             if (method === 'wompi') {
-                // INTEGRACIÓN CON WIDGET OFICIAL DE WOMPI
                 if (typeof WidgetCheckout !== 'undefined') {
-                    if (WOMPI_INTEGRITY_SECRET.startsWith('PEGA_AQUI')) {
-                        return alert("Falta configurar el secreto de integridad de Wompi en el código.");
-                    }
-                    const integrity = await wompiIntegritySignature(reference, totalInCents, 'COP');
                     const checkout = new WidgetCheckout({
                         currency: 'COP',
                         amountInCents: totalInCents,
                         reference: reference,
                         publicKey: WOMPI_PUB_KEY,
-                        signature: { integrity: integrity },
-                        redirectUrl: window.location.origin + window.location.pathname,
+                        redirectUrl: window.location.href,
                         customerData: {
                             email: `${phone}@parfums.co`,
                             fullName: name,
@@ -1012,21 +996,13 @@
                             phoneNumberPrefix: '+57',
                             legalId: doc,
                             legalIdType: 'CC'
-                        },
-                        shippingAddress: {
-                            addressLine1: address,
-                            city: city,
-                            phoneNumber: phone,
-                            region: 'Antioquia',
-                            country: 'CO'
                         }
                     });
                     checkout.open(function (result) {
-                        const transaction = result.transaction;
-                        console.log('Transacción finalizada: ', transaction);
+                        console.log('Resultado de la transacción: ', result.transaction);
                     });
                 } else {
-                    alert("Cargando pasarela de pago... Por favor reintenta en un momento.");
+                    alert("Cargando la pasarela de pago Wompi... Por favor presiona 'Confirmar' en unos segundos.");
                 }
             } else {
                 let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
