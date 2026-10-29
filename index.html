@@ -76,6 +76,7 @@
         }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .carousel-slide { transition: transform 0.5s ease-in-out; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased bg-[#f6f7f9]">
@@ -87,12 +88,19 @@
     <div class="bg-luxury-dark border-b border-gray-800 text-gray-400 py-1.5 px-4 text-xs">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <a href="https://instagram.com" target="_blank" class="hover:text-luxury-gold transition flex items-center gap-1.5"><i class="fab fa-instagram"></i> <span class="hidden sm:inline">Instagram</span></a>
-                <a href="https://wa.me/573105390115" target="_blank" class="hover:text-emerald-400 transition flex items-center gap-1.5"><i class="fab fa-whatsapp"></i> <span class="hidden sm:inline">WhatsApp</span></a>
-                <a href="https://tiktok.com" target="_blank" class="hover:text-luxury-gold transition flex items-center gap-1.5"><i class="fab fa-tiktok"></i> <span class="hidden sm:inline">TikTok</span></a>
+                <a id="link-instagram" href="https://instagram.com" target="_blank" class="hover:text-luxury-gold transition flex items-center gap-1.5"><i class="fab fa-instagram"></i> <span class="hidden sm:inline">Instagram</span></a>
+                <a id="link-whatsapp" href="https://wa.me/573105390115" target="_blank" class="hover:text-emerald-400 transition flex items-center gap-1.5"><i class="fab fa-whatsapp"></i> <span class="hidden sm:inline">WhatsApp</span></a>
+                <a id="link-tiktok" href="https://tiktok.com" target="_blank" class="hover:text-luxury-gold transition flex items-center gap-1.5"><i class="fab fa-tiktok"></i> <span class="hidden sm:inline">TikTok</span></a>
             </div>
-            <div class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider hidden md:block">
-                Perfumería Fina 1:1 & Body Spray
+            <div class="flex items-center gap-3">
+                <div id="admin-social-btn" class="hidden">
+                    <button onclick="promptSocialLinks()" class="text-[10px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded transition flex items-center gap-1 font-bold">
+                        <i class="fas fa-link"></i> Editar Redes
+                    </button>
+                </div>
+                <div class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider hidden md:block">
+                    Perfumería Fina & Body Spray
+                </div>
             </div>
         </div>
     </div>
@@ -129,36 +137,61 @@
     </header>
 
     <!-- Contenido Principal -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
 
-        <!-- Banner Principal -->
-        <section id="banner-section" class="hero-banner rounded-2xl p-6 sm:p-10 mb-8 border border-amber-100 shadow-sm text-center relative">
+        <!-- Banner Principal Elegante y Compacto -->
+        <section id="banner-section" class="hero-banner rounded-2xl px-5 py-5 sm:px-8 sm:py-6 mb-5 border border-amber-100 shadow-sm text-center relative">
             <div id="banner-bg-blur" class="banner-bg-blur"></div>
             <div class="relative z-10">
-                <div class="inline-block bg-amber-100/80 border border-amber-300 text-amber-900 font-bold text-[11px] tracking-wider px-4 py-1 rounded-full uppercase mb-3 shadow-sm">
+                <div class="inline-block bg-amber-100/80 border border-amber-300 text-amber-900 font-bold text-[10px] sm:text-[11px] tracking-wider px-3.5 py-0.5 rounded-full uppercase mb-2 shadow-sm">
                     ¡SOMOS MAYORISTAS!
                 </div>
-                <h2 class="font-cinzel text-2xl sm:text-4xl font-bold text-gray-900 tracking-wide uppercase mb-3">
+                <h2 class="font-cinzel text-xl sm:text-3xl font-bold text-gray-900 tracking-wide uppercase mb-2">
                     EXCELENCIA Y CALIDAD GARANTIZADA
                 </h2>
-                <p class="max-w-2xl mx-auto text-gray-600 text-xs sm:text-sm leading-relaxed font-normal">
-                    Distribución exclusiva de perfumería fina 1.1 y body spray. Explora nuestras ofertas, precios competitivos y realiza tus pedidos directamente por WhatsApp.
+                <p class="max-w-xl mx-auto text-gray-600 text-[11px] sm:text-xs leading-relaxed font-normal">
+                    Distribución exclusiva de perfumería fina y body spray. Explora nuestras ofertas, precios competitivos y realiza tus pedidos directamente por WhatsApp.
                 </p>
 
-                <div id="admin-banner-controls" class="hidden mt-5 pt-4 border-t border-amber-200/50 flex flex-wrap justify-center gap-2">
-                    <label class="cursor-pointer bg-white border border-gray-300 hover:border-luxury-gold text-gray-700 text-xs font-semibold px-3.5 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1.5">
+                <div id="admin-banner-controls" class="hidden mt-4 pt-3 border-t border-amber-200/50 flex flex-wrap justify-center gap-2">
+                    <label class="cursor-pointer bg-white border border-gray-300 hover:border-luxury-gold text-gray-700 text-xs font-semibold px-3 py-1 rounded-lg transition shadow-sm flex items-center gap-1.5">
                         <i class="fas fa-upload text-amber-600"></i> Subir Banner desde Galería
                         <input type="file" id="banner-file-input" accept="image/*" onchange="handleBannerUpload(event)" class="hidden">
                     </label>
-                    <button onclick="promptBannerUrl()" class="bg-white border border-gray-300 hover:border-luxury-gold text-gray-700 text-xs font-semibold px-3.5 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1.5">
+                    <button onclick="promptBannerUrl()" class="bg-white border border-gray-300 hover:border-luxury-gold text-gray-700 text-xs font-semibold px-3 py-1 rounded-lg transition shadow-sm flex items-center gap-1.5">
                         <i class="fas fa-link text-amber-600"></i> Pegar URL de Banner
                     </button>
                 </div>
             </div>
         </section>
 
+        <!-- CARRUSEL DE MÚLTIPLES PROMOCIONES SUTIL Y MODERNO -->
+        <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-sm border border-gray-100 mb-6 bg-slate-900 group">
+            <div id="carousel-track" class="flex transition-transform duration-500 ease-out h-40 sm:h-52 w-full">
+                <!-- Diapositivas dinámicas cargadas desde Firebase -->
+            </div>
+
+            <!-- Botones de Navegación del Carrusel -->
+            <button onclick="prevSlide()" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 backdrop-blur-sm z-10">
+                <i class="fas fa-chevron-left text-xs"></i>
+            </button>
+            <button onclick="nextSlide()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 backdrop-blur-sm z-10">
+                <i class="fas fa-chevron-right text-xs"></i>
+            </button>
+
+            <!-- Indicadores por puntos -->
+            <div id="carousel-dots" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10"></div>
+
+            <!-- Botón de administración del Slider -->
+            <div id="admin-carousel-controls" class="hidden absolute top-2 right-2 z-20">
+                <button onclick="openPromoModal()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold text-[10px] px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1">
+                    <i class="fas fa-plus-circle"></i> + Agregar Promo Slide
+                </button>
+            </div>
+        </section>
+
         <!-- Barra Admin -->
-        <section id="admin-toolbar" class="hidden bg-luxury-dark text-white p-4 rounded-xl mb-8 shadow-xl border border-luxury-gold/30">
+        <section id="admin-toolbar" class="hidden bg-luxury-dark text-white p-4 rounded-xl mb-6 shadow-xl border border-luxury-gold/30">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <span class="bg-luxury-gold text-black text-xs font-extrabold px-2.5 py-1 rounded">MODO ADMIN</span>
@@ -251,10 +284,10 @@
     <footer class="bg-luxury-dark text-gray-400 text-xs py-8 border-t border-gray-800 mt-12 relative">
         <div class="max-w-7xl mx-auto px-4 text-center space-y-3">
             <div class="font-cinzel text-xl text-white font-bold tracking-widest">PARFUMS LUXURY</div>
-            <p class="text-gray-500 max-w-md mx-auto">Catálogo exclusivo de perfumería fina 1:1, nicho y cosmética de alta fijación.</p>
+            <p class="text-gray-500 max-w-md mx-auto">Catálogo exclusivo de perfumería fina, nicho y cosmética de alta fijación.</p>
             
             <div class="pt-4 border-t border-gray-800 text-[11px] text-gray-600 flex items-center justify-between">
-                <span>&copy; 2026 Parfums Luxury. Todos los derechos reservados.</span>
+                <span>© 2026 Parfums Luxury. Todos los derechos reservados.</span>
                 <!-- CANDADO MODO ADMIN OCULTO DISCRETAMENTE EN EL PIE DE PÁGINA -->
                 <button id="admin-lock-btn" type="button" onclick="handleAdminToggle()" title="Acceso Administrador" class="text-gray-700 hover:text-amber-500 transition p-1 text-xs">
                     <i id="admin-lock-icon" class="fas fa-lock"></i>
@@ -321,7 +354,49 @@
         </div>
     </div>
 
-    <!-- MODAL ADMIN -->
+    <!-- MODAL AGREGAR PROMO SLIDE -->
+    <div id="promo-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 relative text-gray-800 shadow-2xl">
+            <button onclick="closePromoModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="font-cinzel text-base font-bold text-gray-900 mb-3 border-b pb-2 flex items-center gap-2">
+                <i class="fas fa-images text-amber-600"></i> Nueva Diapositiva Promocional
+            </h3>
+            <form id="promo-form" onsubmit="handlePromoSubmit(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">Título / Frase Corta</label>
+                    <input type="text" id="promo-title" required placeholder="Ej: Descuentos Embrujados" class="w-full p-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Imagen Promocional (Subir o Pegar URL)</label>
+                    <div class="space-y-1">
+                        <label class="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-1.5 rounded-lg text-center block transition">
+                            <i class="fas fa-upload mr-1"></i> Subir de Galería
+                            <input type="file" accept="image/*" onchange="uploadPromoImageBase64(event)" class="hidden">
+                        </label>
+                        <input type="text" id="promo-image" required placeholder="O pega la URL de la imagen promocional" class="w-full p-2 border rounded-lg text-[11px]">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Vincular a Categoría (Al hacer clic)</label>
+                    <select id="promo-category" class="w-full p-2 border rounded-lg bg-white">
+                        <option value="Promociones">Promociones 🏷️</option>
+                        <option value="Árabe">Árabe</option>
+                        <option value="Diseñador">Diseñador</option>
+                        <option value="Nicho">Nicho</option>
+                        <option value="Body Spray">Body Spray</option>
+                        <option value="Kids">Kids</option>
+                        <option value="Emprendedores">Emprendedores 🚀</option>
+                    </select>
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closePromoModal()" class="px-3 py-1.5 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-1.5 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar Diapositiva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ADMIN PRODUCTO -->
     <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative text-gray-800">
             <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
@@ -416,9 +491,12 @@
         </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL LÓGICA, BÚSQUEDA DIFUSA & FIREBASE -->
+    <!-- SCRIPT PRINCIPAL LÓGICA & FIREBASE -->
     <script>
         let products = [];
+        let promoSlides = [];
+        let currentSlide = 0;
+        let slideInterval;
         let cart = JSON.parse(localStorage.getItem('parfums_luxury_cart')) || [];
         let isAdmin = false;
         let currentCategory = 'Todas';
@@ -427,7 +505,7 @@
 
         const ADMIN_PASSWORD = "J.p12022013";
         const DEFAULT_LOGO_URL = "https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg";
-        const WHATSAPP_NUMBER = "573105390115";
+        let WHATSAPP_NUMBER = "573105390115";
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
@@ -435,6 +513,7 @@
                     clearInterval(checkFirebase);
                     initFirebaseListener();
                     initAppConfigListener();
+                    initPromoSlidesListener();
                 }
             }, 200);
 
@@ -472,16 +551,144 @@
             window.onSnapshot(configRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (data.logoUrl && data.logoUrl.trim() !== '') {
-                        applyCustomLogo(data.logoUrl);
-                    } else {
-                        applyCustomLogo(DEFAULT_LOGO_URL);
-                    }
+                    if (data.logoUrl && data.logoUrl.trim() !== '') applyCustomLogo(data.logoUrl);
+                    else applyCustomLogo(DEFAULT_LOGO_URL);
                     if (data.bannerUrl) applyCustomBannerBlur(data.bannerUrl);
+
+                    if (data.instagramUrl) document.getElementById('link-instagram').href = data.instagramUrl;
+                    if (data.tiktokUrl) document.getElementById('link-tiktok').href = data.tiktokUrl;
+                    if (data.whatsappNumber) {
+                        WHATSAPP_NUMBER = data.whatsappNumber;
+                        document.getElementById('link-whatsapp').href = `https://wa.me/${data.whatsappNumber}`;
+                    }
                 } else {
                     applyCustomLogo(DEFAULT_LOGO_URL);
                 }
             });
+        }
+
+        function initPromoSlidesListener() {
+            const promoRef = window.collection(window.db, "promo_slides");
+            window.onSnapshot(promoRef, (snapshot) => {
+                promoSlides = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+                if (promoSlides.length === 0) {
+                    promoSlides = [{
+                        id: 'default',
+                        title: 'OFERTAS EXCLUSIVAS Y PROMOCIONES',
+                        image: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=80',
+                        category: 'Promociones'
+                    }];
+                }
+                renderPromoCarousel();
+            });
+        }
+
+        function renderPromoCarousel() {
+            const track = document.getElementById('carousel-track');
+            const dots = document.getElementById('carousel-dots');
+            
+            track.innerHTML = promoSlides.map((slide, idx) => `
+                <div class="min-w-full h-full relative cursor-pointer flex-shrink-0" onclick="setCategoryFilter('${slide.category}', document.querySelector('.cat-btn'))">
+                    <img src="${slide.image}" alt="${slide.title}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-4">
+                        <span class="text-amber-400 text-[10px] font-extrabold uppercase tracking-widest"><i class="fas fa-tag mr-1"></i> Categoría: ${slide.category}</span>
+                        <h3 class="text-white font-cinzel text-sm sm:text-lg font-bold uppercase drop-shadow">${slide.title}</h3>
+                    </div>
+                    ${isAdmin && slide.id !== 'default' ? `
+                        <button onclick="event.stopPropagation(); deletePromoSlide('${slide.id}')" class="absolute top-2 left-2 bg-rose-600 hover:bg-rose-700 text-white text-[9px] px-2 py-0.5 rounded font-bold shadow z-20">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    ` : ''}
+                </div>
+            `).join('');
+
+            dots.innerHTML = promoSlides.map((_, idx) => `
+                <button onclick="goToSlide(${idx})" class="w-2 h-2 rounded-full transition ${idx === currentSlide ? 'bg-amber-400 w-5' : 'bg-white/50'}"></button>
+            `).join('');
+
+            goToSlide(currentSlide < promoSlides.length ? currentSlide : 0);
+            startAutoSlide();
+        }
+
+        function startAutoSlide() {
+            clearInterval(slideInterval);
+            if (promoSlides.length > 1) {
+                slideInterval = setInterval(() => nextSlide(), 5000);
+            }
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            if (currentSlide >= promoSlides.length) currentSlide = 0;
+            if (currentSlide < 0) currentSlide = promoSlides.length - 1;
+            const track = document.getElementById('carousel-track');
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+            const dots = document.getElementById('carousel-dots').children;
+            Array.from(dots).forEach((dot, idx) => {
+                dot.className = `w-2 h-2 rounded-full transition ${idx === currentSlide ? 'bg-amber-400 w-5' : 'bg-white/50'}`;
+            });
+        }
+
+        function nextSlide() { goToSlide(currentSlide + 1); }
+        function prevSlide() { goToSlide(currentSlide - 1); }
+
+        function openPromoModal() { 
+            document.getElementById('promo-form').reset();
+            document.getElementById('promo-modal').classList.remove('hidden'); 
+        }
+        function closePromoModal() { document.getElementById('promo-modal').classList.add('hidden'); }
+
+        function uploadPromoImageBase64(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('promo-image').value = e.target.result;
+                showToast("Imagen de promo cargada", "success");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function handlePromoSubmit(e) {
+            e.preventDefault();
+            const payload = {
+                title: document.getElementById('promo-title').value,
+                image: document.getElementById('promo-image').value,
+                category: document.getElementById('promo-category').value
+            };
+            try {
+                await window.addDoc(window.collection(window.db, "promo_slides"), payload);
+                showToast("¡Nueva diapositiva guardada en Firebase!", "success");
+                closePromoModal();
+            } catch (err) {
+                alert("Error al guardar la diapositiva.");
+            }
+        }
+
+        async function deletePromoSlide(id) {
+            if (confirm("¿Deseas eliminar esta diapositiva promocional?")) {
+                try {
+                    await window.deleteDoc(window.doc(window.db, "promo_slides", id));
+                    showToast("Diapositiva eliminada", "info");
+                } catch (err) {
+                    alert("Error al eliminar la diapositiva.");
+                }
+            }
+        }
+
+        async function promptSocialLinks() {
+            if (!isAdmin) return;
+            const insta = prompt("Ingresa el enlace de Instagram:", document.getElementById('link-instagram').href);
+            const tiktok = prompt("Ingresa el enlace de TikTok:", document.getElementById('link-tiktok').href);
+            const wapp = prompt("Ingresa número de WhatsApp (Solo números con código de país p.ej. 573105390115):", WHATSAPP_NUMBER);
+
+            if (insta !== null && tiktok !== null && wapp !== null) {
+                await saveConfigToFirebase("instagramUrl", insta);
+                await saveConfigToFirebase("tiktokUrl", tiktok);
+                await saveConfigToFirebase("whatsappNumber", wapp);
+                showToast("¡Redes sociales actualizadas!", "success");
+            }
         }
 
         async function saveConfigToFirebase(key, value) {
@@ -648,6 +855,8 @@
                 isAdmin = false;
                 document.getElementById('admin-toolbar').classList.add('hidden');
                 document.getElementById('admin-banner-controls').classList.add('hidden');
+                document.getElementById('admin-carousel-controls').classList.add('hidden');
+                document.getElementById('admin-social-btn').classList.add('hidden');
                 document.getElementById('buyer-logo-box').classList.remove('hidden');
                 document.getElementById('admin-logo-box').classList.add('hidden');
                 document.getElementById('admin-lock-icon').className = "fas fa-lock";
@@ -658,6 +867,8 @@
                     isAdmin = true;
                     document.getElementById('admin-toolbar').classList.remove('hidden');
                     document.getElementById('admin-banner-controls').classList.remove('hidden');
+                    document.getElementById('admin-carousel-controls').classList.remove('hidden');
+                    document.getElementById('admin-social-btn').classList.remove('hidden');
                     document.getElementById('buyer-logo-box').classList.add('hidden');
                     document.getElementById('admin-logo-box').classList.remove('hidden');
                     document.getElementById('admin-logo-box').classList.add('flex');
@@ -668,9 +879,10 @@
                 }
             }
             renderProducts();
+            renderPromoCarousel();
         }
 
-        // RENDERIZADO CON REGLA ESPECIAL PARA EMPRENDEDORES & BÚSQUEDA DIDÁCTICA
+        // RENDERIZADO CON REGLA ESPECIAL PARA EMPRENDEDORES
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             const emptyState = document.getElementById('empty-state');
@@ -692,11 +904,9 @@
             }).filter(p => {
                 const isEmprendedores = p.category.toLowerCase() === 'emprendedores';
 
-                // REGLA CLAVE: Si la categoría actual es "Todas", SE EXCLUYE la categoría Emprendedores.
-                // Solo se muestran si la categoría activa es exactamente 'Emprendedores'.
                 let matchesCat = false;
                 if (currentCategory === 'Todas') {
-                    matchesCat = !isEmprendedores; // Ocultar de la vista general
+                    matchesCat = !isEmprendedores;
                 } else {
                     matchesCat = (p.category.toLowerCase() === currentCategory.toLowerCase());
                 }
@@ -864,7 +1074,7 @@
                     b.className = 'cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap';
                 }
             });
-            btn.className = 'cat-btn bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap';
+            if (btn) btn.className = 'cat-btn bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap';
             renderProducts();
         }
 
@@ -988,7 +1198,7 @@
 
         function toggleCartModal() { document.getElementById('cart-modal').classList.toggle('hidden'); }
 
-        // ENVÍO DE PEDIDO A WHATSAPP CON FORMATO DETALLADO
+        // ENVÍO DE PEDIDO A WHATSAPP
         function checkoutWhatsApp() {
             if (cart.length === 0) return alert("El carrito está vacío.");
             const name = document.getElementById('ship-name').value.trim();
