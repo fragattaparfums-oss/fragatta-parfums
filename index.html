@@ -15,9 +15,6 @@
     <!-- SheetJS (XLSX) para lectura de Excel y CSV -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    <!-- SCRIPT OFICIAL DEL CHECKOUT DE WOMPI -->
-    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
-
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -834,7 +831,7 @@
 
             if (method === 'wompi') {
                 try {
-                    // Petición al backend en Vercel para obtener la firma Hash
+                    // 1. Obtener la firma SHA-256 desde el backend en Vercel
                     const response = await fetch('https://wompi-backend-eta.vercel.app/api/sign', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -848,36 +845,29 @@
                     const data = await response.json();
 
                     if (!data.signature) {
-                        throw new Error("No se obtuvo la firma de seguridad.");
+                        throw new Error("No se pudo obtener la firma de seguridad.");
                     }
 
-                    // Despliegue del checkout de Wompi
-                    const checkout = new WidgetCheckout({
-                        currency: 'COP',
-                        amountInCents: Number(totalInCents),
-                        reference: String(reference),
-                        publicKey: WOMPI_PUB_KEY,
-                        signature: {
-                            integrity: data.signature
-                        },
-                        redirectUrl: 'https://fragattaparfums-oss.github.io/fragatta-parfums/',
-                        customerData: {
-                            email: `${phone}@fragattaparfums.com`,
-                            fullName: name,
-                            phoneNumber: phone,
-                            phoneNumberPrefix: '+57',
-                            legalId: doc,
-                            legalIdType: 'CC'
-                        }
-                    });
+                    // 2. Redirección directa a la página segura de Wompi Checkout (sin iframe)
+                    const wompiUrl = new URL('https://checkout.wompi.co/p/');
+                    wompiUrl.searchParams.append('public-key', WOMPI_PUB_KEY);
+                    wompiUrl.searchParams.append('currency', 'COP');
+                    wompiUrl.searchParams.append('amount-in-cents', String(totalInCents));
+                    wompiUrl.searchParams.append('reference', String(reference));
+                    wompiUrl.searchParams.append('signature:integrity', data.signature);
+                    wompiUrl.searchParams.append('redirect-url', 'https://fragattaparfums-oss.github.io/fragatta-parfums/');
+                    wompiUrl.searchParams.append('customer-data:email', `${phone}@fragattaparfums.com`);
+                    wompiUrl.searchParams.append('customer-data:full-name', name);
+                    wompiUrl.searchParams.append('customer-data:phone-number', phone);
+                    wompiUrl.searchParams.append('customer-data:phone-number-prefix', '+57');
+                    wompiUrl.searchParams.append('customer-data:legal-id', doc);
+                    wompiUrl.searchParams.append('customer-data:legal-id-type', 'CC');
 
-                    checkout.open(function (result) {
-                        console.log('Resultado de la transacción:', result.transaction);
-                    });
+                    window.location.href = wompiUrl.toString();
 
                 } catch (err) {
-                    console.error("Error al conectar con el backend:", err);
-                    alert("Error al validar la seguridad del pago. Por favor intenta de nuevo.");
+                    console.error("Error al procesar el pago:", err);
+                    alert("Ocurrió un error al conectar con la pasarela de pagos. Intenta de nuevo.");
                 }
             } else {
                 let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
