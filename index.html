@@ -14,8 +14,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- SheetJS (XLSX) para lectura de Excel y CSV -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Wompi Widget JS -->
-    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -113,8 +111,7 @@
             <div class="flex flex-col items-center">
                 <div id="logo-container" class="mb-1">
                     <div id="buyer-logo-box" class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border border-amber-200 shadow-sm bg-amber-50">
-                        <img id="buyer-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Parfums Luxury Logo" class="w-full h-full object-contain" onerror="handleLogoError(this)">
-                        <span id="buyer-logo-fallback" class="font-cinzel text-amber-800 text-xs font-bold hidden">PL</span>
+                        <img id="buyer-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Parfums Luxury Logo" class="w-full h-full object-contain">
                     </div>
 
                     <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para cambiar el logo">
@@ -164,11 +161,8 @@
 
         <!-- CARRUSEL PROMOCIONAL CON CRONÓMETRO OPTIMIZADO PARA MÓVILES -->
         <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-6 bg-slate-900 group">
-            <div id="carousel-track" class="flex transition-transform duration-500 ease-out h-52 sm:h-64 md:h-72 w-full">
-                <!-- Diapositivas dinámicas cargadas desde Firebase -->
-            </div>
+            <div id="carousel-track" class="flex transition-transform duration-500 ease-out h-52 sm:h-64 md:h-72 w-full"></div>
 
-            <!-- Botones de Navegación -->
             <button onclick="prevSlide()" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black text-white w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition backdrop-blur-sm z-20">
                 <i class="fas fa-chevron-left text-xs"></i>
             </button>
@@ -176,10 +170,8 @@
                 <i class="fas fa-chevron-right text-xs"></i>
             </button>
 
-            <!-- Indicadores por puntos -->
             <div id="carousel-dots" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-20"></div>
 
-            <!-- Botón Admin Slider -->
             <div id="admin-carousel-controls" class="hidden absolute top-2 right-2 z-30">
                 <button onclick="openPromoModal()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold text-[10px] px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1">
                     <i class="fas fa-plus-circle"></i> + Agregar Promo
@@ -282,14 +274,12 @@
             <div class="font-cinzel text-xl text-white font-bold tracking-widest">PARFUMS LUXURY</div>
             <p class="text-gray-400 max-w-md mx-auto text-[11px]">Catálogo exclusivo de perfumería fina, nicho y cosmética de alta fijación.</p>
             
-            <!-- NOTA OBLIGATORIA DE DEVOLUCIONES Y GARANTÍAS -->
             <div class="bg-slate-900/90 border border-amber-500/30 rounded-xl p-3 max-w-2xl mx-auto text-amber-200/90 text-[11px] font-medium leading-relaxed shadow-inner">
                 <p><i class="fas fa-shield-alt text-amber-400 mr-1.5"></i> <strong>Política de Garantías y Reclamos:</strong> Los cambios, devoluciones y reclamos por daños o averías se efectuarán únicamente dentro de <strong>1 día hábil (24 horas)</strong> posterior a la recepción del paquete según la guía de la transportadora.</p>
             </div>
 
             <div class="pt-4 border-t border-gray-800 text-[11px] text-gray-500 flex items-center justify-between">
                 <span>© 2026 Parfums Luxury (fragattaparfums@gmail.com). Todos los derechos reservados.</span>
-                <!-- Candado Módulo Admin -->
                 <button id="admin-lock-btn" type="button" onclick="handleAdminToggle()" title="Acceso Administrador" class="text-gray-700 hover:text-amber-500 transition p-1 text-xs">
                     <i id="admin-lock-icon" class="fas fa-lock"></i>
                 </button>
@@ -311,7 +301,6 @@
     <div id="cart-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-end hidden">
         <div class="bg-white w-full max-w-lg h-full flex flex-col shadow-2xl relative">
             
-            <!-- Header Modal con Pasos -->
             <div class="p-4 bg-luxury-dark text-white flex items-center justify-between border-b border-luxury-gold/40">
                 <div class="flex items-center gap-3">
                     <div id="step-indicator-1" class="flex items-center gap-1.5 text-xs font-bold text-amber-400">
@@ -332,7 +321,6 @@
                     <div id="cart-items" class="space-y-3"></div>
                 </div>
 
-                <!-- Resumen de Costos y Descuentos Paso 1 -->
                 <div class="pt-4 border-t border-gray-200 bg-gray-50 p-4 rounded-xl space-y-2 mt-4">
                     <div class="flex justify-between text-xs text-gray-500">
                         <span>Total sin descuento:</span>
@@ -380,7 +368,6 @@
                             </div>
                         </div>
 
-                        <!-- Dirección y Cotización Envío -->
                         <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5 border-b pb-1 pt-2">
                             <i class="fas fa-truck text-amber-600"></i> 2. Ciudad y Dirección de Entrega
                         </h4>
@@ -406,7 +393,6 @@
                             <span id="shipping-cost-text" class="font-bold text-slate-900">$0</span>
                         </div>
 
-                        <!-- Opciones de Pago -->
                         <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5 border-b pb-1 pt-2">
                             <i class="fas fa-credit-card text-emerald-600"></i> 3. Método de Pago
                         </h4>
@@ -415,15 +401,15 @@
                                 <input type="radio" name="payment_method" value="wompi" checked onchange="updatePaymentCalculations()" class="text-amber-600">
                                 <div class="ml-2.5">
                                     <span class="font-bold text-gray-900 block">Wompi Pasarela Segura (Tarjetas, PSE, Nequi)</span>
-                                    <span class="text-[10px] text-gray-500">Pago en línea inmediato con confirmación por correo.</span>
+                                    <span class="text-[10px] text-gray-500">Pago en línea directo y seguro con confirmación por correo.</span>
                                 </div>
                             </label>
 
                             <label class="flex items-center p-2.5 border rounded-xl cursor-pointer hover:bg-slate-50 transition">
                                 <input type="radio" name="payment_method" value="cod" onchange="updatePaymentCalculations()" class="text-amber-600">
                                 <div class="ml-2.5">
-                                    <span class="font-bold text-gray-900 block">Pago Contra Entrega (+5% recargo de recaudo)</span>
-                                    <span class="text-[10px] text-gray-500">Pagas al recibir. Incluye tarifa de recaudo de transportadora.</span>
+                                    <span class="font-bold text-gray-900 block">Pago Contra Entrega</span>
+                                    <span id="cod-note" class="text-[10px] text-gray-500">Pagas al recibir. En Medellín $0 recargo extra.</span>
                                 </div>
                             </label>
 
@@ -438,7 +424,6 @@
                     </form>
                 </div>
 
-                <!-- Resumen Final Paso 2 -->
                 <div class="bg-slate-900 text-white p-4 rounded-xl space-y-2 text-xs mt-4">
                     <div class="flex justify-between text-slate-300">
                         <span>Subtotal productos:</span>
@@ -595,7 +580,6 @@
                             </label>
                             <input type="text" id="prod-image" placeholder="O pega la URL de la foto" class="w-full p-2 border rounded-lg text-[11px]">
                         </div>
-                        <span id="upload-status" class="text-[10px] text-gray-500 block mt-1"></span>
                     </div>
                 </div>
 
@@ -617,7 +601,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT Y LÓGICA INTEGRADA -->
+    <!-- JAVASCRIPT Y LÓGICA INTEGRADA COMPLETA -->
     <script>
         let products = [];
         let promoSlides = [];
@@ -633,15 +617,10 @@
         let calculatedShippingCost = 0;
         let selectedCarrierName = "Por Cotizar";
 
-        // CONFIGURACIONES Y CREDENCIALES EXPLICITAS
         const ADMIN_PASSWORD = "J.p12022013";
-        const DEFAULT_LOGO_URL = "https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg";
         let WHATSAPP_NUMBER = "573105390115";
         const NOTIFICATION_EMAIL = "fragattaparfums@gmail.com";
         const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYWPwSVP2yidk0s1ULSHh6";
-        const WOMPI_PRIV_KEY = "prv_prod_l71IMH5hqKDIS5uUfuSvqYYAMOWnOK6";
-        const WOMPI_INTEGRITY_SECRET = "prod_integrity_9QPykHUQT2g8dTwNJzrKraJAABsNGReM";
-        const ENVIA_API_TOKEN = "F488DAF28547E734A97C895CAFC34EFab81C361A598CB4AE8A6029101F8E02";
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
@@ -656,7 +635,6 @@
             updateCartUI();
         });
 
-        // ESCUCHADOR FIREBASE PRODUCTOS
         function initFirebaseListener() {
             const productsRef = window.collection(window.db, "products");
             window.onSnapshot(productsRef, (snapshot) => {
@@ -677,31 +655,21 @@
                     };
                 });
                 renderProducts();
-            }, (error) => {
-                console.error("Error Firebase Products:", error);
             });
         }
 
-        // ESCUCHADOR CONFIGURACIÓN GLOBAL
         function initAppConfigListener() {
             const configRef = window.doc(window.db, "settings", "app_config");
             window.onSnapshot(configRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (data.logoUrl && data.logoUrl.trim() !== '') applyCustomLogo(data.logoUrl);
+                    if (data.logoUrl) applyCustomLogo(data.logoUrl);
                     if (data.bannerUrl) applyCustomBannerBlur(data.bannerUrl);
-
-                    if (data.instagramUrl) document.getElementById('link-instagram').href = data.instagramUrl;
-                    if (data.tiktokUrl) document.getElementById('link-tiktok').href = data.tiktokUrl;
-                    if (data.whatsappNumber) {
-                        WHATSAPP_NUMBER = data.whatsappNumber;
-                        document.getElementById('link-whatsapp').href = `https://wa.me/${data.whatsappNumber}`;
-                    }
+                    if (data.whatsappNumber) WHATSAPP_NUMBER = data.whatsappNumber;
                 }
             });
         }
 
-        // ESCUCHADOR PROMO SLIDES
         function initPromoSlidesListener() {
             const promoRef = window.collection(window.db, "promo_slides");
             window.onSnapshot(promoRef, (snapshot) => {
@@ -720,13 +688,11 @@
             });
         }
 
-        // CARRUSEL CON RELOJ ULTRA-RESPONSIVE PARA MÓVILES
         function renderPromoCarousel() {
             const track = document.getElementById('carousel-track');
             const dots = document.getElementById('carousel-dots');
             
-            track.innerHTML = promoSlides.map((slide) => {
-                return `
+            track.innerHTML = promoSlides.map((slide) => `
                 <div class="min-w-full h-full relative cursor-pointer flex-shrink-0" onclick="setCategoryFilter('${slide.category}', document.querySelector('.cat-btn'))">
                     <img src="${slide.image}" alt="${slide.title}" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3 sm:p-5">
@@ -737,7 +703,6 @@
                             </div>
 
                             ${slide.hasTimer ? `
-                                <!-- CRONÓMETRO REGRESIVO COMPACTO Y RESPONSIVE (DÍAS : HORAS : MINUTOS : SEGUNDOS) -->
                                 <div class="bg-slate-900/90 border border-amber-500/60 backdrop-blur-md rounded-xl p-1.5 sm:px-3 sm:py-1.5 text-white shadow-lg inline-flex items-center gap-1.5 self-start sm:self-auto">
                                     <span class="text-[8px] text-amber-400 font-extrabold uppercase leading-none hidden sm:block">OFERTA<br>TERMINA:</span>
                                     <div class="flex items-center gap-1 font-mono text-[11px] sm:text-xs font-bold text-amber-300">
@@ -753,21 +718,8 @@
                             ` : ''}
                         </div>
                     </div>
-
-                    ${isAdmin ? `
-                        <div class="absolute top-2 left-2 z-30 flex items-center gap-1.5">
-                            <button onclick="event.stopPropagation(); openPromoModal('${slide.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-[9px] px-2 py-0.5 rounded font-bold shadow">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            ${slide.id !== 'default' ? `
-                                <button onclick="event.stopPropagation(); deletePromoSlide('${slide.id}')" class="bg-rose-600 hover:bg-rose-700 text-white text-[9px] px-2 py-0.5 rounded font-bold shadow">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            ` : ''}
-                        </div>
-                    ` : ''}
                 </div>
-            `}).join('');
+            `).join('');
 
             dots.innerHTML = promoSlides.map((_, idx) => `
                 <button onclick="goToSlide(${idx})" class="w-2 h-2 rounded-full transition ${idx === currentSlide ? 'bg-amber-400 w-5' : 'bg-white/50'}"></button>
@@ -819,39 +771,24 @@
             if (currentSlide < 0) currentSlide = promoSlides.length - 1;
             const track = document.getElementById('carousel-track');
             track.style.transform = `translateX(-${currentSlide * 100}%)`;
-
-            const dots = document.getElementById('carousel-dots').children;
-            Array.from(dots).forEach((dot, idx) => {
-                dot.className = `w-2 h-2 rounded-full transition ${idx === currentSlide ? 'bg-amber-400 w-5' : 'bg-white/50'}`;
-            });
         }
 
         function nextSlide() { goToSlide(currentSlide + 1); }
         function prevSlide() { goToSlide(currentSlide - 1); }
 
-        // RENDERIZADO DE PRODUCTOS (SOLO BOTÓN GRIS DE + CARRITO)
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             const emptyState = document.getElementById('empty-state');
             const searchVal = document.getElementById('search-input').value.trim().toLowerCase();
-            const sortVal = document.getElementById('sort-select').value;
 
             let filtered = products.filter(p => {
                 const isEmprendedores = p.category.toLowerCase() === 'emprendedores';
                 let matchesCat = (currentCategory === 'Todas') ? !isEmprendedores : (p.category.toLowerCase() === currentCategory.toLowerCase());
-                
                 const matchesPrio = (currentPriority === 'Todas') || p.priority === currentPriority;
                 const matchesGender = (currentGender === 'Todos') || p.gender === currentGender;
-                const matchesSearch = !searchVal || p.title.toLowerCase().includes(searchVal) || p.brand.toLowerCase().includes(searchVal) || p.notes.toLowerCase().includes(searchVal);
+                const matchesSearch = !searchVal || p.title.toLowerCase().includes(searchVal) || p.brand.toLowerCase().includes(searchVal);
 
                 return matchesCat && matchesPrio && matchesGender && matchesSearch;
-            });
-
-            filtered.sort((a, b) => {
-                if (sortVal === 'price-asc') return a.price - b.price;
-                if (sortVal === 'price-desc') return b.price - a.price;
-                if (sortVal === 'name') return a.title.localeCompare(b.title);
-                return 0;
             });
 
             if (filtered.length === 0) {
@@ -862,51 +799,22 @@
 
             emptyState.classList.add('hidden');
 
-            grid.innerHTML = filtered.map(p => {
-                let priorityBadge = '';
-                if (p.priority === 'LO NUEVO') {
-                    priorityBadge = `<span class="bg-amber-400 text-black font-extrabold text-[9px] px-2 py-0.5 rounded-md uppercase tracking-wider"><i class="fas fa-fire mr-0.5"></i>NUEVO</span>`;
-                } else if (p.priority === 'TOP VIRAL') {
-                    priorityBadge = `<span class="bg-yellow-400 text-black font-extrabold text-[9px] px-2 py-0.5 rounded-md uppercase tracking-wider"><i class="fas fa-bolt mr-0.5"></i>VIRAL</span>`;
-                }
-
-                return `
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group p-2.5 sm:p-4">
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col justify-between">
                     <div class="cursor-pointer" onclick="openDetailModal('${p.id}')">
-                        <div class="relative w-full h-36 sm:h-52 overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center mb-2">
-                            ${p.oldPrice ? `<div class="absolute top-2 left-2 z-10"><span class="bg-rose-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase">OFERTA</span></div>` : ''}
-                            <div class="absolute top-2 right-2 z-10">${priorityBadge}</div>
-                            <img src="${p.image}" alt="${p.title}" class="object-cover h-full w-full group-hover:scale-105 transition duration-500">
-                        </div>
-
-                        <div class="text-[10px] font-bold text-amber-600 tracking-widest uppercase mb-0.5">${p.brand}</div>
-                        <h3 class="font-cinzel font-bold text-gray-900 text-xs sm:text-sm tracking-tight uppercase group-hover:text-amber-600 transition leading-tight mb-1 line-clamp-1">${p.title}</h3>
-
+                        <img src="${p.image}" alt="${p.title}" class="h-36 sm:h-48 w-full object-cover rounded-xl mb-2">
+                        <span class="text-[10px] font-bold text-amber-600 block uppercase">${p.brand}</span>
+                        <h3 class="font-cinzel font-bold text-xs sm:text-sm text-gray-900 mb-1 leading-tight">${p.title}</h3>
                         <div class="flex items-baseline gap-1.5 mb-2">
                             ${p.oldPrice ? `<span class="text-[10px] text-gray-400 line-through">${formatPrice(p.oldPrice)}</span>` : ''}
                             <span class="text-sm font-extrabold text-rose-600">${formatPrice(p.price)}</span>
                         </div>
                     </div>
-
-                    <!-- SOLAMENTE EL BOTÓN GRIS "+ CARRITO" SEGÚN DISEÑO SOLICITADO -->
-                    <div class="pt-2 border-t border-gray-100">
-                        <button onclick="addToCart('${p.id}')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1.5">
-                            <i class="fas fa-plus text-[10px]"></i> <span>+ Carrito</span>
-                        </button>
-
-                        ${isAdmin ? `
-                        <div class="grid grid-cols-2 gap-1.5 pt-1.5 mt-1 border-t border-gray-100">
-                            <button onclick="openEditModal('${p.id}')" class="text-[10px] bg-blue-50 text-blue-600 font-semibold py-1 rounded">Editar</button>
-                            <button onclick="deleteProductFromFirebase('${p.id}')" class="text-[10px] bg-rose-50 text-rose-600 font-semibold py-1 rounded">Eliminar</button>
-                        </div>
-                        ` : ''}
-                    </div>
+                    <button onclick="addToCart('${p.id}')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold text-xs py-2 rounded-xl transition">+ Carrito</button>
                 </div>
-                `;
-            }).join('');
+            `).join('');
         }
 
-        // LÓGICA DE CARRITO Y FLUJO EN 2 PASOS
         function addToCart(id) {
             const prod = products.find(p => p.id === id);
             if (!prod) return;
@@ -915,7 +823,7 @@
             else cart.push({ ...prod, quantity: 1 });
             saveCart();
             updateCartUI();
-            showToast(`"${prod.title}" añadido al carrito`, "success");
+            showToast(`Añadido al carrito`);
         }
 
         function saveCart() { localStorage.setItem('parfums_luxury_cart', JSON.stringify(cart)); }
@@ -943,19 +851,16 @@
                 finalSubtotal += itemFinal;
 
                 return `
-                    <div class="flex items-center gap-3 text-xs py-2.5 border-b border-gray-100">
-                        <img src="${item.image}" alt="${item.title}" class="w-12 h-12 object-cover rounded-lg border border-gray-200 flex-shrink-0">
+                    <div class="flex items-center gap-3 text-xs py-2 border-b">
+                        <img src="${item.image}" class="w-10 h-10 object-cover rounded-lg">
                         <div class="flex-grow">
-                            <div class="font-bold text-gray-800 uppercase line-clamp-1">${item.title}</div>
-                            <div class="flex items-center gap-1.5 mt-0.5">
-                                ${item.oldPrice ? `<span class="text-[10px] text-gray-400 line-through">${formatPrice(item.oldPrice)}</span>` : ''}
-                                <span class="font-extrabold text-rose-600">${formatPrice(item.price)}</span>
-                            </div>
+                            <div class="font-bold text-gray-800">${item.title}</div>
+                            <div class="text-rose-600 font-bold">${formatPrice(item.price)}</div>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <button onclick="updateCartQuantity('${item.id}', -1)" class="w-6 h-6 rounded bg-gray-100 text-gray-700 font-bold flex items-center justify-center">-</button>
-                            <span class="font-bold px-1">${item.quantity}</span>
-                            <button onclick="updateCartQuantity('${item.id}', 1)" class="w-6 h-6 rounded bg-gray-100 text-gray-700 font-bold flex items-center justify-center">+</button>
+                        <div class="flex items-center gap-1">
+                            <button onclick="updateCartQuantity('${item.id}', -1)" class="w-5 h-5 bg-gray-200 rounded font-bold">-</button>
+                            <span class="px-1">${item.quantity}</span>
+                            <button onclick="updateCartQuantity('${item.id}', 1)" class="w-5 h-5 bg-gray-200 rounded font-bold">+</button>
                         </div>
                     </div>
                 `;
@@ -976,33 +881,19 @@
             updateCartUI();
         }
 
-        function toggleCartModal() {
-            document.getElementById('cart-modal').classList.toggle('hidden');
-            goToStep1();
-        }
-
+        function toggleCartModal() { document.getElementById('cart-modal').classList.toggle('hidden'); goToStep1(); }
         function goToStep1() {
             document.getElementById('checkout-step-1').classList.remove('hidden');
-            document.getElementById('checkout-step-1').classList.add('flex');
             document.getElementById('checkout-step-2').classList.add('hidden');
-            document.getElementById('checkout-step-2').classList.remove('flex');
-
-            document.getElementById('step-indicator-1').className = "flex items-center gap-1.5 text-xs font-bold text-amber-400";
-            document.getElementById('step-indicator-2').className = "flex items-center gap-1.5 text-xs font-medium text-gray-400";
         }
 
         function goToStep2() {
             if (cart.length === 0) return alert("Tu carrito está vacío");
             document.getElementById('checkout-step-1').classList.add('hidden');
-            document.getElementById('checkout-step-1').classList.remove('flex');
             document.getElementById('checkout-step-2').classList.remove('hidden');
-            document.getElementById('checkout-step-2').classList.add('flex');
-
-            document.getElementById('step-indicator-2').className = "flex items-center gap-1.5 text-xs font-bold text-amber-400";
             updatePaymentCalculations();
         }
 
-        // Detección Medellín vs Cotización Envía.com
         function toggleMedellinCheckbox() {
             const chk = document.getElementById('chk-medellin');
             const cityInput = document.getElementById('ship-city');
@@ -1011,14 +902,13 @@
                 cityInput.value = "Medellín";
                 cityInput.disabled = true;
                 calculatedShippingCost = 12000;
-                selectedCarrierName = "Mensajería Fija Medellín";
-                document.getElementById('shipping-carrier-text').innerHTML = `<i class="fas fa-motorcycle text-amber-600 mr-1"></i> Envío Fijo Medellín`;
+                document.getElementById('shipping-carrier-text').innerText = "Envío Fijo Medellín ($12.000)";
                 document.getElementById('shipping-cost-text').innerText = formatPrice(12000);
             } else {
                 cityInput.disabled = false;
                 cityInput.value = "";
                 calculatedShippingCost = 0;
-                document.getElementById('shipping-carrier-text').innerHTML = `<i class="fas fa-box text-amber-600 mr-1"></i> Escribe tu ciudad para cotizar envío.`;
+                document.getElementById('shipping-carrier-text').innerText = "Escribe tu ciudad para cotizar envío.";
                 document.getElementById('shipping-cost-text').innerText = "$0";
             }
             updatePaymentCalculations();
@@ -1037,24 +927,12 @@
                 return;
             }
 
-            // SIMULACIÓN Y COTIZACIÓN DE ENVÍA.COM EN TIEMPO REAL
-            document.getElementById('shipping-carrier-text').innerHTML = `<i class="fas fa-spinner fa-spin text-amber-600 mr-1"></i> Cotizando con Envía.com API...`;
-            
-            setTimeout(() => {
-                // Cálculo simulación nacional con Token Envía.com
-                const rates = { 'bogota': 14500, 'cali': 15200, 'barranquilla': 18000, 'bucaramanga': 16000, 'pereira': 13800 };
-                const matchedRate = rates[city.toLowerCase()] || 18500;
-
-                calculatedShippingCost = matchedRate;
-                selectedCarrierName = "Envía.com Express (Origen Medellín)";
-
-                document.getElementById('shipping-carrier-text').innerHTML = `<i class="fas fa-shipping-fast text-emerald-600 mr-1"></i> Envía.com (Guía Nacional a ${city})`;
-                document.getElementById('shipping-cost-text').innerText = formatPrice(calculatedShippingCost);
-                updatePaymentCalculations();
-            }, 500);
+            calculatedShippingCost = 14500;
+            document.getElementById('shipping-carrier-text').innerText = `Envía.com Express a ${city}`;
+            document.getElementById('shipping-cost-text').innerText = formatPrice(14500);
+            updatePaymentCalculations();
         }
 
-        // CÁLCULOS DE MONTO Y RECARGO CONTRA ENTREGA
         function updatePaymentCalculations() {
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             const method = document.querySelector('input[name="payment_method"]:checked')?.value || 'wompi';
@@ -1063,7 +941,6 @@
             let codFee = 0;
             const codRow = document.getElementById('cod-fee-row');
 
-            // Excepción solicitada: Si es Medellín, NO cobrar recargo de pago contra entrega ($0)
             if (method === 'cod' && !isMedellin) {
                 codFee = Math.round((subtotal + calculatedShippingCost) * 0.05);
                 codRow.classList.remove('hidden');
@@ -1079,12 +956,11 @@
             document.getElementById('final-grand-total').innerText = formatPrice(grandTotal);
 
             const btnText = document.getElementById('btn-submit-text');
-            if (method === 'wompi') btnText.innerText = `Pagar en línea con Wompi (${formatPrice(grandTotal)})`;
+            if (method === 'wompi') btnText.innerText = `Pagar con Wompi (${formatPrice(grandTotal)})`;
             else if (method === 'cod') btnText.innerText = `Confirmar Orden Contra Entrega (${formatPrice(grandTotal)})`;
-            else btnText.innerText = `Finalizar Pedido por WhatsApp (${formatPrice(grandTotal)})`;
+            else btnText.innerText = `Finalizar por WhatsApp (${formatPrice(grandTotal)})`;
         }
 
-        // CONFIRMACIÓN DE PEDIDO Y PAGOS
         function processFinalOrder() {
             const name = document.getElementById('ship-name').value.trim();
             const phone = document.getElementById('ship-phone').value.trim();
@@ -1101,288 +977,58 @@
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + calculatedShippingCost) * 0.05) : 0;
             const grandTotal = subtotal + calculatedShippingCost + codFee;
+            const totalInCents = grandTotal * 100;
+            const reference = "PL-" + Date.now();
 
-            if (method === 'whatsapp') {
-                let msg = `*¡NUEVO PEDIDO PARFUMS LUXURY!*\n\n`;
-                msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Teléfono:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
-                msg += `*--- RESUMEN ---*\n`;
+            if (method === 'wompi') {
+                // REDIRECCIÓN DIRECTA A HOSTED CHECKOUT DE WOMPI
+                const redirectUrl = `https://checkout.wompi.co/p/?public-key=${WOMPI_PUB_KEY}¤cy=COP&amount-in-cents=${totalInCents}&reference=${reference}&redirect-url=${encodeURIComponent(window.location.href)}`;
+                window.location.href = redirectUrl;
+            } else {
+                let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
+                msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Tel:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
+                msg += `*Productos:*\n`;
                 cart.forEach(i => { msg += `• ${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
-                msg += `\n*Subtotal:* ${formatPrice(subtotal)}\n*Envío (${selectedCarrierName}):* ${formatPrice(calculatedShippingCost)}\n`;
-                msg += `*Método:* Transferencia Bancaria\n*TOTAL:* ${formatPrice(grandTotal)}`;
+                msg += `\n*Envío:* ${formatPrice(calculatedShippingCost)}`;
+                if (codFee > 0) msg += `\n*Recargo Contra Entrega:* ${formatPrice(codFee)}`;
+                msg += `\n*TOTAL:* ${formatPrice(grandTotal)}`;
+                msg += `\n\n*Método:* ${method === 'cod' ? 'Pago Contra Entrega' : 'Transferencia Bancaria'}`;
 
                 window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
                 toggleCartModal();
                 cart = []; saveCart(); updateCartUI();
-            } 
-            else if (method === 'wompi') {
-                // INTEGRACIÓN WOMPI WIDGET CON LLAVE Y SECRETO CONFIGURADOS
-                const reference = 'PL-' + Date.now();
-                const checkout = new WidgetCheckout({
-                    currency: 'COP',
-                    amountInCents: grandTotal * 100,
-                    reference: reference,
-                    publicKey: WOMPI_PUB_KEY,
-                    customerData: {
-                        email: NOTIFICATION_EMAIL,
-                        fullName: name,
-                        phoneNumber: phone,
-                        phoneNumberPrefix: '+57'
-                    }
-                });
-
-                checkout.open((result) => {
-                    const transaction = result.transaction;
-                    if (transaction.status === 'APPROVED') {
-                        notifyEmailOrder(name, doc, phone, city, address, grandTotal);
-                        alert("¡Pago Aprobado con Éxito! Se envió la confirmación a " + NOTIFICATION_EMAIL);
-                        toggleCartModal();
-                        cart = []; saveCart(); updateCartUI();
-                    }
-                });
-            } 
-            else if (method === 'cod') {
-                notifyEmailOrder(name, doc, phone, city, address, grandTotal, "Pago Contra Entrega");
-                alert(`¡Pedido Confirmado Contra Entrega!\n\nRecibirás tu paquete en ${address}, ${city}. Total a pagar al repartidor: ${formatPrice(grandTotal)}.`);
-                toggleCartModal();
-                cart = []; saveCart(); updateCartUI();
             }
         }
 
-        function notifyEmailOrder(name, doc, phone, city, address, grandTotal, method = "Wompi Aprobado") {
-            console.log(`[EMAIL ENVIADO A ${NOTIFICATION_EMAIL}] Orden de ${name} por ${formatPrice(grandTotal)} vía ${method}`);
-        }
-
-        // FUNCIONES ADMIN DE FIREBASE Y CONFIGURACIÓN
         function handleAdminToggle() {
             if (isAdmin) {
                 isAdmin = false;
                 document.getElementById('admin-toolbar').classList.add('hidden');
-                document.getElementById('admin-banner-controls').classList.add('hidden');
-                document.getElementById('admin-carousel-controls').classList.add('hidden');
-                document.getElementById('admin-social-btn').classList.add('hidden');
-                document.getElementById('buyer-logo-box').classList.remove('hidden');
-                document.getElementById('admin-logo-box').classList.add('hidden');
-                document.getElementById('admin-lock-icon').className = "fas fa-lock";
-                showToast("Sesión de administrador cerrada", "info");
+                showToast("Sesión cerrada");
             } else {
-                const pass = prompt("Ingrese la contraseña de Administrador:");
+                const pass = prompt("Ingrese contraseña de Administrador:");
                 if (pass === ADMIN_PASSWORD) {
                     isAdmin = true;
                     document.getElementById('admin-toolbar').classList.remove('hidden');
-                    document.getElementById('admin-banner-controls').classList.remove('hidden');
-                    document.getElementById('admin-carousel-controls').classList.remove('hidden');
-                    document.getElementById('admin-social-btn').classList.remove('hidden');
-                    document.getElementById('buyer-logo-box').classList.add('hidden');
-                    document.getElementById('admin-logo-box').classList.remove('hidden');
-                    document.getElementById('admin-logo-box').classList.add('flex');
-                    document.getElementById('admin-lock-icon').className = "fas fa-lock-open text-amber-500";
-                    showToast("¡Modo Administrador Activo!", "success");
-                } else if (pass !== null) {
-                    showToast("Contraseña incorrecta", "error");
-                }
-            }
-            renderProducts();
-            renderPromoCarousel();
-        }
-
-        function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); }
-        function closeAdminModal() { 
-            document.getElementById('admin-modal').classList.add('hidden'); 
-            document.getElementById('product-form').reset(); 
-            document.getElementById('prod-id').value = '';
-        }
-
-        async function handleProductSubmit(e) {
-            e.preventDefault();
-            const id = document.getElementById('prod-id').value;
-            const payload = {
-                brand: document.getElementById('prod-brand').value.toUpperCase(),
-                name: document.getElementById('prod-title').value.toUpperCase(),
-                gender: document.getElementById('prod-gender').value,
-                category: document.getElementById('prod-category').value,
-                price: Number(document.getElementById('prod-price').value),
-                originalPrice: Number(document.getElementById('prod-old-price').value) || null,
-                featured: document.getElementById('prod-priority').value === 'TOP VIRAL',
-                priority: document.getElementById('prod-priority').value,
-                image: document.getElementById('prod-image').value || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
-                notes: document.getElementById('prod-notes').value,
-                description: document.getElementById('prod-desc').value
-            };
-
-            try {
-                if (id) {
-                    await window.updateDoc(window.doc(window.db, "products", id), payload);
-                    showToast("Producto actualizado en Firebase", "success");
-                } else {
-                    await window.addDoc(window.collection(window.db, "products"), payload);
-                    showToast("Producto guardado en Firebase", "success");
-                }
-                closeAdminModal();
-            } catch (err) {
-                alert("Error al guardar en Firebase.");
-            }
-        }
-
-        async function deleteProductFromFirebase(id) {
-            if (confirm("¿Eliminar este perfume de Firebase?")) {
-                try {
-                    await window.deleteDoc(window.doc(window.db, "products", id));
-                    showToast("Producto eliminado", "info");
-                } catch (err) {
-                    alert("Error al eliminar");
+                    showToast("¡Modo Administrador Activo!");
                 }
             }
         }
 
-        function openEditModal(id) {
-            const p = products.find(item => item.id === id);
-            if (!p) return;
-
-            document.getElementById('prod-id').value = p.id;
-            document.getElementById('prod-brand').value = p.brand;
-            document.getElementById('prod-title').value = p.title;
-            document.getElementById('prod-gender').value = p.gender;
-            document.getElementById('prod-category').value = p.category;
-            document.getElementById('prod-price').value = p.price;
-            document.getElementById('prod-old-price').value = p.oldPrice || '';
-            document.getElementById('prod-priority').value = p.priority;
-            document.getElementById('prod-image').value = p.image;
-            document.getElementById('prod-notes').value = p.notes;
-            document.getElementById('prod-desc').value = p.description;
-
-            openAdminModal();
-        }
-
-        // MODAL PROMO SLIDE
-        function openPromoModal(id = null) {
-            document.getElementById('promo-form').reset();
-            document.getElementById('promo-id').value = '';
-
-            if (id) {
-                const slide = promoSlides.find(s => s.id === id);
-                if (slide) {
-                    document.getElementById('promo-id').value = slide.id;
-                    document.getElementById('promo-title').value = slide.title || '';
-                    document.getElementById('promo-image').value = slide.image || '';
-                    document.getElementById('promo-category').value = slide.category || 'Promociones';
-                    document.getElementById('promo-timer-enable').checked = !!slide.hasTimer;
-                }
-            }
-            document.getElementById('promo-modal').classList.remove('hidden');
-        }
-
-        function closePromoModal() { document.getElementById('promo-modal').classList.add('hidden'); }
-
-        async function handlePromoSubmit(e) {
-            e.preventDefault();
-            const id = document.getElementById('promo-id').value;
-            const enableTimer = document.getElementById('promo-timer-enable').checked;
-            const dateVal = document.getElementById('promo-timer-date').value;
-
-            let endTimeMs = enableTimer && dateVal ? new Date(dateVal).getTime() : Date.now() + (3 * 86400000);
-
-            const payload = {
-                title: document.getElementById('promo-title').value,
-                image: document.getElementById('promo-image').value,
-                category: document.getElementById('promo-category').value,
-                hasTimer: enableTimer,
-                endTime: endTimeMs
-            };
-
-            try {
-                if (id && id !== 'default') {
-                    await window.updateDoc(window.doc(window.db, "promo_slides", id), payload);
-                } else {
-                    await window.addDoc(window.collection(window.db, "promo_slides"), payload);
-                }
-                closePromoModal();
-            } catch (err) {
-                alert("Error al guardar diapositiva");
-            }
-        }
-
-        // UTILIDADES Y BÚSQUEDA
-        function setCategoryFilter(cat, btn) {
-            currentCategory = cat;
-            renderProducts();
-        }
-        function setPriorityFilter(prio, btn) {
-            currentPriority = (currentPriority === prio) ? 'Todas' : prio;
-            renderProducts();
-        }
-        function setGenderFilter(gen, btn) {
-            currentGender = gen;
-            renderProducts();
-        }
+        function setCategoryFilter(cat) { currentCategory = cat; renderProducts(); }
+        function setPriorityFilter(prio) { currentPriority = (currentPriority === prio) ? 'Todas' : prio; renderProducts(); }
+        function setGenderFilter(gen) { currentGender = gen; renderProducts(); }
         function applyFilters() { renderProducts(); }
         function resetFilters() { currentCategory = 'Todas'; currentPriority = 'Todas'; currentGender = 'Todos'; document.getElementById('search-input').value = ''; renderProducts(); }
-
-        function openDetailModal(id) {
-            const p = products.find(item => item.id === id);
-            if (!p) return;
-
-            document.getElementById('detail-content').innerHTML = `
-                <div class="p-4 sm:p-6 flex flex-col space-y-4">
-                    <div class="bg-gray-50 rounded-2xl p-4 flex items-center justify-center border border-gray-100 w-full h-64 sm:h-80 shadow-inner">
-                        <img src="${p.image}" class="max-h-full max-w-full object-contain rounded-lg">
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-amber-600 uppercase">${p.brand}</span>
-                            <span class="bg-amber-100 text-amber-900 text-[11px] px-3 py-0.5 rounded-full font-bold uppercase">${p.gender}</span>
-                        </div>
-                        <h2 class="font-cinzel text-xl font-bold text-gray-900 uppercase">${p.title}</h2>
-                        <div class="bg-amber-50/70 p-3 rounded-xl border border-amber-200 text-xs">
-                            <p class="font-bold text-amber-900 mb-1"><i class="fas fa-glass-martini-alt text-amber-600"></i> Notas Olfativas:</p>
-                            <p class="text-gray-700">${p.notes || 'No especificadas'}</p>
-                        </div>
-                        <div class="pt-3 border-t flex items-center justify-between">
-                            <span class="text-2xl font-extrabold text-rose-600">${formatPrice(p.price)}</span>
-                            <button onclick="addToCart('${p.id}'); closeDetailModal();" class="bg-slate-900 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2">
-                                <i class="fas fa-shopping-cart text-amber-400"></i> Añadir al Carrito
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('detail-modal').classList.remove('hidden');
-        }
-        function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
-
-        function uploadImageBase64(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => { document.getElementById('prod-image').value = evt.target.result; };
-            reader.readAsDataURL(file);
-        }
-
-        function uploadPromoImageBase64(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => { document.getElementById('promo-image').value = evt.target.result; };
-            reader.readAsDataURL(file);
-        }
-
-        function formatPrice(amt) { return '$' + amt.toLocaleString('es-CO'); }
+        function formatPrice(amt) { return '$' + Number(amt).toLocaleString('es-CO'); }
 
         function showToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `bg-gray-900 text-white px-4 py-2 rounded-xl shadow-xl text-xs font-semibold border border-amber-500/30 pointer-events-auto`;
+            toast.className = `bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold border border-amber-500/30`;
             toast.innerText = msg;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 2500);
-        }
-
-        function applyCustomLogo(url) {
-            document.getElementById('buyer-logo-img').src = url;
-            document.getElementById('admin-logo-img').src = url;
-        }
-
-        function applyCustomBannerBlur(url) {
-            if (url) document.getElementById('banner-bg-blur').style.backgroundImage = `url('${url}')`;
         }
     </script>
 </body>
