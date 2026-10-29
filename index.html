@@ -15,9 +15,6 @@
     <!-- SheetJS (XLSX) para lectura de Excel y CSV -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    <!-- SCRIPT OFICIAL DEL CHECKOUT DE WOMPI -->
-    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
-
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -162,7 +159,7 @@
             </div>
         </section>
 
-        <!-- CARRUSEL PROMOCIONAL CON CRONÓMETRO -->
+        <!-- CARRUSEL PROMOCIONAL CON CRONÓMETRO OPTIMIZADO PARA MÓVILES -->
         <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-6 bg-slate-900 group">
             <div id="carousel-track" class="flex transition-transform duration-500 ease-out h-52 sm:h-64 md:h-72 w-full"></div>
 
@@ -404,7 +401,7 @@
                                 <input type="radio" name="payment_method" value="wompi" checked onchange="updatePaymentCalculations()" class="text-amber-600">
                                 <div class="ml-2.5">
                                     <span class="font-bold text-gray-900 block">Wompi Pasarela Segura (Tarjetas, PSE, Nequi)</span>
-                                    <span class="text-[10px] text-gray-500">Pago en línea directo y seguro con confirmación por correo.</span>
+                                    <span class="text-[10px] text-gray-500">Pago directo o con enlace de cobro enviado a tu WhatsApp.</span>
                                 </div>
                             </label>
 
@@ -978,32 +975,20 @@
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + calculatedShippingCost) * 0.05) : 0;
             const grandTotal = subtotal + calculatedShippingCost + codFee;
-            const totalInCents = grandTotal * 100;
-            const reference = "PL-" + Date.now();
 
             if (method === 'wompi') {
-                if (typeof WidgetCheckout !== 'undefined') {
-                    const checkout = new WidgetCheckout({
-                        currency: 'COP',
-                        amountInCents: totalInCents,
-                        reference: reference,
-                        publicKey: WOMPI_PUB_KEY,
-                        redirectUrl: window.location.href,
-                        customerData: {
-                            email: `${phone}@parfums.co`,
-                            fullName: name,
-                            phoneNumber: phone,
-                            phoneNumberPrefix: '+57',
-                            legalId: doc,
-                            legalIdType: 'CC'
-                        }
-                    });
-                    checkout.open(function (result) {
-                        console.log('Resultado de la transacción: ', result.transaction);
-                    });
-                } else {
-                    alert("Cargando la pasarela de pago Wompi... Por favor presiona 'Confirmar' en unos segundos.");
-                }
+                // REDIRECCIÓN ASISTIDA DE ORDEN
+                let msg = `*SOLICITUD DE ENLACE DE PAGO WOMPI*\n\n`;
+                msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Tel:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
+                msg += `*Productos:*\n`;
+                cart.forEach(i => { msg += `• ${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
+                msg += `\n*Envío:* ${formatPrice(calculatedShippingCost)}`;
+                msg += `\n*TOTAL A PAGAR:* ${formatPrice(grandTotal)}`;
+                msg += `\n\n_Por favor envíenme el link directo de cobro Wompi/Bancolombia para pagar con PSE, Nequi o Tarjeta._`;
+
+                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+                toggleCartModal();
+                cart = []; saveCart(); updateCartUI();
             } else {
                 let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
                 msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Tel:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
