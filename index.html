@@ -15,6 +15,9 @@
     <!-- SheetJS (XLSX) para lectura de Excel y CSV -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+    <!-- Script Oficial del Widget Checkout de Wompi -->
+    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
+
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -286,15 +289,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- FORMULARIO DIRECTO Y CIFRADO POST HACIA PASARELA OFICIAL WOMPI -->
-    <form id="wompi-post-form" method="POST" action="https://checkout.wompi.co/p/" class="hidden">
-        <input type="hidden" name="public-key" id="wompi-pk">
-        <input type="hidden" name="currency" value="COP">
-        <input type="hidden" name="amount-in-cents" id="wompi-amount">
-        <input type="hidden" name="reference" id="wompi-ref">
-        <input type="hidden" name="redirect-url" id="wompi-redirect">
-    </form>
 
     <!-- MODAL DETALLE PRODUCTO -->
     <div id="detail-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
@@ -988,13 +982,30 @@
             const reference = "PL-" + Date.now();
 
             if (method === 'wompi') {
-                // REDIRECCIÓN MEDIANTE ENVÍO NATIVO DE FORMULARIO POST
-                document.getElementById('wompi-pk').value = WOMPI_PUB_KEY;
-                document.getElementById('wompi-amount').value = totalInCents;
-                document.getElementById('wompi-ref').value = reference;
-                document.getElementById('wompi-redirect').value = window.location.href;
-                
-                document.getElementById('wompi-post-form').submit();
+                // INTEGRACIÓN CON WIDGET OFICIAL DE WOMPI
+                if (typeof WidgetCheckout !== 'undefined') {
+                    const checkout = new WidgetCheckout({
+                        currency: 'COP',
+                        amountInCents: totalInCents,
+                        reference: reference,
+                        publicKey: WOMPI_PUB_KEY,
+                        redirectUrl: window.location.href,
+                        customerData: {
+                            email: `${phone}@parfums.co`,
+                            fullName: name,
+                            phoneNumber: phone,
+                            phoneNumberPrefix: '+57',
+                            legalId: doc,
+                            legalIdType: 'CC'
+                        }
+                    });
+                    checkout.open(function (result) {
+                        const transaction = result.transaction;
+                        console.log('Transacción finalizada: ', transaction);
+                    });
+                } else {
+                    alert("Cargando pasarela de pago... Por favor reintenta en un momento.");
+                }
             } else {
                 let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
                 msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Tel:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
