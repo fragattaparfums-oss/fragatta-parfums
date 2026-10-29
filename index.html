@@ -342,7 +342,7 @@
                 </div>
             </div>
 
-            <!-- PASO 2: DATOS DEL COMPRADOR Y PAGO CON OPCIONES -->
+            <!-- PASO 2: DATOS DEL COMPRADOR Y PAGO CON AVISO DE CONFIRMACIÓN -->
             <div id="checkout-step-2" class="flex-grow overflow-y-auto p-4 hidden flex-col justify-between space-y-4">
                 <div>
                     <button onclick="goToStep1()" class="inline-flex items-center text-xs font-bold text-amber-700 hover:underline mb-3">
@@ -396,12 +396,23 @@
                         <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5 border-b pb-1 pt-2">
                             <i class="fas fa-credit-card text-emerald-600"></i> 3. Método de Pago
                         </h4>
+
+                        <!-- RECUADRO INFORMATIVO SOBRE CONFIRMACIÓN VÍA WHATSAPP -->
+                        <div class="p-3 bg-amber-50 border border-amber-300 rounded-xl text-[11px] text-amber-900 space-y-1">
+                            <div class="font-bold flex items-center gap-1.5 text-amber-800">
+                                <i class="fas fa-info-circle text-amber-600"></i> ¿Cómo funciona el pago?
+                            </div>
+                            <p class="leading-relaxed">
+                                Al hacer clic en <strong>"Enviar Pedido por WhatsApp"</strong> se abrirá tu WhatsApp con la orden. Un asesor confirmará la <strong>disponibilidad inmediata</strong> de tus fragancias y te suministrará el enlace de pago seguro Wompi o cuenta bancaria.
+                            </p>
+                        </div>
+
                         <div class="space-y-2">
                             <label class="flex items-center p-2.5 border rounded-xl cursor-pointer hover:bg-slate-50 transition border-amber-500 bg-amber-50/30">
                                 <input type="radio" name="payment_method" value="wompi" checked onchange="updatePaymentCalculations()" class="text-amber-600">
                                 <div class="ml-2.5">
-                                    <span class="font-bold text-gray-900 block">Wompi Segura (Tarjetas Crédito/Débito, PSE, Nequi, Bancolombia)</span>
-                                    <span class="text-[10px] text-gray-500">Recibe el link/instrucción de pago Wompi directo a tu WhatsApp.</span>
+                                    <span class="font-bold text-gray-900 block">Wompi (Tarjetas Crédito/Débito, PSE, Nequi, Bancolombia)</span>
+                                    <span class="text-[10px] text-gray-500">Un asesor te enviará el link/QR Wompi tras validar disponibilidad.</span>
                                 </div>
                             </label>
 
@@ -409,7 +420,7 @@
                                 <input type="radio" name="payment_method" value="transfer" onchange="updatePaymentCalculations()" class="text-amber-600">
                                 <div class="ml-2.5">
                                     <span class="font-bold text-gray-900 block">Transferencia Directa (Bancolombia, Nequi, Daviplata)</span>
-                                    <span class="text-[10px] text-gray-500">Solicita los datos bancarios para transferir directo por WhatsApp.</span>
+                                    <span class="text-[10px] text-gray-500">Recibe las cuentas para realizar transferencia directa.</span>
                                 </div>
                             </label>
 
@@ -417,7 +428,7 @@
                                 <input type="radio" name="payment_method" value="cod" onchange="updatePaymentCalculations()" class="text-amber-600">
                                 <div class="ml-2.5">
                                     <span class="font-bold text-gray-900 block">Pago Contra Entrega</span>
-                                    <span id="cod-note" class="text-[10px] text-gray-500">Pagas en efectivo al recibir tu paquete.</span>
+                                    <span id="cod-note" class="text-[10px] text-gray-500">Pagas en efectivo al recibir tu paquete en mano.</span>
                                 </div>
                             </label>
                         </div>
@@ -823,46 +834,47 @@
             const grandTotal = subtotal + calculatedShippingCost + codFee;
             const orderRef = "PL-" + Date.now().toString().slice(-6);
 
-            // Generar el mensaje estructurado para WhatsApp
-            let msg = `🛍️ *NUEVA ORDEN DE COMPRA - PARFUMS LUXURY*\n`;
-            msg += `*Ref de Orden:* #${orderRef}\n\n`;
-            msg += `👤 *DATOS DEL CLIENTE:*\n`;
-            msg += `• *Nombre:* ${name}\n`;
-            msg += `• *Cédula/NIT:* ${doc}\n`;
+            // Estructura formal tipo Ficha de Orden para evitar ediciones manuales
+            let msg = `Hola Parfums Luxury 👋, deseo solicitar disponibilidad para la siguiente orden:\n\n`;
+            msg += `═════════════════════\n`;
+            msg += `  📋 *ORDEN DE COMPRA #${orderRef}*\n`;
+            msg += `═════════════════════\n\n`;
+            msg += `👤 *DATOS DE ENTREGA:*\n`;
+            msg += `• *Cliente:* ${name}\n`;
+            msg += `• *Cédula:* ${doc}\n`;
             msg += `• *Teléfono:* ${phone}\n`;
             msg += `• *Ciudad:* ${city}\n`;
             msg += `• *Dirección:* ${address}\n\n`;
             
-            msg += `📦 *PRODUCTOS SOLICITADOS:*\n`;
+            msg += `📦 *PRODUCTOS:*\n`;
             cart.forEach(i => { 
                 msg += `• ${i.title} (x${i.quantity}) - ${formatPrice(i.price * i.quantity)}\n`; 
             });
             
-            msg += `\n💰 *RESUMEN DE PAGO:*\n`;
+            msg += `\n💰 *VALORES:*\n`;
             msg += `• *Subtotal:* ${formatPrice(subtotal)}\n`;
             msg += `• *Envío:* ${formatPrice(calculatedShippingCost)}\n`;
             if (codFee > 0) msg += `• *Recargo Contra Entrega (5%):* ${formatPrice(codFee)}\n`;
-            msg += `• *TOTAL A PAGAR:* ${formatPrice(grandTotal)}\n\n`;
+            msg += `• *TOTAL:* ${formatPrice(grandTotal)}\n\n`;
             
-            msg += `💳 *MÉTODO DE PAGO SELECCIONADO:*\n`;
+            msg += `💳 *MÉTODO DE PAGO SOLICITADO:*\n`;
             if (method === 'wompi') {
-                msg += `👉 *PAGO POR WOMPI (PSE, Tarjetas Crédito/Débito, Nequi, Botón Bancolombia)*\n`;
-                msg += `*Por favor enviar el link o QR de pago Wompi para realizar la transacción.*`;
+                msg += `👉 *Wompi (PSE / Tarjetas / Nequi / Bancolombia)*\n`;
+                msg += `*(Solicito confirmación de stock y link/QR de pago Wompi)*`;
             } else if (method === 'transfer') {
-                msg += `👉 *TRANSFERENCIA BANCARIA DIRECTA*\n`;
-                msg += `*Solicito datos de cuenta para transferir.*`;
+                msg += `👉 *Transferencia Directa*\n`;
+                msg += `*(Solicito datos bancarios para transferir)*`;
             } else {
-                msg += `👉 *PAGO CONTRA ENTREGA*\n`;
-                msg += `*Pago al recibir el paquete.*`;
+                msg += `👉 *Pago Contra Entrega*\n`;
+                msg += `*(Pago en efectivo al recibir el pedido)*`;
             }
 
-            // Redirección directa a WhatsApp
+            // Redirección directa
             const targetNumber = WHATSAPP_NUMBER.replace(/\D/g, '');
             const waUrl = `https://wa.me/${targetNumber}?text=${encodeURIComponent(msg)}`;
 
             window.open(waUrl, '_blank');
 
-            // Limpieza del carrito
             toggleCartModal();
             cart = []; 
             saveCart(); 
