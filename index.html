@@ -114,7 +114,7 @@
                         <img id="buyer-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Parfums Luxury Logo" class="w-full h-full object-contain">
                     </div>
 
-                    <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para cambiar el logo">
+                    <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para cambiar el logo">
                         <img id="admin-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Logo Admin" class="w-full h-full object-contain">
                         <div class="absolute inset-0 bg-black/60 text-luxury-gold text-[8px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition">Cambiar</div>
                     </div>
@@ -297,7 +297,7 @@
         </div>
     </div>
 
-    <!-- MODAL ADMINISTRACIÓN (CREAR / EDITAR PRODUCTO) -->
+    <!-- MODAL ADMINISTRACIÓN (CREAR / EDITAR PRODUCTO CON OPCIÓN DOBLE DE IMAGEN) -->
     <div id="admin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl relative text-gray-800 max-h-[90vh] overflow-y-auto">
             <button onclick="closeAdminModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-lg"><i class="fas fa-times"></i></button>
@@ -354,10 +354,21 @@
                         </select>
                     </div>
                 </div>
-                <div>
-                    <label class="block font-bold text-gray-700 mb-1">URL Imagen *</label>
-                    <input type="url" id="prod-image" required placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-lg">
+
+                <!-- OPCIÓN DOBLE DE IMAGEN: URL O ARCHIVO LOCAL -->
+                <div class="space-y-1.5 p-3 bg-amber-50/50 rounded-xl border border-amber-200">
+                    <label class="block font-bold text-gray-800">Imagen del Producto *</label>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 font-semibold mb-0.5">Opción 1: Pegar URL de Imagen</label>
+                        <input type="url" id="prod-image" placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-lg bg-white">
+                    </div>
+                    <div class="text-center font-bold text-[10px] text-gray-400 uppercase">o bien</div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 font-semibold mb-0.5">Opción 2: Cargar desde Galería</label>
+                        <input type="file" id="prod-image-file" accept="image/*" onchange="handleProductImageFile(event)" class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                    </div>
                 </div>
+
                 <div>
                     <label class="block font-bold text-gray-700 mb-1">Notas Olfativas</label>
                     <input type="text" id="prod-notes" placeholder="Ej: Limón, Grosellas negras, Manzana" class="w-full p-2 border border-gray-300 rounded-lg">
@@ -383,10 +394,20 @@
                     <label class="block font-bold text-gray-700 mb-1">Título de la Promo *</label>
                     <input type="text" id="promo-title" required placeholder="Ej: DESCUENTO ESPECIAL ÁRABES" class="w-full p-2 border border-gray-300 rounded-lg">
                 </div>
-                <div>
-                    <label class="block font-bold text-gray-700 mb-1">URL Imagen del Banner *</label>
-                    <input type="url" id="promo-image" required placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-lg">
+
+                <div class="space-y-1.5 p-3 bg-amber-50/50 rounded-xl border border-amber-200">
+                    <label class="block font-bold text-gray-800">Imagen del Banner Promo *</label>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 font-semibold mb-0.5">Opción 1: Pegar URL de Imagen</label>
+                        <input type="url" id="promo-image" placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-lg bg-white">
+                    </div>
+                    <div class="text-center font-bold text-[10px] text-gray-400 uppercase">o bien</div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 font-semibold mb-0.5">Opción 2: Subir desde Galería</label>
+                        <input type="file" id="promo-image-file" accept="image/*" onchange="handlePromoImageFile(event)" class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                    </div>
                 </div>
+
                 <div>
                     <label class="block font-bold text-gray-700 mb-1">Categoría Destino</label>
                     <select id="promo-category" class="w-full p-2 border border-gray-300 rounded-lg bg-white">
@@ -792,7 +813,7 @@
             `).join('');
         }
 
-        // --- MANEJO DE ESTILOS DE BOTONES AL FILTRAR ---
+        // --- MANEJO DE ESTILOS DE BOTONES DE FILTRO ---
         function setCategoryFilter(cat, btnElem) {
             currentCategory = cat;
             document.querySelectorAll('.cat-btn').forEach(btn => {
@@ -802,7 +823,6 @@
             if (btnElem) {
                 btnElem.className = "cat-btn bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap";
             } else {
-                // Si fue invocado desde fuera (ej: carrusel)
                 const targetBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.textContent.includes(cat));
                 if (targetBtn) targetBtn.className = "cat-btn bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap";
             }
@@ -830,6 +850,29 @@
                 if (btnElem) btnElem.classList.add('ring-2', 'ring-amber-500', 'bg-amber-400', 'text-white');
             }
             renderProducts();
+        }
+
+        // --- MANEJO DE LECTURA DE IMÁGENES DESDE ARCHIVO LOCAL (GALERÍA) ---
+        function handleProductImageFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                document.getElementById('prod-image').value = evt.target.result;
+                showToast("Imagen cargada desde galería");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handlePromoImageFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                document.getElementById('promo-image').value = evt.target.result;
+                showToast("Imagen de promo cargada");
+            };
+            reader.readAsDataURL(file);
         }
 
         // --- CARRITO DE COMPRAS ---
@@ -1074,6 +1117,7 @@
             document.getElementById('admin-modal-title').innerText = "Agregar Nuevo Producto";
             document.getElementById('product-form').reset();
             document.getElementById('prod-id').value = "";
+            document.getElementById('prod-image').value = "";
             document.getElementById('admin-modal').classList.remove('hidden');
         }
 
@@ -1082,6 +1126,8 @@
         async function handleProductFormSubmit(e) {
             e.preventDefault();
             const id = document.getElementById('prod-id').value;
+            const imageUrl = document.getElementById('prod-image').value.trim() || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS';
+
             const data = {
                 title: document.getElementById('prod-name').value.trim(),
                 name: document.getElementById('prod-name').value.trim(),
@@ -1091,7 +1137,7 @@
                 oldPrice: document.getElementById('prod-oldprice').value ? Number(document.getElementById('prod-oldprice').value) : null,
                 gender: document.getElementById('prod-gender').value,
                 priority: document.getElementById('prod-priority').value,
-                image: document.getElementById('prod-image').value.trim(),
+                image: imageUrl,
                 notes: document.getElementById('prod-notes').value.trim(),
                 description: document.getElementById('prod-description').value.trim()
             };
@@ -1243,14 +1289,21 @@
             }
         }
 
-        function openPromoModal() { document.getElementById('promo-modal').classList.remove('hidden'); }
+        function openPromoModal() {
+            document.getElementById('promo-form').reset();
+            document.getElementById('promo-image').value = "";
+            document.getElementById('promo-modal').classList.remove('hidden');
+        }
         function closePromoModal() { document.getElementById('promo-modal').classList.add('hidden'); }
 
         async function handlePromoSubmit(e) {
             e.preventDefault();
+            const imageUrl = document.getElementById('promo-image').value.trim();
+            if (!imageUrl) return alert("Por favor asigna una imagen por URL o desde tu galería.");
+
             const promo = {
                 title: document.getElementById('promo-title').value.trim(),
-                image: document.getElementById('promo-image').value.trim(),
+                image: imageUrl,
                 category: document.getElementById('promo-category').value,
                 hasTimer: document.getElementById('promo-timer-chk').checked,
                 endTime: Date.now() + (3 * 86400000)
