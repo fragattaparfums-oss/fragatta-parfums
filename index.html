@@ -981,9 +981,15 @@
             const reference = "PL-" + Date.now();
 
             if (method === 'wompi') {
-                // REDIRECCIÓN DIRECTA A HOSTED CHECKOUT DE WOMPI
-                const redirectUrl = `https://checkout.wompi.co/p/?public-key=${WOMPI_PUB_KEY}¤cy=COP&amount-in-cents=${totalInCents}&reference=${reference}&redirect-url=${encodeURIComponent(window.location.href)}`;
-                window.location.href = redirectUrl;
+                // REDIRECCIÓN LIMPIA Y COMPATIBLE CON URLSearchParams
+                const params = new URLSearchParams({
+                    'public-key': WOMPI_PUB_KEY,
+                    'currency': 'COP',
+                    'amount-in-cents': totalInCents,
+                    'reference': reference,
+                    'redirect-url': window.location.href
+                });
+                window.location.href = `https://checkout.wompi.co/p/?${params.toString()}`;
             } else {
                 let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
                 msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Tel:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
