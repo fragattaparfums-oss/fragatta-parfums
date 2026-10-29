@@ -622,6 +622,16 @@
         const ADMIN_PASSWORD = "J.p12022013";
         let WHATSAPP_NUMBER = "573105390115";
         const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYWPwSVP2yidk0s1ULSHh6";
+        // Secreto de INTEGRIDAD de Wompi (Dashboard > Desarrolladores > Secretos para integración técnica).
+        // Empieza por "prod_integrity_". NO es la llave de eventos ni la privada.
+        const WOMPI_INTEGRITY_SECRET = "prod_integrity_9QPykHUQT2g8dTwNJzrKraJAABsNGReM";
+
+        // Firma SHA-256: referencia + monto en centavos + moneda + secreto
+        async function wompiIntegritySignature(reference, amountInCents, currency) {
+            const data = `${reference}${amountInCents}${currency}${WOMPI_INTEGRITY_SECRET}`;
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
@@ -962,7 +972,7 @@
             else btnText.innerText = `Finalizar por WhatsApp (${formatPrice(grandTotal)})`;
         }
 
-        function processFinalOrder() {
+        async function processFinalOrder() {
             const name = document.getElementById('ship-name').value.trim();
             const phone = document.getElementById('ship-phone').value.trim();
             const doc = document.getElementById('ship-doc').value.trim();
@@ -978,18 +988,23 @@
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + calculatedShippingCost) * 0.05) : 0;
             const grandTotal = subtotal + calculatedShippingCost + codFee;
-            const totalInCents = grandTotal * 100;
+            const totalInCents = Math.round(grandTotal * 100);
             const reference = "PL-" + Date.now();
 
             if (method === 'wompi') {
                 // INTEGRACIÓN CON WIDGET OFICIAL DE WOMPI
                 if (typeof WidgetCheckout !== 'undefined') {
+                    if (WOMPI_INTEGRITY_SECRET.startsWith('PEGA_AQUI')) {
+                        return alert("Falta configurar el secreto de integridad de Wompi en el código.");
+                    }
+                    const integrity = await wompiIntegritySignature(reference, totalInCents, 'COP');
                     const checkout = new WidgetCheckout({
                         currency: 'COP',
                         amountInCents: totalInCents,
                         reference: reference,
                         publicKey: WOMPI_PUB_KEY,
-                        redirectUrl: window.location.href,
+                        signature: { integrity: integrity },
+                        redirectUrl: window.location.origin + window.location.pathname,
                         customerData: {
                             email: `${phone}@parfums.co`,
                             fullName: name,
@@ -997,6 +1012,13 @@
                             phoneNumberPrefix: '+57',
                             legalId: doc,
                             legalIdType: 'CC'
+                        },
+                        shippingAddress: {
+                            addressLine1: address,
+                            city: city,
+                            phoneNumber: phone,
+                            region: 'Antioquia',
+                            country: 'CO'
                         }
                     });
                     checkout.open(function (result) {
