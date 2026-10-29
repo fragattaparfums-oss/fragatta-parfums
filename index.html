@@ -287,15 +287,6 @@
         </div>
     </footer>
 
-    <!-- FORMULARIO DIRECTO E INVISIBLE PARA PASARELA OFICIAL WOMPI -->
-    <form id="wompi-form" method="GET" action="https://checkout.wompi.co/p/" class="hidden">
-        <input type="hidden" name="public-key" id="wompi-pk">
-        <input type="hidden" name="currency" value="COP">
-        <input type="hidden" name="amount-in-cents" id="wompi-amount">
-        <input type="hidden" name="reference" id="wompi-ref">
-        <input type="hidden" name="redirect-url" id="wompi-redirect">
-    </form>
-
     <!-- MODAL DETALLE PRODUCTO -->
     <div id="detail-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
         <div class="bg-white rounded-3xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-gray-100 relative text-gray-800">
@@ -988,13 +979,9 @@
             const reference = "PL-" + Date.now();
 
             if (method === 'wompi') {
-                // ENVÍO DE FORMULARIO NATIVO A WOMPI
-                document.getElementById('wompi-pk').value = WOMPI_PUB_KEY;
-                document.getElementById('wompi-amount').value = totalInCents;
-                document.getElementById('wompi-ref').value = reference;
-                document.getElementById('wompi-redirect').value = window.location.href;
-                
-                document.getElementById('wompi-form').submit();
+                // REDIRECCIÓN CON PARÁMETRO OFICIAL EXIGIDO: public_key (CON GUION BAJO)
+                const redirectUrl = `https://checkout.wompi.co/p/?public_key=${WOMPI_PUB_KEY}¤cy=COP&amount-in-cents=${totalInCents}&reference=${reference}&redirect-url=${encodeURIComponent(window.location.href)}`;
+                window.location.href = redirectUrl;
             } else {
                 let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
                 msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Tel:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
