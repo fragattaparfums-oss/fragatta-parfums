@@ -137,16 +137,16 @@
     </header>
 
     <!-- Contenido Principal -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-5">
 
         <!-- Banner Principal Elegante y Compacto -->
-        <section id="banner-section" class="hero-banner rounded-2xl px-5 py-5 sm:px-8 sm:py-6 mb-5 border border-amber-100 shadow-sm text-center relative">
+        <section id="banner-section" class="hero-banner rounded-2xl px-4 py-4 sm:px-8 sm:py-6 mb-4 sm:mb-5 border border-amber-100 shadow-sm text-center relative">
             <div id="banner-bg-blur" class="banner-bg-blur"></div>
             <div class="relative z-10">
                 <div class="inline-block bg-amber-100/80 border border-amber-300 text-amber-900 font-bold text-[10px] sm:text-[11px] tracking-wider px-3.5 py-0.5 rounded-full uppercase mb-2 shadow-sm">
                     ¡SOMOS MAYORISTAS!
                 </div>
-                <h2 class="font-cinzel text-xl sm:text-3xl font-bold text-gray-900 tracking-wide uppercase mb-2">
+                <h2 class="font-cinzel text-lg sm:text-3xl font-bold text-gray-900 tracking-wide uppercase mb-1.5 sm:mb-2">
                     EXCELENCIA Y CALIDAD GARANTIZADA
                 </h2>
                 <p class="max-w-xl mx-auto text-gray-600 text-[11px] sm:text-xs leading-relaxed font-normal">
@@ -165,27 +165,27 @@
             </div>
         </section>
 
-        <!-- CARRUSEL DE MÚLTIPLES PROMOCIONES SUTIL Y MODERNO -->
-        <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-sm border border-gray-100 mb-6 bg-slate-900 group">
-            <div id="carousel-track" class="flex transition-transform duration-500 ease-out h-40 sm:h-52 w-full">
+        <!-- CARRUSEL DE MÚLTIPLES PROMOCIONES CON EDICIÓN Y RELOJ EN DÍAS/MINUTOS/SEGUNDOS -->
+        <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-6 bg-slate-900 group">
+            <div id="carousel-track" class="flex transition-transform duration-500 ease-out h-48 sm:h-56 md:h-64 w-full">
                 <!-- Diapositivas dinámicas cargadas desde Firebase -->
             </div>
 
             <!-- Botones de Navegación del Carrusel -->
-            <button onclick="prevSlide()" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 backdrop-blur-sm z-10">
+            <button onclick="prevSlide()" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition duration-300 backdrop-blur-sm z-20">
                 <i class="fas fa-chevron-left text-xs"></i>
             </button>
-            <button onclick="nextSlide()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 backdrop-blur-sm z-10">
+            <button onclick="nextSlide()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition duration-300 backdrop-blur-sm z-20">
                 <i class="fas fa-chevron-right text-xs"></i>
             </button>
 
             <!-- Indicadores por puntos -->
-            <div id="carousel-dots" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10"></div>
+            <div id="carousel-dots" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-20"></div>
 
             <!-- Botón de administración del Slider -->
-            <div id="admin-carousel-controls" class="hidden absolute top-2 right-2 z-20">
+            <div id="admin-carousel-controls" class="hidden absolute top-2 right-2 z-30">
                 <button onclick="openPromoModal()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold text-[10px] px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1">
-                    <i class="fas fa-plus-circle"></i> + Agregar Promo Slide
+                    <i class="fas fa-plus-circle"></i> + Agregar Promo
                 </button>
             </div>
         </section>
@@ -211,7 +211,7 @@
         </section>
 
         <!-- Filtros -->
-        <section class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 space-y-3.5">
+        <section class="bg-white p-3.5 sm:p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 space-y-3.5">
             <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div class="relative w-full sm:w-72 flex-shrink-0">
                     <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
@@ -354,17 +354,18 @@
         </div>
     </div>
 
-    <!-- MODAL AGREGAR PROMO SLIDE -->
+    <!-- MODAL EDITAR O AGREGAR PROMO SLIDE -->
     <div id="promo-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-5 relative text-gray-800 shadow-2xl">
             <button onclick="closePromoModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
-            <h3 class="font-cinzel text-base font-bold text-gray-900 mb-3 border-b pb-2 flex items-center gap-2">
-                <i class="fas fa-images text-amber-600"></i> Nueva Diapositiva Promocional
+            <h3 id="promo-modal-title" class="font-cinzel text-base font-bold text-gray-900 mb-3 border-b pb-2 flex items-center gap-2">
+                <i class="fas fa-images text-amber-600"></i> Gestor de Diapositiva Promocional
             </h3>
             <form id="promo-form" onsubmit="handlePromoSubmit(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="promo-id">
                 <div>
                     <label class="block font-semibold mb-1">Título / Frase Corta</label>
-                    <input type="text" id="promo-title" required placeholder="Ej: Descuentos Embrujados" class="w-full p-2 border rounded-lg">
+                    <input type="text" id="promo-title" required placeholder="Ej: Descuentos Embrujados 15% OFF" class="w-full p-2 border rounded-lg">
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">Imagen Promocional (Subir o Pegar URL)</label>
@@ -388,9 +389,24 @@
                         <option value="Emprendedores">Emprendedores 🚀</option>
                     </select>
                 </div>
+
+                <!-- OPCIÓN DE TEMPORIZADOR POR FECHA (DÍAS, MINUTOS, SEGUNDOS) -->
+                <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200/80 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="font-bold text-amber-900 text-xs flex items-center gap-1.5">
+                            <i class="fas fa-clock text-amber-600"></i> ¿Activar Cronómetro Límite?
+                        </label>
+                        <input type="checkbox" id="promo-timer-enable" class="w-4 h-4 text-amber-600 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-0.5">Fecha y Hora Límite (Ej: 30 de Agosto):</label>
+                        <input type="datetime-local" id="promo-timer-date" class="w-full p-2 border rounded-lg bg-white font-mono text-xs">
+                    </div>
+                </div>
+
                 <div class="pt-2 flex justify-end gap-2">
                     <button type="button" onclick="closePromoModal()" class="px-3 py-1.5 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
-                    <button type="submit" class="px-4 py-1.5 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar Diapositiva</button>
+                    <button type="submit" class="px-4 py-1.5 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar Cambios</button>
                 </div>
             </form>
         </div>
@@ -497,6 +513,7 @@
         let promoSlides = [];
         let currentSlide = 0;
         let slideInterval;
+        let timerInterval;
         let cart = JSON.parse(localStorage.getItem('parfums_luxury_cart')) || [];
         let isAdmin = false;
         let currentCategory = 'Todas';
@@ -576,7 +593,9 @@
                         id: 'default',
                         title: 'OFERTAS EXCLUSIVAS Y PROMOCIONES',
                         image: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=80',
-                        category: 'Promociones'
+                        category: 'Promociones',
+                        hasTimer: true,
+                        endTime: Date.now() + (5 * 86400000)
                     }];
                 }
                 renderPromoCarousel();
@@ -587,20 +606,43 @@
             const track = document.getElementById('carousel-track');
             const dots = document.getElementById('carousel-dots');
             
-            track.innerHTML = promoSlides.map((slide, idx) => `
+            track.innerHTML = promoSlides.map((slide, idx) => {
+                return `
                 <div class="min-w-full h-full relative cursor-pointer flex-shrink-0" onclick="setCategoryFilter('${slide.category}', document.querySelector('.cat-btn'))">
                     <img src="${slide.image}" alt="${slide.title}" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-4">
-                        <span class="text-amber-400 text-[10px] font-extrabold uppercase tracking-widest"><i class="fas fa-tag mr-1"></i> Categoría: ${slide.category}</span>
-                        <h3 class="text-white font-cinzel text-sm sm:text-lg font-bold uppercase drop-shadow">${slide.title}</h3>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-3 sm:p-5">
+                        <div class="flex flex-wrap items-end justify-between gap-2">
+                            <div>
+                                <span class="text-amber-400 text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest block mb-0.5"><i class="fas fa-tag mr-1"></i> Categoría: ${slide.category}</span>
+                                <h3 class="text-white font-cinzel text-xs sm:text-lg font-bold uppercase drop-shadow leading-tight">${slide.title}</h3>
+                            </div>
+
+                            ${slide.hasTimer ? `
+                                <!-- RELOJ REGRESIVO SUTIL EN DÍAS : HORAS : MINUTOS : SEGUNDOS -->
+                                <div class="bg-black/80 border border-amber-500/50 backdrop-blur-md rounded-xl px-2.5 py-1 text-white text-center shadow-lg flex items-center gap-2">
+                                    <div class="text-[8px] sm:text-[9px] text-amber-400 font-extrabold uppercase leading-none hidden sm:block">OFERTA<br>LÍMITE:</div>
+                                    <div class="flex items-center gap-1 font-mono text-xs sm:text-sm font-bold text-amber-300" id="timer-box-${slide.id}">
+                                        <span id="td-${slide.id}">00</span>d <span id="th-${slide.id}">00</span>h:<span id="tm-${slide.id}">00</span>m:<span id="ts-${slide.id}">00</span>s
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
                     </div>
-                    ${isAdmin && slide.id !== 'default' ? `
-                        <button onclick="event.stopPropagation(); deletePromoSlide('${slide.id}')" class="absolute top-2 left-2 bg-rose-600 hover:bg-rose-700 text-white text-[9px] px-2 py-0.5 rounded font-bold shadow z-20">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
+
+                    ${isAdmin ? `
+                        <div class="absolute top-2 left-2 z-30 flex items-center gap-1.5">
+                            <button onclick="event.stopPropagation(); openPromoModal('${slide.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-[9px] px-2 py-0.5 rounded font-bold shadow">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            ${slide.id !== 'default' ? `
+                                <button onclick="event.stopPropagation(); deletePromoSlide('${slide.id}')" class="bg-rose-600 hover:bg-rose-700 text-white text-[9px] px-2 py-0.5 rounded font-bold shadow">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
                     ` : ''}
                 </div>
-            `).join('');
+            `}).join('');
 
             dots.innerHTML = promoSlides.map((_, idx) => `
                 <button onclick="goToSlide(${idx})" class="w-2 h-2 rounded-full transition ${idx === currentSlide ? 'bg-amber-400 w-5' : 'bg-white/50'}"></button>
@@ -608,6 +650,35 @@
 
             goToSlide(currentSlide < promoSlides.length ? currentSlide : 0);
             startAutoSlide();
+            startLiveTimers();
+        }
+
+        function startLiveTimers() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                promoSlides.forEach(slide => {
+                    if (slide.hasTimer && slide.endTime) {
+                        const diff = Math.max(0, slide.endTime - now);
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                        const dEl = document.getElementById(`td-${slide.id}`);
+                        const hEl = document.getElementById(`th-${slide.id}`);
+                        const mEl = document.getElementById(`tm-${slide.id}`);
+                        const sEl = document.getElementById(`ts-${slide.id}`);
+
+                        if (dEl && hEl && mEl && sEl) {
+                            dEl.innerText = String(days).padStart(2, '0');
+                            hEl.innerText = String(hours).padStart(2, '0');
+                            mEl.innerText = String(minutes).padStart(2, '0');
+                            sEl.innerText = String(seconds).padStart(2, '0');
+                        }
+                    }
+                });
+            }, 1000);
         }
 
         function startAutoSlide() {
@@ -633,10 +704,34 @@
         function nextSlide() { goToSlide(currentSlide + 1); }
         function prevSlide() { goToSlide(currentSlide - 1); }
 
-        function openPromoModal() { 
+        function openPromoModal(id = null) { 
             document.getElementById('promo-form').reset();
+            document.getElementById('promo-id').value = '';
+
+            if (id) {
+                const slide = promoSlides.find(s => s.id === id);
+                if (slide) {
+                    document.getElementById('promo-id').value = slide.id;
+                    document.getElementById('promo-title').value = slide.title || '';
+                    document.getElementById('promo-image').value = slide.image || '';
+                    document.getElementById('promo-category').value = slide.category || 'Promociones';
+                    document.getElementById('promo-timer-enable').checked = !!slide.hasTimer;
+                    if (slide.endTime) {
+                        const dateObj = new Date(slide.endTime);
+                        const isoStr = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                        document.getElementById('promo-timer-date').value = isoStr;
+                    }
+                }
+            } else {
+                // Seteamos una fecha por defecto en 3 días
+                const future = new Date(Date.now() + 3 * 86400000);
+                const isoStr = new Date(future.getTime() - (future.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                document.getElementById('promo-timer-date').value = isoStr;
+            }
+
             document.getElementById('promo-modal').classList.remove('hidden'); 
         }
+
         function closePromoModal() { document.getElementById('promo-modal').classList.add('hidden'); }
 
         function uploadPromoImageBase64(event) {
@@ -645,24 +740,42 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 document.getElementById('promo-image').value = e.target.result;
-                showToast("Imagen de promo cargada", "success");
+                showToast("Imagen cargada con éxito", "success");
             };
             reader.readAsDataURL(file);
         }
 
         async function handlePromoSubmit(e) {
             e.preventDefault();
+            const id = document.getElementById('promo-id').value;
+            const enableTimer = document.getElementById('promo-timer-enable').checked;
+            const dateVal = document.getElementById('promo-timer-date').value;
+
+            let endTimeMs = null;
+            if (enableTimer && dateVal) {
+                endTimeMs = new Date(dateVal).getTime();
+            }
+
             const payload = {
                 title: document.getElementById('promo-title').value,
                 image: document.getElementById('promo-image').value,
-                category: document.getElementById('promo-category').value
+                category: document.getElementById('promo-category').value,
+                hasTimer: enableTimer,
+                endTime: endTimeMs
             };
+
             try {
-                await window.addDoc(window.collection(window.db, "promo_slides"), payload);
-                showToast("¡Nueva diapositiva guardada en Firebase!", "success");
+                if (id && id !== 'default') {
+                    await window.updateDoc(window.doc(window.db, "promo_slides", id), payload);
+                    showToast("¡Diapositiva actualizada!", "success");
+                } else {
+                    await window.addDoc(window.collection(window.db, "promo_slides"), payload);
+                    showToast("¡Nueva diapositiva creada!", "success");
+                }
                 closePromoModal();
             } catch (err) {
-                alert("Error al guardar la diapositiva.");
+                console.error(err);
+                alert("Error al guardar la diapositiva en Firebase.");
             }
         }
 
