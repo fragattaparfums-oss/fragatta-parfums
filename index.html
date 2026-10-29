@@ -144,7 +144,7 @@
                     EXCELENCIA Y CALIDAD GARANTIZADA
                 </h2>
                 <p class="max-w-xl mx-auto text-gray-600 text-[11px] sm:text-xs leading-relaxed font-normal">
-                    Distribución exclusiva de perfumería fina y body spray. Explora nuestras ofertas, precios competitivos y realiza tus compras seguras en línea o por WhatsApp.
+                    Distribución exclusiva de perfumería fina y body spray. Explora nuestras ofertas, precios competitivos y realiza tus compras seguras directamente por WhatsApp.
                 </p>
 
                 <div id="admin-banner-controls" class="hidden mt-4 pt-3 border-t border-amber-200/50 flex flex-wrap justify-center gap-2">
@@ -342,7 +342,7 @@
                 </div>
             </div>
 
-            <!-- PASO 2: DATOS DEL COMPRADOR Y PAGO -->
+            <!-- PASO 2: DATOS DEL COMPRADOR Y PAGO VIA WHATSAPP -->
             <div id="checkout-step-2" class="flex-grow overflow-y-auto p-4 hidden flex-col justify-between space-y-4">
                 <div>
                     <button onclick="goToStep1()" class="inline-flex items-center text-xs font-bold text-amber-700 hover:underline mb-3">
@@ -394,14 +394,14 @@
                         </div>
 
                         <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5 border-b pb-1 pt-2">
-                            <i class="fas fa-credit-card text-emerald-600"></i> 3. Método de Pago
+                            <i class="fab fa-whatsapp text-emerald-500"></i> 3. Modalidad de Pago
                         </h4>
                         <div class="space-y-2">
                             <label class="flex items-center p-2.5 border rounded-xl cursor-pointer hover:bg-slate-50 transition border-amber-500 bg-amber-50/30">
-                                <input type="radio" name="payment_method" value="wompi" checked onchange="updatePaymentCalculations()" class="text-amber-600">
+                                <input type="radio" name="payment_method" value="transfer" checked onchange="updatePaymentCalculations()" class="text-amber-600">
                                 <div class="ml-2.5">
-                                    <span class="font-bold text-gray-900 block">Wompi Pasarela Segura (Tarjetas, PSE, Nequi)</span>
-                                    <span class="text-[10px] text-gray-500">Pago en línea directo y seguro con confirmación por correo.</span>
+                                    <span class="font-bold text-gray-900 block">Transferencia Bancaria (Bancolombia, Nequi, Daviplata)</span>
+                                    <span class="text-[10px] text-gray-500">Te enviamos las cuentas por WhatsApp para transferir el pago.</span>
                                 </div>
                             </label>
 
@@ -409,15 +409,7 @@
                                 <input type="radio" name="payment_method" value="cod" onchange="updatePaymentCalculations()" class="text-amber-600">
                                 <div class="ml-2.5">
                                     <span class="font-bold text-gray-900 block">Pago Contra Entrega</span>
-                                    <span id="cod-note" class="text-[10px] text-gray-500">Pagas al recibir. En Medellín $0 recargo extra.</span>
-                                </div>
-                            </label>
-
-                            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer hover:bg-slate-50 transition">
-                                <input type="radio" name="payment_method" value="whatsapp" onchange="updatePaymentCalculations()" class="text-amber-600">
-                                <div class="ml-2.5">
-                                    <span class="font-bold text-gray-900 block">Transferencia / Finalizar por WhatsApp</span>
-                                    <span class="text-[10px] text-gray-500">Envía la orden a un asesor comercial vía WhatsApp.</span>
+                                    <span id="cod-note" class="text-[10px] text-gray-500">Pagas en efectivo o transferencia al recibir tu paquete.</span>
                                 </div>
                             </label>
                         </div>
@@ -443,7 +435,7 @@
                     </div>
 
                     <button onclick="processFinalOrder()" class="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-lg">
-                        <i class="fas fa-check-circle"></i> <span id="btn-submit-text">Confirmar y Pagar Orden</span>
+                        <i class="fab fa-whatsapp text-lg"></i> <span id="btn-submit-text">Enviar Pedido por WhatsApp</span>
                     </button>
                 </div>
             </div>
@@ -467,9 +459,6 @@
 
         const ADMIN_PASSWORD = "J.p12022013";
         let WHATSAPP_NUMBER = "573105390115";
-        
-        // CLAVE PÚBLICA DE WOMPI
-        const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYWPwSVP2yidk0s1ULSHh6";
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
@@ -784,7 +773,7 @@
 
         function updatePaymentCalculations() {
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-            const method = document.querySelector('input[name="payment_method"]:checked')?.value || 'wompi';
+            const method = document.querySelector('input[name="payment_method"]:checked')?.value || 'transfer';
             const isMedellin = document.getElementById('chk-medellin')?.checked;
 
             let codFee = 0;
@@ -805,12 +794,10 @@
             document.getElementById('final-grand-total').innerText = formatPrice(grandTotal);
 
             const btnText = document.getElementById('btn-submit-text');
-            if (method === 'wompi') btnText.innerText = `Pagar con Wompi (${formatPrice(grandTotal)})`;
-            else if (method === 'cod') btnText.innerText = `Confirmar Orden Contra Entrega (${formatPrice(grandTotal)})`;
-            else btnText.innerText = `Finalizar por WhatsApp (${formatPrice(grandTotal)})`;
+            btnText.innerText = `Enviar Pedido por WhatsApp (${formatPrice(grandTotal)})`;
         }
 
-        async function processFinalOrder() {
+        function processFinalOrder() {
             const name = document.getElementById('ship-name').value.trim();
             const phone = document.getElementById('ship-phone').value.trim();
             const doc = document.getElementById('ship-doc').value.trim();
@@ -820,83 +807,49 @@
             const isMedellin = document.getElementById('chk-medellin')?.checked;
 
             if (!name || !phone || !doc || !city || !address) {
-                return alert("Por favor completa todos los datos del formulario.");
+                return alert("Por favor completa todos los campos requeridos para el envío.");
             }
 
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + calculatedShippingCost) * 0.05) : 0;
             const grandTotal = subtotal + calculatedShippingCost + codFee;
-            const totalInCents = Math.round(grandTotal) * 100;
-            const reference = "PL-" + Date.now();
+            const orderRef = "PL-" + Date.now().toString().slice(-6);
 
-            if (method === 'wompi') {
-                try {
-                    // 1. Obtener la firma SHA-256 desde Vercel
-                    const response = await fetch('https://wompi-backend-eta.vercel.app/api/sign', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            reference: String(reference),
-                            amountInCents: Number(totalInCents),
-                            currency: 'COP'
-                        })
-                    });
+            // Generar el mensaje estructurado de WhatsApp
+            let msg = `🛍️ *NUEVA ORDEN DE COMPRA - PARFUMS LUXURY*\n`;
+            msg += `*Ref de Orden:* #${orderRef}\n\n`;
+            msg += `👤 *DATOS DEL CLIENTE:*\n`;
+            msg += `• *Nombre:* ${name}\n`;
+            msg += `• *Cédula/NIT:* ${doc}\n`;
+            msg += `• *Teléfono:* ${phone}\n`;
+            msg += `• *Ciudad:* ${city}\n`;
+            msg += `• *Dirección:* ${address}\n\n`;
+            
+            msg += `📦 *PRODUCTOS SOLICITADOS:*\n`;
+            cart.forEach(i => { 
+                msg += `• ${i.title} (x${i.quantity}) - ${formatPrice(i.price * i.quantity)}\n`; 
+            });
+            
+            msg += `\n💰 *RESUMEN DE PAGO:*\n`;
+            msg += `• *Subtotal:* ${formatPrice(subtotal)}\n`;
+            msg += `• *Envío:* ${formatPrice(calculatedShippingCost)}\n`;
+            if (codFee > 0) msg += `• *Recargo Contra Entrega (5%):* ${formatPrice(codFee)}\n`;
+            msg += `• *TOTAL A PAGAR:* ${formatPrice(grandTotal)}\n\n`;
+            
+            msg += `💳 *MÉTODO DE PAGO ELEGIDO:*\n`;
+            msg += method === 'cod' ? `👉 *Pago Contra Entrega*` : `👉 *Transferencia Bancaria (Solicito datos para transferir)*`;
 
-                    const data = await response.json();
+            // Redirección directa a WhatsApp
+            const targetNumber = WHATSAPP_NUMBER.replace(/\D/g, '');
+            const waUrl = `https://wa.me/${targetNumber}?text=${encodeURIComponent(msg)}`;
 
-                    if (!data.signature) {
-                        throw new Error("No se pudo obtener la firma de seguridad.");
-                    }
+            window.open(waUrl, '_blank');
 
-                    // 2. Crear un formulario dinámico e enviarlo (GET directo a Wompi)
-                    const form = document.createElement('form');
-                    form.method = 'GET';
-                    form.action = 'https://checkout.wompi.co/p/';
-
-                    const params = {
-                        'public-key': WOMPI_PUB_KEY,
-                        'currency': 'COP',
-                        'amount-in-cents': totalInCents,
-                        'reference': reference,
-                        'signature:integrity': data.signature,
-                        'redirect-url': 'https://fragattaparfums-oss.github.io/fragatta-parfums/',
-                        'customer-data:email': `${phone}@fragattaparfums.com`,
-                        'customer-data:full-name': name,
-                        'customer-data:phone-number': phone,
-                        'customer-data:phone-number-prefix': '+57',
-                        'customer-data:legal-id': doc,
-                        'customer-data:legal-id-type': 'CC'
-                    };
-
-                    for (const key in params) {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = key;
-                        input.value = params[key];
-                        form.appendChild(input);
-                    }
-
-                    document.body.appendChild(form);
-                    form.submit();
-
-                } catch (err) {
-                    console.error("Error al procesar el pago:", err);
-                    alert("Ocurrió un error al conectar con la pasarela de pagos. Intenta de nuevo.");
-                }
-            } else {
-                let msg = `*NUEVO PEDIDO PARFUMS LUXURY*\n\n`;
-                msg += `*Cliente:* ${name}\n*Cédula:* ${doc}\n*Tel:* ${phone}\n*Ciudad:* ${city}\n*Dirección:* ${address}\n\n`;
-                msg += `*Productos:*\n`;
-                cart.forEach(i => { msg += `• ${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
-                msg += `\n*Envío:* ${formatPrice(calculatedShippingCost)}`;
-                if (codFee > 0) msg += `\n*Recargo Contra Entrega:* ${formatPrice(codFee)}`;
-                msg += `\n*TOTAL:* ${formatPrice(grandTotal)}`;
-                msg += `\n\n*Método:* ${method === 'cod' ? 'Pago Contra Entrega' : 'Transferencia Bancaria'}`;
-
-                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
-                toggleCartModal();
-                cart = []; saveCart(); updateCartUI();
-            }
+            // Limpieza del carrito y modal
+            toggleCartModal();
+            cart = []; 
+            saveCart(); 
+            updateCartUI();
         }
 
         function handleAdminToggle() {
