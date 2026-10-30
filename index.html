@@ -296,47 +296,159 @@
         </div>
     </footer>
 
-    <!-- MODAL POLÍTICAS Y GARANTÍAS DE FRAGATTAPARFUMS -->
+    <!-- MODAL POLÍTICAS Y GARANTÍAS DE FRAGATTAPARFUMS DESLIZABLE COMPLETO -->
     <div id="policies-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto shadow-2xl border border-gray-100 relative text-gray-800 p-5 sm:p-7">
-            <button onclick="closePoliciesModal()" class="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center transition z-20">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto shadow-2xl border border-amber-100 relative text-gray-800 p-5 sm:p-7">
+            
+            <button onclick="closePoliciesModal()" class="absolute top-4 right-4 bg-amber-50 hover:bg-amber-100 text-amber-900 w-8 h-8 rounded-full flex items-center justify-center transition z-20 border border-amber-200 shadow-sm">
                 <i class="fas fa-times text-sm"></i>
             </button>
             
-            <h2 class="font-cinzel text-lg sm:text-xl font-bold text-gray-900 border-b pb-3 mb-4 flex items-center gap-2">
-                <i class="fas fa-file-contract text-amber-600"></i> Políticas de Garantías, Cambios y Envíos – FRAGATTAPARFUMS
-            </h2>
-
-            <div class="space-y-4 text-xs leading-relaxed text-gray-600">
-                <p><strong>Última actualización:</strong> 1 de octubre de 2026<br>
-                En <strong>FRAGATTAPARFUMS</strong> queremos brindarte una experiencia de compra segura, clara y confiable. Esta política se aplica de conformidad con la Ley 1480 de 2011, el Decreto 735 de 2013, la Ley 2439 de 2024 y las demás normas colombianas de protección al consumidor.</p>
-
-                <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-lg">
-                    <h3 class="font-bold text-amber-900 mb-1">1. Garantía de los perfumes</h3>
-                    <p>Los perfumes nuevos comercializados por FRAGATTAPARFUMS cuentan con una garantía legal de <strong>treinta (30) días calendario</strong>, contados desde la fecha en que el producto sea entregado al consumidor.</p>
+            <div class="border-b border-gray-100 pb-3 mb-4">
+                <div class="inline-block bg-amber-100 border border-amber-300 text-amber-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase mb-1">
+                    ✨ Experiencia Segura & Transparente
                 </div>
-
-                <div>
-                    <h3 class="font-bold text-gray-900 mb-1">2. ¿Qué cubre la garantía?</h3>
-                    <p>Fugas o derrames por defectos del envase, atomizadores defectuosos, producto alterado de manera anormal o incumplimiento de las características ofrecidas. La percepción personal del aroma o fijación no constituye defecto por sí sola.</p>
-                </div>
-
-                <div>
-                    <h3 class="font-bold text-gray-900 mb-1">3. Solicitud de garantía y Retracto</h3>
-                    <p>Puedes solicitarla a través de nuestro WhatsApp oficial <strong>+57 314 547 0262</strong>. El derecho de retracto aplica dentro de los 5 días hábiles siguientes a la entrega siempre que el producto conserve sus sellos y empaque sin abrir.</p>
-                </div>
-
-                <div class="bg-slate-900 text-white p-3.5 rounded-xl space-y-1">
-                    <h3 class="font-bold text-amber-400">🚚 POLÍTICAS DE ENVÍO</h3>
-                    <p>• <strong>Envíos locales (Medellín y A.M.):</strong> Entrega en 1 a 2 días hábiles con opción de pago contra entrega ($12.000 COP fijo).</p>
-                    <p>• <strong>Envíos nacionales:</strong> Cotización en tiempo real vía <strong>Envia.com</strong>. Tiempos de entrega de 3 a 5 días hábiles.</p>
-                    <p>• <strong>Revisión importante:</strong> Reclamos por daños, faltantes o averías deben reportarse dentro de las primeras <strong>24 horas</strong> posteriores a la recepción con evidencias fotográficas o en video.</p>
-                </div>
+                <h2 class="font-cinzel text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-shield-alt text-amber-600"></i> Políticas de Envíos, Garantías y Devoluciones
+                </h2>
             </div>
 
-            <div class="mt-6 text-center">
-                <button onclick="closePoliciesModal()" class="bg-luxury-dark hover:bg-black text-white font-bold text-xs px-6 py-2.5 rounded-xl transition">Entendido y Aceptar</button>
+            <!-- CONTENEDOR DESLIZABLE INTERNO CON TODAS LAS POLÍTICAS -->
+            <div class="space-y-4 text-xs leading-relaxed text-gray-600 pr-1">
+                
+                <p class="text-gray-700">
+                    En <strong>FRAGATTAPARFUMS</strong> trabajamos para ofrecerte la máxima excelencia en perfumería fina y cosmética de alta fijación. Todas nuestras transacciones y procesos de atención se rigen bajo los parámetros del Estatuto del Consumidor en Colombia (Ley 1480 de 2011, Decreto 735 de 2013 y Ley 2439 de 2024). Ninguna disposición limita los derechos irrenunciables de nuestros clientes.
+                </p>
+
+                <div class="bg-amber-50/80 border-l-4 border-amber-500 p-3 rounded-r-xl space-y-1">
+                    <h3 class="font-bold text-amber-900 text-xs flex items-center gap-1.5">
+                        <span>🌟</span> 1. Garantía Legal de Fragancias
+                    </h3>
+                    <p>Todos nuestros perfumes nuevos disponen de una cobertura legal de <strong>30 días calendario</strong> contados a partir de la entrega efectiva del paquete.</p>
+                    <ul class="list-disc pl-4 space-y-0.5 text-[11px] text-amber-950">
+                        <li>El término empieza a contar desde el momento en que recibes el pedido, no desde el pago.</li>
+                        <li>El plazo se suspende durante los días que el producto esté en revisión técnica por trámite de garantía.</li>
+                        <li>En caso de cambio por un producto totalmente nuevo, la garantía de 30 días vuelve a iniciar desde cero.</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-1">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>🛡️</span> 2. ¿Qué cubre exactamente la garantía?
+                    </h3>
+                    <p>Cubre anomalías de fabricación, seguridad e idoneidad como:</p>
+                    <ul class="list-disc pl-4 space-y-0.5 text-[11px]">
+                        <li>Filtraciones o derrames ocasionados por defectos de sellado en el envase de cristal.</li>
+                        <li>Fallas mecánicas en el sistema del atomizador (que no rocíe o se atasque).</li>
+                        <li>Contenido alterado, contaminado o en condiciones irregulares de forma anormal.</li>
+                        <li>Despacho erróneo de la referencia o características distintas a las ofrecidas.</li>
+                    </ul>
+                    <p class="text-[11px] text-gray-500 italic mt-1">
+                        *Nota importante: La percepción individual sobre el aroma, la intensidad olfativa o la fijación química en tu piel dependen de factores de pH personales y preferencias; esto no constituye una falla de calidad cubierta.
+                    </p>
+                </div>
+
+                <div class="space-y-1">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>🤝</span> 3. Alternativas de Solución de Garantía
+                    </h3>
+                    <p>Al confirmarse un defecto legalmente cubierto, <strong>FRAGATTAPARFUMS</strong> asumirá los fletes necesarios para brindarte una de las siguientes soluciones, ya que los perfumes por naturaleza no admiten reparación:</p>
+                    <ul class="list-disc pl-4 space-y-0.5 text-[11px]">
+                        <li>Cambio total por un artículo nuevo de la misma referencia.</li>
+                        <li>Sustitución por una alternativa equivalente, siempre con la aprobación previa tuya.</li>
+                        <li>Devolución íntegra del dinero pagado cuando no sea posible efectuar el cambio.</li>
+                    </ul>
+                </div>
+
+                <div class="bg-rose-50/60 border border-rose-200 p-3 rounded-xl space-y-1">
+                    <h3 class="font-bold text-rose-900 text-xs flex items-center gap-1.5">
+                        <span>🚫</span> 4. Casos Excluidos de Cobertura
+                    </h3>
+                    <p class="text-[11px] text-rose-950">
+                        La garantía será negada únicamente si el daño se deriva de: 
+                        1. Situaciones de fuerza mayor. 
+                        2. Alteraciones provocadas por un tercero. 
+                        3. Uso indebido por parte del cliente. 
+                        4. Golpes, rupturas de frasco o caídas posteriores al momento de la entrega. 
+                        5. Almacenamiento perjudicial (exposición al sol directo o calor extremo).
+                    </p>
+                </div>
+
+                <div class="space-y-1">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>📱</span> 5. Solicitud de Reclamación
+                    </h3>
+                    <p>Para gestionar tu caso rápidamente, escríbenos a nuestro WhatsApp oficial: <strong class="text-emerald-600 font-bold">+57 310 539 0115</strong> indicando:</p>
+                    <ul class="list-disc pl-4 space-y-0.5 text-[11px]">
+                        <li>Nombre completo y número de cédula/pedido.</li>
+                        <li>Descripción clara de la falla que observaste.</li>
+                        <li>Evidencias fotográficas o en video del producto defectuoso.</li>
+                    </ul>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-200">
+                        <h4 class="font-bold text-gray-800 mb-0.5 flex items-center gap-1">
+                            <span>🔄</span> 6. Cambios por Gusto
+                        </h4>
+                        <p class="text-[11px]">Puedes solicitar un cambio por otra fragancia dentro de los <strong>4 días calendario</strong> tras la entrega. Requisito: producto 100% sellado, sin uso, caja y empaque de celofán intactos. Los fletes de transporte son asumidos por el cliente en este escenario.</p>
+                    </div>
+
+                    <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-200">
+                        <h4 class="font-bold text-gray-800 mb-0.5 flex items-center gap-1">
+                            <span>🔙</span> 7. Derecho de Retracto
+                        </h4>
+                        <p class="text-[11px]">Aplica en compras a distancia. Tienes <strong>5 días hábiles</strong> desde la entrega para devolverlo intacto, sellado y sin absolutamente ninguna señal de uso. El dinero será devuelto sin retenciones en un plazo máximo de 15 días calendario tras su comprobación.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>📦</span> 8 y 9. Averías, Novedades y Productos Faltantes
+                    </h3>
+                    <p class="text-[11px]">Nosotros contamos con sistemas de cámaras y escaneo láser en preparación. Sin embargo, si recibes un paquete con cintas rotas, reencintado o golpes visibles, repórtalo en la guía del transportador antes de firmar.</p>
+                    <p class="text-[11px] font-bold text-amber-600">Recomendamos encarecidamente grabar un video continuo mostrando la guía y cómo abres el paquete por primera vez.</p>
+                </div>
+
+                <div class="space-y-1">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>💳</span> 12. Reversión de Pagos en Línea (Wompi)
+                    </h3>
+                    <p class="text-[11px]">Si pagaste de forma electrónica (Tarjetas/PSE), puedes exigir reversión si fuiste víctima de fraude, o si no recibiste el pedido, según estipula el artículo 51 de la Ley 1480.</p>
+                </div>
+
+                <!-- SECCIÓN DE ENVÍOS DESTACADA CON STICKERS -->
+                <div class="bg-slate-900 text-white p-4 rounded-2xl space-y-3 border border-amber-500/30 mt-4">
+                    <h3 class="font-bold text-amber-400 text-sm flex items-center gap-1.5 uppercase tracking-wider">
+                        <span>🚚</span> Políticas de Envío y Entregas
+                    </h3>
+                    
+                    <p class="text-[11px] text-slate-300 leading-tight">
+                        En FRAGATTAPARFUMS nos encargamos de que la magia llegue a tu puerta rápido y seguro. Trabajamos de la mano con las mejores transportadoras (Envía, Coordinadora, Inter Rapidísimo).
+                    </p>
+                    
+                    <div>
+                        <p class="text-[12px] font-bold text-white mb-1">⏱️ Tiempos de Tránsito Estimados:</p>
+                        <ul class="list-disc pl-4 space-y-1 text-[11px] text-slate-300">
+                            <li><span class="text-amber-300 font-bold">Envíos Locales (Medellín y A.M.):</span> Entregas ultra rápidas en 1 a 2 días hábiles (Tarifa fija de $12.000 COP, con opción de Pago Contra Entrega). 💨</li>
+                            <li><span class="text-amber-300 font-bold">Envíos Nacionales:</span> Entre 3 y 5 días hábiles calculados en tiempo real según destino. 🌍</li>
+                            <li><span class="text-amber-300 font-bold">Zonas Especiales / Reexpedición:</span> Hasta 15 días hábiles.</li>
+                        </ul>
+                    </div>
+
+                    <div class="p-2.5 bg-black/40 border border-slate-700 rounded-lg text-[11px] text-amber-200 font-medium">
+                        <span>📹</span> <strong>¡Ojo al Dato! - Garantiza tu envío:</strong> Una vez despachado, la transportadora asume la custodia del producto. Para poder escalar rápidamente cualquier eventualidad por robo, daño visible o manipulación indebida, debes notificarnos a nuestro WhatsApp oficial <strong>+57 310 539 0115</strong> con fotos/videos dentro de las <strong>24 horas siguientes</strong> a la recepción para hacer efectivo el seguro.
+                    </div>
+                </div>
+
             </div>
+
+            <div class="mt-5 pt-3 border-t border-gray-100 flex justify-center">
+                <button onclick="closePoliciesModal()" class="bg-luxury-dark hover:bg-black text-white font-bold text-xs px-8 py-2.5 rounded-xl transition shadow-md">
+                    Entendido y Cerrar
+                </button>
+            </div>
+
         </div>
     </div>
 
