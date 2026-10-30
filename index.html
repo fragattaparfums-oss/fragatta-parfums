@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PARFUMS LUXURY | Perfumería Exclusiva</title>
+    <title>FRAGATTAPARFUMS | Perfumería Exclusiva</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
@@ -14,6 +14,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- SheetJS (XLSX) para lectura de Excel y CSV -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- SCRIPT OFICIAL DEL CHECKOUT DE WOMPI -->
+    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -111,22 +114,28 @@
             <div class="flex flex-col items-center">
                 <div id="logo-container" class="mb-1">
                     <div id="buyer-logo-box" class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border border-amber-200 shadow-sm bg-amber-50">
-                        <img id="buyer-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Parfums Luxury Logo" class="w-full h-full object-contain">
+                        <img id="buyer-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Fragatta Parfums Logo" class="w-full h-full object-contain">
                     </div>
 
-                    <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para cambiar el logo">
+                    <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para cambiar el logo">
                         <img id="admin-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Logo Admin" class="w-full h-full object-contain">
                         <div class="absolute inset-0 bg-black/60 text-luxury-gold text-[8px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition">Cambiar</div>
                     </div>
                 </div>
                 <input type="file" id="logo-file-input" accept="image/*" onchange="handleLogoUpload(event)" class="hidden">
-                <h1 class="font-cinzel text-lg sm:text-2xl font-bold text-gray-900 tracking-widest uppercase leading-tight">PARFUMS LUXURY</h1>
+                <h1 class="font-cinzel text-lg sm:text-2xl font-bold text-gray-900 tracking-widest uppercase leading-tight">FRAGATTAPARFUMS</h1>
             </div>
 
-            <button onclick="toggleCartModal()" class="bg-luxury-dark hover:bg-black text-white px-3.5 py-1.5 rounded-full font-semibold text-xs flex items-center gap-2 border border-luxury-gold transition shadow">
-                <i class="fas fa-shopping-cart text-amber-400 text-xs"></i>
-                <span id="cart-badge" class="bg-amber-500 text-black text-[10px] w-5 h-5 rounded-full font-bold flex items-center justify-center">0</span>
-            </button>
+            <!-- CONTENEDOR SUPERIOR DERECHA: CARRITO + BOTÓN DE ENVÍOS & GARANTÍAS DEBAJO -->
+            <div class="flex flex-col items-end gap-1.5">
+                <button onclick="toggleCartModal()" class="bg-luxury-dark hover:bg-black text-white px-3.5 py-1.5 rounded-full font-semibold text-xs flex items-center gap-2 border border-luxury-gold transition shadow">
+                    <i class="fas fa-shopping-cart text-amber-400 text-xs"></i>
+                    <span id="cart-badge" class="bg-amber-500 text-black text-[10px] w-5 h-5 rounded-full font-bold flex items-center justify-center">0</span>
+                </button>
+                <button onclick="openPoliciesModal()" class="bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-[10px] font-bold px-2.5 py-1 rounded-full transition shadow-sm flex items-center gap-1">
+                    <i class="fas fa-shield-alt text-amber-600"></i> Envíos & Garantías
+                </button>
+            </div>
         </div>
     </header>
 
@@ -144,7 +153,7 @@
                     EXCELENCIA Y CALIDAD GARANTIZADA
                 </h2>
                 <p class="max-w-xl mx-auto text-gray-600 text-[11px] sm:text-xs leading-relaxed font-normal">
-                    Distribución exclusiva de perfumería fina y body spray. Explora nuestras ofertas, precios competitivos y realiza tus compras seguras directamente por WhatsApp.
+                    Distribución exclusiva de perfumería fina y body spray. Explora nuestras ofertas, precios competitivos y realiza tus compras seguras en línea o por WhatsApp.
                 </p>
 
                 <div id="admin-banner-controls" class="hidden mt-4 pt-3 border-t border-amber-200/50 flex flex-wrap justify-center gap-2">
@@ -159,7 +168,7 @@
             </div>
         </section>
 
-        <!-- CARRUSEL PROMOCIONAL CON CRONÓMETRO -->
+        <!-- CARRUSEL PROMOCIONAL CON CRONÓMETRO ADAPTATIVO MÓVIL -->
         <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-6 bg-slate-900 group">
             <div id="carousel-track" class="flex transition-transform duration-500 ease-out h-52 sm:h-64 md:h-72 w-full"></div>
 
@@ -271,21 +280,65 @@
     <!-- Footer con Términos de Garantía -->
     <footer class="bg-luxury-dark text-gray-400 text-xs py-8 border-t border-gray-800 mt-12 relative">
         <div class="max-w-7xl mx-auto px-4 text-center space-y-4">
-            <div class="font-cinzel text-xl text-white font-bold tracking-widest">PARFUMS LUXURY</div>
+            <div class="font-cinzel text-xl text-white font-bold tracking-widest">FRAGATTAPARFUMS</div>
             <p class="text-gray-400 max-w-md mx-auto text-[11px]">Catálogo exclusivo de perfumería fina, nicho y cosmética de alta fijación.</p>
             
             <div class="bg-slate-900/90 border border-amber-500/30 rounded-xl p-3 max-w-2xl mx-auto text-amber-200/90 text-[11px] font-medium leading-relaxed shadow-inner">
-                <p><i class="fas fa-shield-alt text-amber-400 mr-1.5"></i> <strong>Política de Garantías y Reclamos:</strong> Los cambios, devoluciones y reclamos por daños o averías se efectuarán únicamente dentro de <strong>1 día hábil (24 horas)</strong> posterior a la recepción del paquete según la guía de la transportadora.</p>
+                <p><i class="fas fa-shield-alt text-amber-400 mr-1.5"></i> <strong>Política de Garantías y Reclamos:</strong> Los cambios, devoluciones y reclamos por daños o averías se efectuarán únicamente dentro de <strong>1 día hábil (24 horas)</strong> posterior a la recepción del paquete según la guía de la transportadora. <button onclick="openPoliciesModal()" class="text-amber-400 underline font-bold ml-1 hover:text-white">Ver políticas completas</button></p>
             </div>
 
             <div class="pt-4 border-t border-gray-800 text-[11px] text-gray-500 flex items-center justify-between">
-                <span>© 2026 Parfums Luxury (fragattaparfums@gmail.com). Todos los derechos reservados.</span>
+                <span>© 2026 FRAGATTAPARFUMS (fragattaparfums@gmail.com). Todos los derechos reservados.</span>
                 <button id="admin-lock-btn" type="button" onclick="handleAdminToggle()" title="Acceso Administrador" class="text-gray-700 hover:text-amber-500 transition p-1 text-xs">
                     <i id="admin-lock-icon" class="fas fa-lock"></i>
                 </button>
             </div>
         </div>
     </footer>
+
+    <!-- MODAL POLÍTICAS Y GARANTÍAS DE FRAGATTAPARFUMS -->
+    <div id="policies-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto shadow-2xl border border-gray-100 relative text-gray-800 p-5 sm:p-7">
+            <button onclick="closePoliciesModal()" class="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center transition z-20">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+            
+            <h2 class="font-cinzel text-lg sm:text-xl font-bold text-gray-900 border-b pb-3 mb-4 flex items-center gap-2">
+                <i class="fas fa-file-contract text-amber-600"></i> Políticas de Garantías, Cambios y Envíos – FRAGATTAPARFUMS
+            </h2>
+
+            <div class="space-y-4 text-xs leading-relaxed text-gray-600">
+                <p><strong>Última actualización:</strong> 1 de octubre de 2026<br>
+                En <strong>FRAGATTAPARFUMS</strong> queremos brindarte una experiencia de compra segura, clara y confiable. Esta política se aplica de conformidad con la Ley 1480 de 2011, el Decreto 735 de 2013, la Ley 2439 de 2024 y las demás normas colombianas de protección al consumidor.</p>
+
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-lg">
+                    <h3 class="font-bold text-amber-900 mb-1">1. Garantía de los perfumes</h3>
+                    <p>Los perfumes nuevos comercializados por FRAGATTAPARFUMS cuentan con una garantía legal de <strong>treinta (30) días calendario</strong>, contados desde la fecha en que el producto sea entregado al consumidor.</p>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-gray-900 mb-1">2. ¿Qué cubre la garantía?</h3>
+                    <p>Fugas o derrames por defectos del envase, atomizadores defectuosos, producto alterado de manera anormal o incumplimiento de las características ofrecidas. La percepción personal del aroma o fijación no constituye defecto por sí sola.</p>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-gray-900 mb-1">3. Solicitud de garantía y Retracto</h3>
+                    <p>Puedes solicitarla a través de nuestro WhatsApp oficial <strong>+57 314 547 0262</strong>. El derecho de retracto aplica dentro de los 5 días hábiles siguientes a la entrega siempre que el producto conserve sus sellos y empaque sin abrir.</p>
+                </div>
+
+                <div class="bg-slate-900 text-white p-3.5 rounded-xl space-y-1">
+                    <h3 class="font-bold text-amber-400">🚚 POLÍTICAS DE ENVÍO</h3>
+                    <p>• <strong>Envíos locales (Medellín y A.M.):</strong> Entrega en 1 a 2 días hábiles con opción de pago contra entrega ($12.000 COP fijo).</p>
+                    <p>• <strong>Envíos nacionales:</strong> Cotización en tiempo real vía <strong>Envia.com</strong>. Tiempos de entrega de 3 a 5 días hábiles.</p>
+                    <p>• <strong>Revisión importante:</strong> Reclamos por daños, faltantes o averías deben reportarse dentro de las primeras <strong>24 horas</strong> posteriores a la recepción con evidencias fotográficas o en video.</p>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button onclick="closePoliciesModal()" class="bg-luxury-dark hover:bg-black text-white font-bold text-xs px-6 py-2.5 rounded-xl transition">Entendido y Aceptar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL DETALLE PRODUCTO -->
     <div id="detail-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
@@ -297,134 +350,154 @@
         </div>
     </div>
 
-    <!-- MODAL ADMINISTRACIÓN (CREAR / EDITAR PRODUCTO CON OPCIÓN DOBLE DE IMAGEN) -->
-    <div id="admin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl relative text-gray-800 max-h-[90vh] overflow-y-auto">
-            <button onclick="closeAdminModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-lg"><i class="fas fa-times"></i></button>
-            <h3 id="admin-modal-title" class="font-cinzel text-lg font-bold text-gray-900 mb-4 border-b pb-2">Agregar Nuevo Producto</h3>
-            <form id="product-form" onsubmit="handleProductFormSubmit(event)" class="space-y-3 text-xs">
-                <input type="hidden" id="prod-id">
-                <div>
-                    <label class="block font-bold text-gray-700 mb-1">Nombre / Título *</label>
-                    <input type="text" id="prod-name" required placeholder="Ej: Club de Nuit Intense" class="w-full p-2 border border-gray-300 rounded-lg">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block font-bold text-gray-700 mb-1">Marca *</label>
-                        <input type="text" id="prod-brand" required placeholder="Ej: Armaf" class="w-full p-2 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-gray-700 mb-1">Categoría *</label>
-                        <select id="prod-category" class="w-full p-2 border border-gray-300 rounded-lg bg-white">
-                            <option value="Árabe">Árabe</option>
-                            <option value="Diseñador">Diseñador</option>
-                            <option value="Nicho">Nicho</option>
-                            <option value="Body Spray">Body Spray</option>
-                            <option value="Kids">Kids</option>
-                            <option value="Emprendedores">Emprendedores 🚀</option>
-                            <option value="Promociones">Promociones 🏷️</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block font-bold text-gray-700 mb-1">Precio Actual ($) *</label>
-                        <input type="number" id="prod-price" required placeholder="120000" class="w-full p-2 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-gray-700 mb-1">Precio Anterior ($)</label>
-                        <input type="number" id="prod-oldprice" placeholder="150000 (Opcional)" class="w-full p-2 border border-gray-300 rounded-lg">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block font-bold text-gray-700 mb-1">Género</label>
-                        <select id="prod-gender" class="w-full p-2 border border-gray-300 rounded-lg bg-white">
-                            <option value="Unisex">Unisex</option>
-                            <option value="Hombre">Hombre</option>
-                            <option value="Mujer">Mujer</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-gray-700 mb-1">Prioridad / Etiqueta</label>
-                        <select id="prod-priority" class="w-full p-2 border border-gray-300 rounded-lg bg-white">
-                            <option value="NINGUNA">Normal</option>
-                            <option value="LO NUEVO">🔥 LO NUEVO</option>
-                            <option value="TOP VIRAL">⚡ TOP VIRAL</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- OPCIÓN DOBLE DE IMAGEN: URL O ARCHIVO LOCAL -->
-                <div class="space-y-1.5 p-3 bg-amber-50/50 rounded-xl border border-amber-200">
-                    <label class="block font-bold text-gray-800">Imagen del Producto *</label>
-                    <div>
-                        <label class="block text-[10px] text-gray-500 font-semibold mb-0.5">Opción 1: Pegar URL de Imagen</label>
-                        <input type="url" id="prod-image" placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-lg bg-white">
-                    </div>
-                    <div class="text-center font-bold text-[10px] text-gray-400 uppercase">o bien</div>
-                    <div>
-                        <label class="block text-[10px] text-gray-500 font-semibold mb-0.5">Opción 2: Cargar desde Galería</label>
-                        <input type="file" id="prod-image-file" accept="image/*" onchange="handleProductImageFile(event)" class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block font-bold text-gray-700 mb-1">Notas Olfativas</label>
-                    <input type="text" id="prod-notes" placeholder="Ej: Limón, Grosellas negras, Manzana" class="w-full p-2 border border-gray-300 rounded-lg">
-                </div>
-                <div>
-                    <label class="block font-bold text-gray-700 mb-1">Descripción</label>
-                    <textarea id="prod-description" rows="2" placeholder="Detalles adicionals de la fragancia..." class="w-full p-2 border border-gray-300 rounded-lg"></textarea>
-                </div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition text-xs shadow">
-                    Guardar Producto
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL GESTIÓN DE BANNER Y PROMOS -->
-    <div id="promo-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl relative text-gray-800">
-            <button onclick="closePromoModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-lg"><i class="fas fa-times"></i></button>
-            <h3 class="font-cinzel text-lg font-bold text-gray-900 mb-3 border-b pb-2">Agregar Banner Promocional</h3>
+    <!-- MODAL EDITAR O AGREGAR PROMO SLIDE -->
+    <div id="promo-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 relative text-gray-800 shadow-2xl">
+            <button onclick="closePromoModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+            <h3 id="promo-modal-title" class="font-cinzel text-base font-bold text-gray-900 mb-3 border-b pb-2 flex items-center gap-2">
+                <i class="fas fa-images text-amber-600"></i> Gestor de Diapositiva Promocional
+            </h3>
             <form id="promo-form" onsubmit="handlePromoSubmit(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="promo-id">
                 <div>
-                    <label class="block font-bold text-gray-700 mb-1">Título de la Promo *</label>
-                    <input type="text" id="promo-title" required placeholder="Ej: DESCUENTO ESPECIAL ÁRABES" class="w-full p-2 border border-gray-300 rounded-lg">
+                    <label class="block font-semibold mb-1">Título / Frase Corta</label>
+                    <input type="text" id="promo-title" required placeholder="Ej: Descuentos Embrujados 15% OFF" class="w-full p-2 border rounded-lg">
                 </div>
-
-                <div class="space-y-1.5 p-3 bg-amber-50/50 rounded-xl border border-amber-200">
-                    <label class="block font-bold text-gray-800">Imagen del Banner Promo *</label>
-                    <div>
-                        <label class="block text-[10px] text-gray-500 font-semibold mb-0.5">Opción 1: Pegar URL de Imagen</label>
-                        <input type="url" id="promo-image" placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-lg bg-white">
-                    </div>
-                    <div class="text-center font-bold text-[10px] text-gray-400 uppercase">o bien</div>
-                    <div>
-                        <label class="block text-[10px] text-gray-500 font-semibold mb-0.5">Opción 2: Subir desde Galería</label>
-                        <input type="file" id="promo-image-file" accept="image/*" onchange="handlePromoImageFile(event)" class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                <div>
+                    <label class="block font-semibold mb-1">Imagen Promocional (Subir o Pegar URL)</label>
+                    <div class="space-y-1">
+                        <label class="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-1.5 rounded-lg text-center block transition">
+                            <i class="fas fa-upload mr-1"></i> Subir de Galería
+                            <input type="file" accept="image/*" onchange="uploadPromoImageBase64(event)" class="hidden">
+                        </label>
+                        <input type="text" id="promo-image" required placeholder="O pega la URL de la imagen promocional" class="w-full p-2 border rounded-lg text-[11px]">
                     </div>
                 </div>
-
                 <div>
-                    <label class="block font-bold text-gray-700 mb-1">Categoría Destino</label>
-                    <select id="promo-category" class="w-full p-2 border border-gray-300 rounded-lg bg-white">
+                    <label class="block font-semibold mb-1">Vincular a Categoría (Al hacer clic)</label>
+                    <select id="promo-category" class="w-full p-2 border rounded-lg bg-white">
                         <option value="Promociones">Promociones 🏷️</option>
                         <option value="Árabe">Árabe</option>
                         <option value="Diseñador">Diseñador</option>
                         <option value="Nicho">Nicho</option>
                         <option value="Body Spray">Body Spray</option>
+                        <option value="Kids">Kids</option>
+                        <option value="Emprendedores">Emprendedores 🚀</option>
                     </select>
                 </div>
-                <div class="flex items-center gap-2 pt-1">
-                    <input type="checkbox" id="promo-timer-chk" class="w-4 h-4 text-amber-600 rounded">
-                    <label for="promo-timer-chk" class="font-bold text-gray-700">Incluir Cronómetro de Oferta (72 horas)</label>
+
+                <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200/80 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="font-bold text-amber-900 text-xs flex items-center gap-1.5">
+                            <i class="fas fa-clock text-amber-600"></i> ¿Activar Cronómetro Límite?
+                        </label>
+                        <input type="checkbox" id="promo-timer-enable" class="w-4 h-4 text-amber-600 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-0.5">Fecha y Hora Límite:</label>
+                        <input type="datetime-local" id="promo-timer-date" class="w-full p-2 border rounded-lg bg-white font-mono text-xs">
+                    </div>
                 </div>
-                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-2.5 rounded-lg transition text-xs shadow">
-                    Guardar Promo
-                </button>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closePromoModal()" class="px-3 py-1.5 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-1.5 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ADMIN PRODUCTO -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative text-gray-800">
+            <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="font-cinzel text-lg font-bold text-gray-900 mb-4 border-b pb-2 flex items-center gap-2">
+                <i class="fas fa-tasks text-amber-600"></i> Administrar Producto en Firebase
+            </h3>
+
+            <form id="product-form" onsubmit="handleProductSubmit(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="prod-id">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Marca</label>
+                        <input type="text" id="prod-brand" required placeholder="LATTAFA" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Nombre Fragancia</label>
+                        <input type="text" id="prod-title" required placeholder="YARA 100ML" class="w-full p-2 border rounded-lg">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Género</label>
+                        <select id="prod-gender" class="w-full p-2 border rounded-lg bg-white">
+                            <option value="Hombre">Hombre</option>
+                            <option value="Mujer">Mujer</option>
+                            <option value="Unisex">Unisex</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Categoría</label>
+                        <select id="prod-category" class="w-full p-2 border rounded-lg bg-white">
+                            <option value="Árabe">Árabe</option>
+                            <option value="Diseñador">Diseñador</option>
+                            <option value="Nicho">Nicho</option>
+                            <option value="Body Spray">Body Spray</option>
+                            <option value="Kids">Kids</option>
+                            <option value="Emprendedores">Emprendedores</option>
+                            <option value="Promociones">Promociones</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Precio Normal ($)</label>
+                        <input type="number" id="prod-old-price" placeholder="210000" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Precio Oferta Venta ($)</label>
+                        <input type="number" id="prod-price" required placeholder="175000" class="w-full p-2 border rounded-lg">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Etiqueta Prioridad</label>
+                        <select id="prod-priority" class="w-full p-2 border rounded-lg bg-white">
+                            <option value="LO NUEVO">🔥 LO NUEVO</option>
+                            <option value="TOP VIRAL">⚡ TOP VIRAL</option>
+                            <option value="NINGUNA">Sin Etiqueta</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Imagen del Producto (2 Opciones)</label>
+                        <div class="space-y-1.5">
+                            <label class="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-1.5 rounded-lg text-center block transition">
+                                <i class="fas fa-upload mr-1"></i> Opción 1: Subir de Galería
+                                <input type="file" id="prod-image-file" accept="image/*" onchange="uploadImageBase64(event)" class="hidden">
+                            </label>
+                            <input type="text" id="prod-image" placeholder="Opción 2: O pega aquí la URL de la foto" class="w-full p-2 border rounded-lg text-[11px]">
+                        </div>
+                        <span id="upload-status" class="text-[10px] text-gray-500 block mt-1"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-1">Notas Olfativas</label>
+                    <input type="text" id="prod-notes" placeholder="Vainilla, Caramelo, Fresa" class="w-full p-2 border rounded-lg">
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-1">Descripción Breve</label>
+                    <textarea id="prod-desc" rows="2" placeholder="Set gourmand dulce y cremoso." class="w-full p-2 border rounded-lg"></textarea>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeAdminModal()" class="px-4 py-2 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
+                    <button type="submit" id="btn-save-prod" class="px-5 py-2 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar en Firebase</button>
+                </div>
             </form>
         </div>
     </div>
@@ -474,7 +547,7 @@
                 </div>
             </div>
 
-            <!-- PASO 2: DATOS DEL COMPRADOR Y PAGO VIA WHATSAPP -->
+            <!-- PASO 2: DATOS DEL COMPRADOR Y PAGO -->
             <div id="checkout-step-2" class="flex-grow overflow-y-auto p-4 hidden flex-col justify-between space-y-4">
                 <div>
                     <button onclick="goToStep1()" class="inline-flex items-center text-xs font-bold text-amber-700 hover:underline mb-3">
@@ -492,7 +565,7 @@
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="block font-semibold text-gray-700 mb-0.5">Teléfono / WhatsApp *</label>
-                                <input type="tel" id="ship-phone" required placeholder="3001234567" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400">
+                                <input type="tel" id="ship-phone" required placeholder="3105390115" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400">
                             </div>
                             <div>
                                 <label class="block font-semibold text-gray-700 mb-0.5">Cédula / NIT *</label>
@@ -528,31 +601,12 @@
                         <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5 border-b pb-1 pt-2">
                             <i class="fas fa-credit-card text-emerald-600"></i> 3. Método de Pago
                         </h4>
-
-                        <!-- RECUADRO INFORMATIVO DE CONFIRMACIÓN -->
-                        <div class="p-3 bg-amber-50 border border-amber-300 rounded-xl text-[11px] text-amber-900 space-y-1">
-                            <div class="font-bold flex items-center gap-1.5 text-amber-800">
-                                <i class="fas fa-info-circle text-amber-600"></i> Confirmación de disponibilidad
-                            </div>
-                            <p class="leading-relaxed">
-                                Al hacer clic en <strong>"Enviar Pedido por WhatsApp"</strong> se enviará la solicitud. Un asesor verificará la <strong>disponibilidad inmediata</strong> de tus fragancias y te suministrará el enlace Wompi o los datos de pago.
-                            </p>
-                        </div>
-
                         <div class="space-y-2">
                             <label class="flex items-center p-2.5 border rounded-xl cursor-pointer hover:bg-slate-50 transition border-amber-500 bg-amber-50/30">
                                 <input type="radio" name="payment_method" value="wompi" checked onchange="updatePaymentCalculations()" class="text-amber-600">
                                 <div class="ml-2.5">
-                                    <span class="font-bold text-gray-900 block">Wompi (Tarjetas Crédito/Débito, PSE, Nequi, Bancolombia)</span>
-                                    <span class="text-[10px] text-gray-500">Un asesor te enviará el link/QR Wompi tras validar disponibilidad.</span>
-                                </div>
-                            </label>
-
-                            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer hover:bg-slate-50 transition">
-                                <input type="radio" name="payment_method" value="transfer" onchange="updatePaymentCalculations()" class="text-amber-600">
-                                <div class="ml-2.5">
-                                    <span class="font-bold text-gray-900 block">Transferencia Directa (Bancolombia, Nequi, Daviplata)</span>
-                                    <span class="text-[10px] text-gray-500">Recibe las cuentas para realizar transferencia directa.</span>
+                                    <span class="font-bold text-gray-900 block">Wompi Pasarela Segura (Tarjetas, PSE, Nequi)</span>
+                                    <span class="text-[10px] text-gray-500">Pago en línea directo y seguro con confirmación inmediata.</span>
                                 </div>
                             </label>
 
@@ -560,7 +614,15 @@
                                 <input type="radio" name="payment_method" value="cod" onchange="updatePaymentCalculations()" class="text-amber-600">
                                 <div class="ml-2.5">
                                     <span class="font-bold text-gray-900 block">Pago Contra Entrega</span>
-                                    <span id="cod-note" class="text-[10px] text-gray-500">Pagas en efectivo al recibir tu paquete en mano.</span>
+                                    <span id="cod-note" class="text-[10px] text-gray-500">Pagas al recibir. Disponible para Medellín y envíos nacionales.</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer hover:bg-slate-50 transition">
+                                <input type="radio" name="payment_method" value="whatsapp" onchange="updatePaymentCalculations()" class="text-amber-600">
+                                <div class="ml-2.5">
+                                    <span class="font-bold text-gray-900 block">Transferencia / Finalizar por WhatsApp</span>
+                                    <span class="text-[10px] text-gray-500">Envía la orden directa a nuestro asesor comercial vía WhatsApp.</span>
                                 </div>
                             </label>
                         </div>
@@ -586,7 +648,7 @@
                     </div>
 
                     <button onclick="processFinalOrder()" class="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-lg">
-                        <i class="fab fa-whatsapp text-lg"></i> <span id="btn-submit-text">Enviar Pedido por WhatsApp</span>
+                        <i class="fab fa-whatsapp text-sm"></i> <span id="btn-submit-text">Enviar Pedido por WhatsApp</span>
                     </button>
                 </div>
             </div>
@@ -610,10 +672,14 @@
 
         const ADMIN_PASSWORD = "J.p12022013";
         let WHATSAPP_NUMBER = "573105390115";
+        
+        // CLAVES DE WOMPI INTEGRADAS
+        const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYwPw5VP27yidk0s1ULSHh6";
+        const WOMPI_INTEGRITY_SECRET = "prod_integrity_9QPykHUQT2g8dTwNJzrKraJAABsNGReM"; 
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
-                if (window.db && window.collection) {
+                if (window.db) {
                     clearInterval(checkFirebase);
                     initFirebaseListener();
                     initAppConfigListener();
@@ -624,7 +690,17 @@
             updateCartUI();
         });
 
-        // --- LISTENERS DE FIREBASE ---
+        // FUNCIÓN CRIPTOGRÁFICA PARA CALCULAR LA FIRMA SHA-256 EXIGIDA POR WOMPI
+        async function generateWompiSignature(reference, amountInCents, currency) {
+            const chain = `${reference}${amountInCents}${currency}${WOMPI_INTEGRITY_SECRET}`;
+            const encoder = new TextEncoder();
+            const data = encoder.encode(chain);
+            
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         function initFirebaseListener() {
             const productsRef = window.collection(window.db, "products");
             window.onSnapshot(productsRef, (snapshot) => {
@@ -632,13 +708,13 @@
                     const data = docSnap.data();
                     return {
                         id: docSnap.id,
-                        title: data.title || data.name || 'FRAGANCIA',
                         brand: data.brand || 'LUXURY',
+                        title: data.name || data.title || 'FRAGANCIA',
+                        gender: data.gender || 'Unisex',
                         category: data.category || 'Árabe',
                         price: Number(data.price) || 0,
-                        oldPrice: data.oldPrice ? Number(data.oldPrice) : (data.originalPrice ? Number(data.originalPrice) : null),
-                        gender: data.gender || 'Unisex',
-                        priority: data.priority || (data.featured ? 'TOP VIRAL' : 'NINGUNA'),
+                        oldPrice: data.originalPrice ? Number(data.originalPrice) : (data.oldPrice ? Number(data.oldPrice) : null),
+                        priority: data.featured ? 'TOP VIRAL' : (data.priority || 'NINGUNA'),
                         image: data.image || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
                         notes: data.notes || '',
                         description: data.description || ''
@@ -667,7 +743,7 @@
                 if (promoSlides.length === 0) {
                     promoSlides = [{
                         id: 'default',
-                        title: 'OFERTAS EXCLUSIVAS PARFUMS LUXURY',
+                        title: 'OFERTAS EXCLUSIVAS FRAGATTAPARFUMS',
                         image: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=80',
                         category: 'Promociones',
                         hasTimer: true,
@@ -678,13 +754,12 @@
             });
         }
 
-        // --- CARRUSEL Y CRONÓMETROS ---
         function renderPromoCarousel() {
             const track = document.getElementById('carousel-track');
             const dots = document.getElementById('carousel-dots');
             
             track.innerHTML = promoSlides.map((slide) => `
-                <div class="min-w-full h-full relative cursor-pointer flex-shrink-0" onclick="setCategoryFilter('${slide.category}')">
+                <div class="min-w-full h-full relative cursor-pointer flex-shrink-0" onclick="setCategoryFilter('${slide.category}', document.querySelector('.cat-btn'))">
                     <img src="${slide.image}" alt="${slide.title}" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3 sm:p-5">
                         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
@@ -767,7 +842,6 @@
         function nextSlide() { goToSlide(currentSlide + 1); }
         function prevSlide() { goToSlide(currentSlide - 1); }
 
-        // --- RENDERIZADO Y FILTROS DE PRODUCTOS ---
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             const emptyState = document.getElementById('empty-state');
@@ -791,91 +865,45 @@
 
             emptyState.classList.add('hidden');
 
-            grid.innerHTML = filtered.map(p => `
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col justify-between relative group">
-                    ${isAdmin ? `
-                        <div class="absolute top-2 right-2 z-20 flex gap-1 bg-white/90 p-1 rounded-lg shadow border border-gray-200">
-                            <button onclick="editProduct('${p.id}')" class="text-amber-600 hover:text-amber-800 p-1 text-xs" title="Editar"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteProduct('${p.id}')" class="text-rose-600 hover:text-rose-800 p-1 text-xs" title="Eliminar"><i class="fas fa-trash"></i></button>
-                        </div>
-                    ` : ''}
+            grid.innerHTML = filtered.map(p => {
+                const notesList = p.notes ? p.notes.split(',').slice(0, 3).map(n => `<span class="inline-flex items-center gap-1 text-[10px] text-gray-500 mr-1.5"><i class="fas fa-glass-martini-alt text-[8px] text-amber-500"></i>${n.trim()}</span>`).join('') : '';
+
+                return `
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group p-2.5 sm:p-4">
                     <div class="cursor-pointer" onclick="openDetailModal('${p.id}')">
-                        <img src="${p.image}" alt="${p.title}" class="h-36 sm:h-48 w-full object-cover rounded-xl mb-2">
-                        <span class="text-[10px] font-bold text-amber-600 block uppercase">${p.brand}</span>
-                        <h3 class="font-cinzel font-bold text-xs sm:text-sm text-gray-900 mb-1 leading-tight">${p.title}</h3>
+                        <div class="relative w-full h-36 sm:h-48 overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center mb-2">
+                            ${p.oldPrice ? `<div class="absolute top-2 left-2 z-10"><span class="bg-rose-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">OFERTA</span></div>` : ''}
+                            <img src="${p.image}" alt="${p.title}" class="object-cover h-full w-full group-hover:scale-105 transition duration-500">
+                        </div>
+
+                        <span class="text-[10px] font-bold text-amber-600 block uppercase tracking-wider mb-0.5">${p.brand}</span>
+                        <h3 class="font-cinzel font-bold text-xs sm:text-sm text-gray-900 tracking-tight uppercase group-hover:text-amber-600 transition leading-tight mb-1 line-clamp-1">${p.title}</h3>
+
+                        <div class="flex flex-wrap items-center mb-1.5 min-h-[20px]">${notesList}</div>
+                        <p class="text-[10px] sm:text-[11px] text-gray-400 line-clamp-1 mb-2 font-normal">${p.description || 'Fragancia exclusiva.'}</p>
+
                         <div class="flex items-baseline gap-1.5 mb-2">
-                            ${p.oldPrice ? `<span class="text-[10px] text-gray-400 line-through">${formatPrice(p.oldPrice)}</span>` : ''}
-                            <span class="text-sm font-extrabold text-rose-600">${formatPrice(p.price)}</span>
+                            ${p.oldPrice ? `<span class="text-[10px] sm:text-xs text-gray-400 line-through font-normal">${formatPrice(p.oldPrice)}</span>` : ''}
+                            <span class="text-sm sm:text-base font-extrabold text-rose-600">${formatPrice(p.price)}</span>
                         </div>
                     </div>
-                    <button onclick="addToCart('${p.id}')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold text-xs py-2 rounded-xl transition">+ Carrito</button>
+
+                    <!-- MANTENIENDO EL COLOR EXACTO DE LA CASILLA + CARRITO ORIGINAL -->
+                    <div class="space-y-1.5 pt-2 border-t border-gray-100">
+                        <button onclick="addToCart('${p.id}')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-semibold py-2 rounded-xl transition">+ Carrito</button>
+
+                        ${isAdmin ? `
+                        <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-gray-100">
+                            <button onclick="openEditModal('${p.id}')" class="text-[10px] bg-blue-50 text-blue-600 font-semibold py-1 rounded">Editar</button>
+                            <button onclick="deleteProductFromFirebase('${p.id}')" class="text-[10px] bg-rose-50 text-rose-600 font-semibold py-1 rounded">Eliminar</button>
+                        </div>
+                        ` : ''}
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        // --- MANEJO DE ESTILOS DE BOTONES DE FILTRO ---
-        function setCategoryFilter(cat, btnElem) {
-            currentCategory = cat;
-            document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.className = "cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap";
-            });
-
-            if (btnElem) {
-                btnElem.className = "cat-btn bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap";
-            } else {
-                const targetBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.textContent.includes(cat));
-                if (targetBtn) targetBtn.className = "cat-btn bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap";
-            }
-            renderProducts();
-        }
-
-        function setGenderFilter(gen, btnElem) {
-            currentGender = gen;
-            document.querySelectorAll('.gender-btn').forEach(btn => {
-                btn.className = "gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs";
-            });
-            if (btnElem) {
-                btnElem.className = "gender-btn bg-luxury-dark text-white px-3 py-1 rounded-md font-medium transition text-xs";
-            }
-            renderProducts();
-        }
-
-        function setPriorityFilter(prio, btnElem) {
-            if (currentPriority === prio) {
-                currentPriority = 'Todas';
-                if (btnElem) btnElem.classList.remove('ring-2', 'ring-amber-500', 'bg-amber-400', 'text-white');
-            } else {
-                currentPriority = prio;
-                document.querySelectorAll('.prio-btn').forEach(btn => btn.classList.remove('ring-2', 'ring-amber-500', 'bg-amber-400', 'text-white'));
-                if (btnElem) btnElem.classList.add('ring-2', 'ring-amber-500', 'bg-amber-400', 'text-white');
-            }
-            renderProducts();
-        }
-
-        // --- MANEJO DE LECTURA DE IMÁGENES DESDE ARCHIVO LOCAL (GALERÍA) ---
-        function handleProductImageFile(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                document.getElementById('prod-image').value = evt.target.result;
-                showToast("Imagen cargada desde galería");
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function handlePromoImageFile(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                document.getElementById('promo-image').value = evt.target.result;
-                showToast("Imagen de promo cargada");
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // --- CARRITO DE COMPRAS ---
         function addToCart(id) {
             const prod = products.find(p => p.id === id);
             if (!prod) return;
@@ -1017,10 +1045,12 @@
             document.getElementById('final-grand-total').innerText = formatPrice(grandTotal);
 
             const btnText = document.getElementById('btn-submit-text');
-            btnText.innerText = `Enviar Pedido por WhatsApp (${formatPrice(grandTotal)})`;
+            if (method === 'wompi') btnText.innerText = `Pagar con Wompi (${formatPrice(grandTotal)})`;
+            else if (method === 'cod') btnText.innerText = `Confirmar Orden Contra Entrega (${formatPrice(grandTotal)})`;
+            else btnText.innerText = `Enviar Pedido por WhatsApp (${formatPrice(grandTotal)})`;
         }
 
-        function processFinalOrder() {
+        async function processFinalOrder() {
             const name = document.getElementById('ship-name').value.trim();
             const phone = document.getElementById('ship-phone').value.trim();
             const doc = document.getElementById('ship-doc').value.trim();
@@ -1030,324 +1060,114 @@
             const isMedellin = document.getElementById('chk-medellin')?.checked;
 
             if (!name || !phone || !doc || !city || !address) {
-                return alert("Por favor completa todos los campos requeridos para el envío.");
+                return alert("Por favor completa todos los datos del formulario.");
             }
 
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + calculatedShippingCost) * 0.05) : 0;
             const grandTotal = subtotal + calculatedShippingCost + codFee;
-            const orderRef = "PL-" + Date.now().toString().slice(-6);
 
-            let msg = `Hola Parfums Luxury 👋, deseo solicitar disponibilidad para la siguiente orden:\n\n`;
-            msg += `═════════════════════\n`;
-            msg += `  📋 *ORDEN DE COMPRA #${orderRef}*\n`;
-            msg += `═════════════════════\n\n`;
-            msg += `👤 *DATOS DE ENTREGA:*\n`;
-            msg += `• *Cliente:* ${name}\n`;
-            msg += `• *Cédula:* ${doc}\n`;
-            msg += `• *Teléfono:* ${phone}\n`;
-            msg += `• *Ciudad:* ${city}\n`;
-            msg += `• *Dirección:* ${address}\n\n`;
-            
-            msg += `📦 *PRODUCTOS:*\n`;
-            cart.forEach(i => { 
-                msg += `• ${i.title} (x${i.quantity}) - ${formatPrice(i.price * i.quantity)}\n`; 
-            });
-            
-            msg += `\n💰 *VALORES:*\n`;
-            msg += `• *Subtotal:* ${formatPrice(subtotal)}\n`;
-            msg += `• *Envío:* ${formatPrice(calculatedShippingCost)}\n`;
-            if (codFee > 0) msg += `• *Recargo Contra Entrega (5%):* ${formatPrice(codFee)}\n`;
-            msg += `• *TOTAL:* ${formatPrice(grandTotal)}\n\n`;
-            
-            msg += `💳 *MÉTODO DE PAGO SOLICITADO:*\n`;
-            if (method === 'wompi') {
-                msg += `👉 *Wompi (PSE / Tarjetas / Nequi / Bancolombia)*\n`;
-                msg += `*(Solicito confirmación de stock y link/QR de pago Wompi)*`;
-            } else if (method === 'transfer') {
-                msg += `👉 *Transferencia Directa*\n`;
-                msg += `*(Solicito datos bancarios para transferir)*`;
-            } else {
-                msg += `👉 *Pago Contra Entrega*\n`;
-                msg += `*(Pago en efectivo al recibir el pedido)*`;
-            }
+            // CONSTRUCCIÓN DEL MENSAJE COMPLETO DIRECTO A WHATSAPP
+            let msg = `*NUEVO PEDIDO - FRAGATTAPARFUMS*\n\n`;
+            msg += `*DATOS DE ENVÍO:*\n`;
+            msg += `• Nombre: ${name}\n• Cédula: ${doc}\n• Teléfono: ${phone}\n• Ciudad: ${city}\n• Dirección: ${address}\n\n`;
+            msg += `*PRODUCTOS SOLICITADOS:*\n`;
+            cart.forEach(i => { msg += `• ${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
+            msg += `\n*RESUMEN DE PAGO:*\n`;
+            msg += `• Subtotal: ${formatPrice(subtotal)}\n`;
+            msg += `• Envío: ${formatPrice(calculatedShippingCost)}\n`;
+            if (codFee > 0) msg += `• Recargo Contra Entrega: ${formatPrice(codFee)}\n`;
+            msg += `*TOTAL:* ${formatPrice(grandTotal)}\n\n`;
+            msg += `*MÉTODO DE PAGO:* ${method === 'wompi' ? 'Wompi En Línea' : (method === 'cod' ? 'Pago Contra Entrega' : 'Transferencia Bancaria')}`;
 
-            const targetNumber = WHATSAPP_NUMBER.replace(/\D/g, '');
-            const waUrl = `https://wa.me/${targetNumber}?text=${encodeURIComponent(msg)}`;
-
-            window.open(waUrl, '_blank');
-
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
             toggleCartModal();
-            cart = []; 
-            saveCart(); 
-            updateCartUI();
+            cart = []; saveCart(); updateCartUI();
         }
 
-        // --- ADMINISTRADOR ---
+        function openPoliciesModal() { document.getElementById('policies-modal').classList.remove('hidden'); }
+        function closePoliciesModal() { document.getElementById('policies-modal').classList.add('hidden'); }
+
         function handleAdminToggle() {
             if (isAdmin) {
                 isAdmin = false;
                 document.getElementById('admin-toolbar').classList.add('hidden');
-                document.getElementById('admin-logo-box').classList.add('hidden');
-                document.getElementById('buyer-logo-box').classList.remove('hidden');
-                document.getElementById('admin-banner-controls').classList.add('hidden');
-                document.getElementById('admin-carousel-controls').classList.add('hidden');
-                document.getElementById('admin-social-btn').classList.add('hidden');
-                showToast("Sesión de Administrador cerrada");
-                renderProducts();
+                showToast("Sesión cerrada");
             } else {
                 const pass = prompt("Ingrese contraseña de Administrador:");
                 if (pass === ADMIN_PASSWORD) {
                     isAdmin = true;
                     document.getElementById('admin-toolbar').classList.remove('hidden');
-                    document.getElementById('admin-logo-box').classList.remove('hidden');
-                    document.getElementById('buyer-logo-box').classList.add('hidden');
-                    document.getElementById('admin-banner-controls').classList.remove('hidden');
-                    document.getElementById('admin-carousel-controls').classList.remove('hidden');
-                    document.getElementById('admin-social-btn').classList.remove('hidden');
                     showToast("¡Modo Administrador Activo!");
-                    renderProducts();
-                } else if (pass) {
-                    alert("Contraseña incorrecta.");
                 }
             }
+            renderProducts();
         }
 
-        function openAdminModal() {
-            document.getElementById('admin-modal-title').innerText = "Agregar Nuevo Producto";
-            document.getElementById('product-form').reset();
-            document.getElementById('prod-id').value = "";
-            document.getElementById('prod-image').value = "";
-            document.getElementById('admin-modal').classList.remove('hidden');
-        }
-
-        function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
-
-        async function handleProductFormSubmit(e) {
-            e.preventDefault();
-            const id = document.getElementById('prod-id').value;
-            const imageUrl = document.getElementById('prod-image').value.trim() || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS';
-
-            const data = {
-                title: document.getElementById('prod-name').value.trim(),
-                name: document.getElementById('prod-name').value.trim(),
-                brand: document.getElementById('prod-brand').value.trim(),
-                category: document.getElementById('prod-category').value,
-                price: Number(document.getElementById('prod-price').value),
-                oldPrice: document.getElementById('prod-oldprice').value ? Number(document.getElementById('prod-oldprice').value) : null,
-                gender: document.getElementById('prod-gender').value,
-                priority: document.getElementById('prod-priority').value,
-                image: imageUrl,
-                notes: document.getElementById('prod-notes').value.trim(),
-                description: document.getElementById('prod-description').value.trim()
-            };
-
-            try {
-                if (id) {
-                    await window.updateDoc(window.doc(window.db, "products", id), data);
-                    showToast("Producto actualizado correctamente");
-                } else {
-                    await window.addDoc(window.collection(window.db, "products"), data);
-                    showToast("Producto agregado a la tienda");
-                }
-                closeAdminModal();
-            } catch (err) {
-                console.error("Error al guardar producto:", err);
-                alert("Ocurrió un error al guardar en la base de datos de Firebase.");
-            }
-        }
-
-        function editProduct(id) {
-            const p = products.find(x => x.id === id);
-            if (!p) return;
-            document.getElementById('admin-modal-title').innerText = "Editar Producto";
-            document.getElementById('prod-id').value = p.id;
-            document.getElementById('prod-name').value = p.title;
-            document.getElementById('prod-brand').value = p.brand;
-            document.getElementById('prod-category').value = p.category;
-            document.getElementById('prod-price').value = p.price;
-            document.getElementById('prod-oldprice').value = p.oldPrice || '';
-            document.getElementById('prod-gender').value = p.gender;
-            document.getElementById('prod-priority').value = p.priority;
-            document.getElementById('prod-image').value = p.image;
-            document.getElementById('prod-notes').value = p.notes;
-            document.getElementById('prod-description').value = p.description;
-            document.getElementById('admin-modal').classList.remove('hidden');
-        }
-
-        async function deleteProduct(id) {
-            if (confirm("¿Estás seguro de eliminar este producto de la tienda?")) {
-                try {
-                    await window.deleteDoc(window.doc(window.db, "products", id));
-                    showToast("Producto eliminado");
-                } catch (err) {
-                    alert("Error al eliminar el producto.");
-                }
-            }
-        }
-
-        // --- IMPORTACIÓN MASIVA DESDE EXCEL / CSV ---
         function handleExcelImport(event) {
+            if (!isAdmin) return;
             const file = event.target.files[0];
             if (!file) return;
 
+            showToast("Leyendo archivo Excel...");
+
             const reader = new FileReader();
-            reader.onload = async (e) => {
+            reader.onload = async function (e) {
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet);
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
-                    if (json.length === 0) return alert("El archivo está vacío.");
+                    if (!rows || rows.length === 0) return alert("El archivo está vacío.");
 
                     let addedCount = 0;
-                    for (const row of json) {
-                        const name = row.Nombre || row.nombre || row.Title || row.title || row.PRODUCTO;
-                        const price = row.Precio || row.precio || row.PRICE || row.VALOR;
-                        if (!name || !price) continue;
+                    for (const row of rows) {
+                        const brand = row.MARCA || row.marca || 'LUXURY';
+                        const name = row.NOMBRE || row.nombre || row.TITLE;
+                        const price = Number(row.PRECIO || row.precio || 0);
 
-                        const prodDoc = {
-                            title: String(name).trim(),
-                            name: String(name).trim(),
-                            brand: String(row.Marca || row.marca || 'LUXURY').trim(),
-                            category: String(row.Categoria || row.categoria || 'Árabe').trim(),
-                            price: Number(price),
-                            oldPrice: row.PrecioAnterior ? Number(row.PrecioAnterior) : null,
-                            gender: String(row.Genero || row.genero || 'Unisex').trim(),
-                            priority: String(row.Prioridad || row.prioridad || 'NINGUNA').trim(),
-                            image: String(row.Imagen || row.imagen || row.URL || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS').trim(),
-                            notes: String(row.Notas || row.notas || '').trim(),
-                            description: String(row.Descripcion || row.descripcion || '').trim()
+                        if (!name || price <= 0) continue;
+
+                        const payload = {
+                            brand: String(brand).toUpperCase(),
+                            name: String(name).toUpperCase(),
+                            price: price,
+                            originalPrice: Number(row.PRECIO_ANTERIOR || row.oldPrice) || null,
+                            category: row.CATEGORIA || 'Árabe',
+                            gender: row.GENERO || 'Unisex',
+                            priority: row.PRIORIDAD || 'NINGUNA',
+                            featured: (row.PRIORIDAD === 'TOP VIRAL'),
+                            image: row.IMAGEN || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
+                            notes: row.NOTAS || '',
+                            description: row.DESCRIPCION || ''
                         };
 
-                        await window.addDoc(window.collection(window.db, "products"), prodDoc);
+                        await window.addDoc(window.collection(window.db, "products"), payload);
                         addedCount++;
                     }
 
-                    showToast(`¡Se cargaron ${addedCount} productos desde Excel!`);
+                    showToast(`Cargados ${addedCount} productos`);
+                    event.target.value = '';
                 } catch (err) {
-                    console.error("Error al procesar Excel:", err);
-                    alert("Hubo un error al procesar el archivo Excel. Verifica el formato.");
+                    alert("Error al procesar el Excel.");
                 }
             };
             reader.readAsArrayBuffer(file);
         }
 
-        // --- GESTIÓN DE LOGO, BANNER Y CONFIGURACIÓN ---
-        function triggerLogoSelect() { document.getElementById('logo-file-input').click(); }
-
-        function handleLogoUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const logoUrl = event.target.result;
-                applyCustomLogo(logoUrl);
-                await window.setDoc(window.doc(window.db, "settings", "app_config"), { logoUrl }, { merge: true });
-                showToast("Logo actualizado");
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function applyCustomLogo(url) {
-            document.getElementById('buyer-logo-img').src = url;
-            document.getElementById('admin-logo-img').src = url;
-        }
-
-        function promptBannerUrl() {
-            const url = prompt("Ingresa la URL pública de la imagen de Banner:");
-            if (url) updateBannerImage(url);
-        }
-
-        function handleBannerUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => updateBannerImage(event.target.result);
-            reader.readAsDataURL(file);
-        }
-
-        async function updateBannerImage(url) {
-            applyCustomBannerBlur(url);
-            await window.setDoc(window.doc(window.db, "settings", "app_config"), { bannerUrl: url }, { merge: true });
-            showToast("Banner actualizado");
-        }
-
-        function applyCustomBannerBlur(url) {
-            document.getElementById('banner-bg-blur').style.backgroundImage = `url('${url}')`;
-        }
-
-        function promptSocialLinks() {
-            const num = prompt("Número de WhatsApp (con código de país ej: 573105390115):", WHATSAPP_NUMBER);
-            if (num) {
-                WHATSAPP_NUMBER = num.trim();
-                document.getElementById('link-whatsapp').href = `https://wa.me/${WHATSAPP_NUMBER}`;
-                window.setDoc(window.doc(window.db, "settings", "app_config"), { whatsappNumber: WHATSAPP_NUMBER }, { merge: true });
-                showToast("WhatsApp de contacto actualizado");
-            }
-        }
-
-        function openPromoModal() {
-            document.getElementById('promo-form').reset();
-            document.getElementById('promo-image').value = "";
-            document.getElementById('promo-modal').classList.remove('hidden');
-        }
-        function closePromoModal() { document.getElementById('promo-modal').classList.add('hidden'); }
-
-        async function handlePromoSubmit(e) {
-            e.preventDefault();
-            const imageUrl = document.getElementById('promo-image').value.trim();
-            if (!imageUrl) return alert("Por favor asigna una imagen por URL o desde tu galería.");
-
-            const promo = {
-                title: document.getElementById('promo-title').value.trim(),
-                image: imageUrl,
-                category: document.getElementById('promo-category').value,
-                hasTimer: document.getElementById('promo-timer-chk').checked,
-                endTime: Date.now() + (3 * 86400000)
-            };
-
-            await window.addDoc(window.collection(window.db, "promo_slides"), promo);
-            showToast("Banner promocional guardado");
-            closePromoModal();
-        }
-
-        // --- DETALLE DE PRODUCTO ---
-        function openDetailModal(id) {
-            const p = products.find(x => x.id === id);
-            if (!p) return;
-            const content = document.getElementById('detail-content');
-            content.innerHTML = `
-                <div class="p-6 space-y-4">
-                    <img src="${p.image}" class="w-full h-64 object-cover rounded-2xl shadow-md">
-                    <div>
-                        <span class="text-xs font-bold text-amber-600 tracking-wider uppercase">${p.brand} · ${p.gender}</span>
-                        <h2 class="font-cinzel text-xl font-bold text-gray-900">${p.title}</h2>
-                        <div class="text-2xl font-extrabold text-rose-600 mt-1">${formatPrice(p.price)}</div>
-                    </div>
-                    ${p.notes ? `<div><h4 class="text-xs font-bold text-gray-500 uppercase">Notas Olfativas</h4><p class="text-xs text-gray-700 font-medium">${p.notes}</p></div>` : ''}
-                    ${p.description ? `<div><h4 class="text-xs font-bold text-gray-500 uppercase">Descripción</h4><p class="text-xs text-gray-600 leading-relaxed">${p.description}</p></div>` : ''}
-                    <button onclick="addToCart('${p.id}'); closeDetailModal();" class="w-full bg-luxury-dark hover:bg-black text-white font-bold py-3 rounded-xl transition text-xs shadow-lg">
-                        + Añadir al Carrito
-                    </button>
-                </div>
-            `;
-            document.getElementById('detail-modal').classList.remove('hidden');
-        }
-
-        function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
-
-        // --- AUXILIARES ---
+        function setCategoryFilter(cat) { currentCategory = cat; renderProducts(); }
+        function setPriorityFilter(prio) { currentPriority = (currentPriority === prio) ? 'Todas' : prio; renderProducts(); }
+        function setGenderFilter(gen) { currentGender = gen; renderProducts(); }
         function applyFilters() { renderProducts(); }
-        function resetFilters() { setCategoryFilter('Todas'); setGenderFilter('Todos'); currentPriority = 'Todas'; document.getElementById('search-input').value = ''; renderProducts(); }
+        function resetFilters() { currentCategory = 'Todas'; currentPriority = 'Todas'; currentGender = 'Todos'; document.getElementById('search-input').value = ''; renderProducts(); }
         function formatPrice(amt) { return '$' + Number(amt).toLocaleString('es-CO'); }
 
         function showToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold border border-amber-500/30 shadow-lg`;
+            toast.className = `bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold border border-amber-500/30`;
             toast.innerText = msg;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 2500);
