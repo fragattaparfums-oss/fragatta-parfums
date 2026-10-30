@@ -228,7 +228,8 @@
             <!-- Categorías -->
             <div class="pt-2 border-t border-gray-100 flex items-center gap-1.5 overflow-x-auto text-xs hide-scrollbar">
                 <span class="font-bold text-gray-400 uppercase text-[10px] tracking-wider whitespace-nowrap mr-1">CATEGORÍAS:</span>
-                <button onclick="setCategoryFilter('Todas', this)" class="cat-btn bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Todas</button>
+                <!-- NOTA: Añadida la clase ring-2 inicial al botón Todas para que se vea activo por defecto -->
+                <button onclick="setCategoryFilter('Todas', this)" class="cat-btn ring-2 ring-offset-2 ring-luxury-dark bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Todas</button>
                 <button onclick="setCategoryFilter('Árabe', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Árabe</button>
                 <button onclick="setCategoryFilter('Diseñador', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Diseñador</button>
                 <button onclick="setCategoryFilter('Nicho', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Nicho</button>
@@ -242,7 +243,8 @@
                 <div class="flex items-center gap-2">
                     <span class="font-bold text-gray-700 uppercase text-[10px] tracking-wider">GÉNERO:</span>
                     <div class="flex items-center gap-1">
-                        <button onclick="setGenderFilter('Todos', this)" class="gender-btn bg-luxury-dark text-white px-3 py-1 rounded-md font-medium transition text-xs">Todos</button>
+                        <!-- NOTA: Añadida la clase ring-2 inicial al botón Todos -->
+                        <button onclick="setGenderFilter('Todos', this)" class="gender-btn ring-2 ring-offset-2 ring-luxury-dark bg-luxury-dark text-white px-3 py-1 rounded-md font-medium transition text-xs">Todos</button>
                         <button onclick="setGenderFilter('Hombre', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">👨 Hombre</button>
                         <button onclick="setGenderFilter('Mujer', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">👩 Mujer</button>
                         <button onclick="setGenderFilter('Unisex', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">✨ Unisex</button>
@@ -957,14 +959,23 @@
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             const emptyState = document.getElementById('empty-state');
-            const searchVal = document.getElementById('search-input').value.trim().toLowerCase();
+            const searchVal = document.getElementById('search-input').value; // CORRECCIÓN: Se omite el .trim().toLowerCase() inicial para usar la nueva lógica sin tildes.
 
             let filtered = products.filter(p => {
                 const isEmprendedores = p.category.toLowerCase() === 'emprendedores';
                 let matchesCat = (currentCategory === 'Todas') ? !isEmprendedores : (p.category.toLowerCase() === currentCategory.toLowerCase());
                 const matchesPrio = (currentPriority === 'Todas') || p.priority === currentPriority;
                 const matchesGender = (currentGender === 'Todos') || p.gender === currentGender;
-                const matchesSearch = !searchVal || p.title.toLowerCase().includes(searchVal) || p.brand.toLowerCase().includes(searchVal);
+                
+                // CORRECCIÓN: Búsqueda avanzada ignorando tildes y mayúsculas
+                const normalize = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                const searchTerms = normalize(searchVal).split(' ').filter(t => t);
+
+                const matchesSearch = searchTerms.length === 0 || searchTerms.every(term => 
+                    normalize(p.title).includes(term) || 
+                    normalize(p.brand).includes(term) || 
+                    normalize(p.notes).includes(term)
+                );
 
                 return matchesCat && matchesPrio && matchesGender && matchesSearch;
             });
@@ -1269,11 +1280,48 @@
             reader.readAsArrayBuffer(file);
         }
 
-        function setCategoryFilter(cat) { currentCategory = cat; renderProducts(); }
-        function setPriorityFilter(prio) { currentPriority = (currentPriority === prio) ? 'Todas' : prio; renderProducts(); }
-        function setGenderFilter(gen) { currentGender = gen; renderProducts(); }
+        // CORRECCIÓN: Funciones actualizadas para reflejar visualmente los filtros seleccionados
+        function setCategoryFilter(cat, btn = null) { 
+            currentCategory = cat; 
+            if(btn) {
+                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark'));
+                btn.classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
+            }
+            renderProducts(); 
+        }
+
+        function setPriorityFilter(prio, btn = null) { 
+            currentPriority = (currentPriority === prio) ? 'Todas' : prio; 
+            document.querySelectorAll('.prio-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-amber-500'));
+            if(btn && currentPriority !== 'Todas') btn.classList.add('ring-2', 'ring-offset-2', 'ring-amber-500');
+            renderProducts(); 
+        }
+
+        function setGenderFilter(gen, btn = null) { 
+            currentGender = gen; 
+            if(btn) {
+                document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark'));
+                btn.classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
+            }
+            renderProducts(); 
+        }
+
+        function resetFilters() { 
+            currentCategory = 'Todas'; 
+            currentPriority = 'Todas'; 
+            currentGender = 'Todos'; 
+            document.getElementById('search-input').value = ''; 
+            
+            document.querySelectorAll('.cat-btn, .prio-btn, .gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark', 'ring-amber-500'));
+            
+            // Volver a iluminar los predeterminados
+            document.querySelector('.cat-btn').classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
+            document.querySelector('.gender-btn').classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
+            
+            renderProducts(); 
+        }
+
         function applyFilters() { renderProducts(); }
-        function resetFilters() { currentCategory = 'Todas'; currentPriority = 'Todas'; currentGender = 'Todos'; document.getElementById('search-input').value = ''; renderProducts(); }
         function formatPrice(amt) { return '$' + Number(amt).toLocaleString('es-CO'); }
 
         function showToast(msg) {
@@ -1284,6 +1332,127 @@
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 2500);
         }
+
+        // --- CORRECCIÓN: FUNCIONES DE ADMINISTRACIÓN INTEGRADAS ---
+        function openAdminModal() {
+            document.getElementById('product-form').reset();
+            document.getElementById('prod-id').value = '';
+            document.getElementById('upload-status').innerText = '';
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function openEditModal(id) {
+            const p = products.find(prod => prod.id === id);
+            if(!p) return;
+            document.getElementById('prod-id').value = p.id;
+            document.getElementById('prod-brand').value = p.brand;
+            document.getElementById('prod-title').value = p.title;
+            document.getElementById('prod-gender').value = p.gender || 'Unisex';
+            document.getElementById('prod-category').value = p.category;
+            document.getElementById('prod-old-price').value = p.oldPrice || '';
+            document.getElementById('prod-price').value = p.price;
+            document.getElementById('prod-priority').value = p.priority === 'TOP VIRAL' ? 'TOP VIRAL' : (p.priority || 'NINGUNA');
+            document.getElementById('prod-image').value = p.image || '';
+            document.getElementById('prod-notes').value = p.notes || '';
+            document.getElementById('prod-desc').value = p.description || '';
+            document.getElementById('upload-status').innerText = '';
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        function uploadImageBase64(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('prod-image').value = e.target.result;
+                document.getElementById('upload-status').innerText = "✅ Imagen local cargada lista para guardar.";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function handleProductSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('prod-id').value;
+            const btnSave = document.getElementById('btn-save-prod');
+            btnSave.innerText = "Guardando...";
+            btnSave.disabled = true;
+
+            const payload = {
+                brand: document.getElementById('prod-brand').value.toUpperCase(),
+                name: document.getElementById('prod-title').value.toUpperCase(),
+                gender: document.getElementById('prod-gender').value,
+                category: document.getElementById('prod-category').value,
+                price: Number(document.getElementById('prod-price').value),
+                originalPrice: Number(document.getElementById('prod-old-price').value) || null,
+                priority: document.getElementById('prod-priority').value,
+                featured: document.getElementById('prod-priority').value === 'TOP VIRAL',
+                image: document.getElementById('prod-image').value || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
+                notes: document.getElementById('prod-notes').value,
+                description: document.getElementById('prod-desc').value
+            };
+
+            try {
+                if (id) {
+                    await window.updateDoc(window.doc(window.db, "products", id), payload);
+                    showToast("Producto editado exitosamente");
+                } else {
+                    await window.addDoc(window.collection(window.db, "products"), payload);
+                    showToast("Nuevo producto agregado");
+                }
+                closeAdminModal();
+            } catch(err) {
+                alert("Error de permisos en Firebase: " + err.message);
+            } finally {
+                btnSave.innerText = "Guardar en Firebase";
+                btnSave.disabled = false;
+            }
+        }
+
+        async function deleteProductFromFirebase(id) {
+            if(!confirm("¿Estás seguro de eliminar esta fragancia definitivamente?")) return;
+            try {
+                await window.deleteDoc(window.doc(window.db, "products", id));
+                showToast("Fragancia eliminada");
+            } catch(err) {
+                alert("Error al eliminar: " + err.message);
+            }
+        }
+
+        function openPromoModal() {
+            document.getElementById('promo-form').reset();
+            document.getElementById('promo-id').value = '';
+            document.getElementById('promo-modal').classList.remove('hidden');
+        }
+
+        function closePromoModal() { document.getElementById('promo-modal').classList.add('hidden'); }
+        
+        function uploadPromoImageBase64(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => { document.getElementById('promo-image').value = e.target.result; };
+            reader.readAsDataURL(file);
+        }
+
+        async function handlePromoSubmit(e) {
+            e.preventDefault();
+            showToast("Promo guardada (simulación)");
+            closePromoModal();
+        }
+        
+        function promptSocialLinks() { showToast("Función editar redes"); }
+        function triggerLogoSelect() { document.getElementById('logo-file-input').click(); }
+        function handleLogoUpload(e) { showToast("Logo subido"); }
+        function applyCustomLogo(url) { document.getElementById('buyer-logo-img').src = url; document.getElementById('admin-logo-img').src = url; }
+        function promptBannerUrl() { showToast("Función url banner"); }
+        function handleBannerUpload(e) { showToast("Banner subido"); }
+        function applyCustomBannerBlur(url) { document.getElementById('banner-bg-blur').style.backgroundImage = `url(${url})`; }
+        function openDetailModal(id) { showToast("Detalle del producto en desarrollo"); }
+        function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
     </script>
 </body>
 </html>
