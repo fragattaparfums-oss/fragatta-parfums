@@ -1001,10 +1001,30 @@
             }, 1000);
         }
 
+        // LÓGICA PARA INTERCALAR DAR PRIORIDAD A LO NUEVO, TOP VIRAL Y OFERTAS EN LA PÁGINA PRINCIPAL
+        function interleaveProducts(items) {
+            const nuevos = items.filter(p => p.priority === 'LO NUEVO');
+            const virales = items.filter(p => p.priority === 'TOP VIRAL');
+            const ofertas = items.filter(p => p.oldPrice && p.priority !== 'LO NUEVO' && p.priority !== 'TOP VIRAL');
+            const otros = items.filter(p => p.priority !== 'LO NUEVO' && p.priority !== 'TOP VIRAL' && !p.oldPrice);
+
+            const result = [];
+            const maxLength = Math.max(nuevos.length, virales.length, ofertas.length);
+
+            for (let i = 0; i < maxLength; i++) {
+                if (i < nuevos.length) result.push(nuevos[i]);
+                if (i < virales.length) result.push(virales[i]);
+                if (i < ofertas.length) result.push(ofertas[i]);
+            }
+
+            return [...result, ...otros];
+        }
+
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             const emptyState = document.getElementById('empty-state');
             const searchVal = document.getElementById('search-input').value;
+            const sortVal = document.getElementById('sort-select').value;
 
             let filtered = products.filter(p => {
                 if (showInactive) {
@@ -1030,6 +1050,18 @@
                 return matchesCat && matchesPrio && matchesGender && matchesSearch;
             });
 
+            // Aplicar ordenación o intercalado prioritario según el filtro
+            if (sortVal === 'price-asc') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sortVal === 'price-desc') {
+                filtered.sort((a, b) => b.price - a.price);
+            } else if (sortVal === 'name') {
+                filtered.sort((a, b) => a.title.localeCompare(b.title));
+            } else if (currentPriority === 'Todas') {
+                // Si la prioridad es 'Todas', intercalar dando prioridad principal a LO NUEVO y TOP VIRAL
+                filtered = interleaveProducts(filtered);
+            }
+
             if (filtered.length === 0) {
                 grid.innerHTML = '';
                 emptyState.classList.remove('hidden');
@@ -1041,11 +1073,21 @@
             grid.innerHTML = filtered.map(p => {
                 const notesList = p.notes ? p.notes.split(',').slice(0, 3).map(n => `<span class="inline-flex items-center gap-1 text-[10px] text-gray-500 mr-1.5"><i class="fas fa-glass-martini-alt text-[8px] text-amber-500"></i>${n.trim()}</span>`).join('') : '';
 
+                // Definir las insignias visuales dinámicas (LO NUEVO / TOP VIRAL / OFERTA)
+                let badgeHTML = '';
+                if (p.priority === 'LO NUEVO') {
+                    badgeHTML = `<span class="bg-amber-500 text-slate-900 font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">🔥 LO NUEVO</span>`;
+                } else if (p.priority === 'TOP VIRAL') {
+                    badgeHTML = `<span class="bg-yellow-400 text-slate-900 font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">⚡ TOP VIRAL</span>`;
+                } else if (p.oldPrice) {
+                    badgeHTML = `<span class="bg-rose-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">OFERTA</span>`;
+                }
+
                 return `
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group p-2.5 sm:p-4">
                     <div class="cursor-pointer" onclick="openDetailModal('${p.id}')">
                         <div class="relative w-full h-36 sm:h-48 overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center mb-2">
-                            ${p.oldPrice ? `<div class="absolute top-2 left-2 z-10"><span class="bg-rose-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">OFERTA</span></div>` : ''}
+                            ${badgeHTML ? `<div class="absolute top-2 left-2 z-10">${badgeHTML}</div>` : ''}
                             <img src="${p.image}" alt="${p.title}" class="object-cover h-full w-full group-hover:scale-105 transition duration-500">
                         </div>
 
