@@ -782,7 +782,7 @@
         let currentCategory = 'Todas';
         let currentPriority = 'Todas';
         let currentGender = 'Todos';
-        let showInactive = false; // Estado para ver productos inactivos (Modo Admin)
+        let showInactive = false;
 
         let calculatedShippingCost = 0;
 
@@ -833,7 +833,7 @@
                         image: data.image || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
                         notes: data.notes || '',
                         description: data.description || '',
-                        isActive: data.isActive !== false // Por defecto true si no existe
+                        isActive: data.isActive !== false
                     };
                 });
                 renderProducts();
@@ -847,7 +847,12 @@
                     const data = docSnap.data();
                     if (data.logoUrl) applyCustomLogo(data.logoUrl);
                     if (data.bannerUrl) applyCustomBannerBlur(data.bannerUrl);
-                    if (data.whatsappNumber) WHATSAPP_NUMBER = data.whatsappNumber;
+                    if (data.whatsappNumber) {
+                        WHATSAPP_NUMBER = data.whatsappNumber;
+                        document.getElementById('link-whatsapp').href = `https://wa.me/${data.whatsappNumber}`;
+                    }
+                    if (data.instagramUrl) document.getElementById('link-instagram').href = data.instagramUrl;
+                    if (data.tiktokUrl) document.getElementById('link-tiktok').href = data.tiktokUrl;
                 }
             });
         }
@@ -870,12 +875,37 @@
             });
         }
 
+        function navigateFromPromo(category) {
+            let targetBtn = null;
+            const buttons = document.querySelectorAll('.cat-btn');
+            buttons.forEach(b => {
+                if (b.innerText.toLowerCase().includes(category.toLowerCase())) {
+                    targetBtn = b;
+                }
+            });
+            
+            setCategoryFilter(category, targetBtn);
+            
+            // Hacer scroll a los productos
+            const grid = document.getElementById('product-grid');
+            if (grid) {
+                const y = grid.getBoundingClientRect().top + window.scrollY - 120;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        }
+
         function renderPromoCarousel() {
             const track = document.getElementById('carousel-track');
             const dots = document.getElementById('carousel-dots');
             
             track.innerHTML = promoSlides.map((slide) => `
-                <div class="min-w-full h-full relative cursor-pointer flex-shrink-0" onclick="setCategoryFilter('${slide.category}', document.querySelector('.cat-btn'))">
+                <div class="min-w-full h-full relative cursor-pointer flex-shrink-0" onclick="navigateFromPromo('${slide.category}')">
+                    ${isAdmin && slide.id !== 'default' ? `
+                        <div class="absolute top-2 left-2 z-30 flex gap-2">
+                            <button onclick="event.stopPropagation(); editPromo('${slide.id}')" class="bg-blue-600 hover:bg-blue-700 text-white w-8 h-8 rounded-full shadow flex items-center justify-center transition"><i class="fas fa-pen text-xs"></i></button>
+                            <button onclick="event.stopPropagation(); deletePromo('${slide.id}')" class="bg-rose-600 hover:bg-rose-700 text-white w-8 h-8 rounded-full shadow flex items-center justify-center transition"><i class="fas fa-trash text-xs"></i></button>
+                        </div>
+                    ` : ''}
                     <img src="${slide.image}" alt="${slide.title}" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3 sm:p-5">
                         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
@@ -965,9 +995,9 @@
 
             let filtered = products.filter(p => {
                 if (showInactive) {
-                    if (p.isActive) return false; // Solo muestra inactivos
+                    if (p.isActive) return false;
                 } else {
-                    if (!p.isActive) return false; // Oculta inactivos normalmente
+                    if (!p.isActive) return false;
                 }
 
                 const isEmprendedores = p.category.toLowerCase() === 'emprendedores';
@@ -1245,6 +1275,13 @@
                 isAdmin = false;
                 document.getElementById('admin-toolbar').classList.add('hidden');
                 document.getElementById('btn-view-inactive').classList.add('hidden');
+                document.getElementById('admin-social-btn').classList.add('hidden');
+                
+                document.getElementById('admin-logo-box').classList.add('hidden');
+                document.getElementById('buyer-logo-box').classList.remove('hidden');
+                
+                document.getElementById('admin-banner-controls').classList.add('hidden');
+                document.getElementById('admin-carousel-controls').classList.add('hidden');
                 showInactive = false;
                 showToast("Sesión cerrada");
             } else {
@@ -1253,10 +1290,18 @@
                     isAdmin = true;
                     document.getElementById('admin-toolbar').classList.remove('hidden');
                     document.getElementById('btn-view-inactive').classList.remove('hidden');
+                    document.getElementById('admin-social-btn').classList.remove('hidden');
+                    
+                    document.getElementById('admin-logo-box').classList.remove('hidden');
+                    document.getElementById('buyer-logo-box').classList.add('hidden');
+                    
+                    document.getElementById('admin-banner-controls').classList.remove('hidden');
+                    document.getElementById('admin-carousel-controls').classList.remove('hidden');
                     showToast("¡Modo Administrador Activo!");
                 }
             }
             renderProducts();
+            renderPromoCarousel();
         }
 
         function handleExcelImport(event) {
@@ -1360,7 +1405,7 @@
         function showToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold border border-amber-500/30`;
+            toast.className = `bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold border border-amber-500/30 shadow-lg`;
             toast.innerText = msg;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 2500);
@@ -1455,10 +1500,44 @@
             }
         }
 
+        // FUNCIONES ADMIN: PROMO SLIDER
         function openPromoModal() {
             document.getElementById('promo-form').reset();
             document.getElementById('promo-id').value = '';
+            document.getElementById('promo-modal-title').innerHTML = '<i class="fas fa-images text-amber-600"></i> Agregar Diapositiva';
             document.getElementById('promo-modal').classList.remove('hidden');
+        }
+        
+        function editPromo(id) {
+            const slide = promoSlides.find(s => s.id === id);
+            if (!slide) return;
+            document.getElementById('promo-id').value = slide.id;
+            document.getElementById('promo-title').value = slide.title || '';
+            document.getElementById('promo-image').value = slide.image || '';
+            document.getElementById('promo-category').value = slide.category || 'Promociones';
+            document.getElementById('promo-timer-enable').checked = slide.hasTimer || false;
+            
+            if (slide.endTime) {
+                const d = new Date(slide.endTime);
+                const pad = n => n.toString().padStart(2, '0');
+                document.getElementById('promo-timer-date').value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            } else {
+                document.getElementById('promo-timer-date').value = '';
+            }
+
+            document.getElementById('promo-modal-title').innerHTML = '<i class="fas fa-edit text-amber-600"></i> Editar Diapositiva';
+            document.getElementById('promo-modal').classList.remove('hidden');
+        }
+
+        async function deletePromo(id) {
+            if (id === 'default') return alert("Esta es la promo por defecto, mejor edítala en lugar de borrarla.");
+            if (!confirm("¿Eliminar esta promoción del carrusel?")) return;
+            try {
+                await window.deleteDoc(window.doc(window.db, "promo_slides", id));
+                showToast("Promo eliminada");
+            } catch (e) {
+                alert("Error eliminando promo: " + e.message);
+            }
         }
 
         function closePromoModal() { document.getElementById('promo-modal').classList.add('hidden'); }
@@ -1473,17 +1552,117 @@
 
         async function handlePromoSubmit(e) {
             e.preventDefault();
-            showToast("Promo guardada (simulación)");
-            closePromoModal();
+            const id = document.getElementById('promo-id').value;
+            const title = document.getElementById('promo-title').value;
+            const image = document.getElementById('promo-image').value;
+            const category = document.getElementById('promo-category').value;
+            const hasTimer = document.getElementById('promo-timer-enable').checked;
+            const timerDate = document.getElementById('promo-timer-date').value;
+
+            let endTime = null;
+            if (hasTimer && timerDate) {
+                endTime = new Date(timerDate).getTime();
+            }
+
+            const payload = { title, image, category, hasTimer, endTime };
+
+            try {
+                if (id && id !== 'default') {
+                    await window.updateDoc(window.doc(window.db, "promo_slides", id), payload);
+                    showToast("Promo actualizada");
+                } else if (id === 'default') {
+                    await window.setDoc(window.doc(window.db, "promo_slides", "default"), payload, {merge: true});
+                    showToast("Promo actualizada");
+                } else {
+                    await window.addDoc(window.collection(window.db, "promo_slides"), payload);
+                    showToast("Nueva promo agregada");
+                }
+                closePromoModal();
+            } catch(err) {
+                alert("Error guardando promo en Firebase: " + err.message);
+            }
         }
         
-        function promptSocialLinks() { showToast("Función editar redes"); }
-        function triggerLogoSelect() { document.getElementById('logo-file-input').click(); }
-        function handleLogoUpload(e) { showToast("Logo subido"); }
-        function applyCustomLogo(url) { document.getElementById('buyer-logo-img').src = url; document.getElementById('admin-logo-img').src = url; }
-        function promptBannerUrl() { showToast("Función url banner"); }
-        function handleBannerUpload(e) { showToast("Banner subido"); }
-        function applyCustomBannerBlur(url) { document.getElementById('banner-bg-blur').style.backgroundImage = `url(${url})`; }
+        // FUNCIONES ADMIN: REDES, LOGO, BANNER
+        async function promptSocialLinks() {
+            const ig = prompt("URL de Instagram (deja vacío para no cambiar):", document.getElementById('link-instagram').href);
+            const wa = prompt("Número de WhatsApp sin el '+' (Ej: 573105390115):", WHATSAPP_NUMBER);
+            const tk = prompt("URL de TikTok (deja vacío para no cambiar):", document.getElementById('link-tiktok').href);
+            
+            if (ig !== null || wa !== null || tk !== null) {
+                try {
+                    const payload = {};
+                    if (ig) payload.instagramUrl = ig;
+                    if (wa) payload.whatsappNumber = wa;
+                    if (tk) payload.tiktokUrl = tk;
+                    
+                    await window.setDoc(window.doc(window.db, "settings", "app_config"), payload, {merge: true});
+                    showToast("✅ Redes actualizadas correctamente");
+                } catch (e) {
+                    alert("Error al actualizar las redes: " + e.message);
+                }
+            }
+        }
+
+        function triggerLogoSelect() {
+            const choice = confirm("¿Deseas subir el Logo desde tu galería?\n(Haz clic en Aceptar para galería o Cancelar para pegar URL)");
+            if (choice) {
+                document.getElementById('logo-file-input').click();
+            } else {
+                const url = prompt("Pega aquí la URL de la imagen del logo:");
+                if (url) {
+                    window.setDoc(window.doc(window.db, "settings", "app_config"), { logoUrl: url }, {merge: true})
+                        .then(() => showToast("Logo actualizado por URL"));
+                }
+            }
+        }
+
+        function handleLogoUpload(e) { 
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    await window.setDoc(window.doc(window.db, "settings", "app_config"), { logoUrl: ev.target.result }, {merge: true});
+                    showToast("Logo subido y guardado exitosamente");
+                } catch(err) {
+                    alert("Error guardando logo: " + err.message);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function applyCustomLogo(url) { 
+            document.getElementById('buyer-logo-img').src = url; 
+            document.getElementById('admin-logo-img').src = url; 
+        }
+
+        function promptBannerUrl() { 
+            const url = prompt("Pega aquí la URL de la imagen de fondo para el Banner:");
+            if (url) {
+                window.setDoc(window.doc(window.db, "settings", "app_config"), { bannerUrl: url }, {merge: true})
+                    .then(() => showToast("Banner actualizado por URL"));
+            }
+        }
+
+        function handleBannerUpload(e) { 
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    await window.setDoc(window.doc(window.db, "settings", "app_config"), { bannerUrl: ev.target.result }, {merge: true});
+                    showToast("Fondo del banner subido exitosamente");
+                } catch(err) {
+                    alert("Error subiendo banner: " + err.message);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function applyCustomBannerBlur(url) { 
+            document.getElementById('banner-bg-blur').style.backgroundImage = `url(${url})`; 
+        }
         
         function openDetailModal(id) {
             const p = products.find(prod => prod.id === id);
