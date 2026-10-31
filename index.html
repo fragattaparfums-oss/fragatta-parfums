@@ -165,10 +165,10 @@
             </div>
         </section>
 
-        <!-- IMAGEN PROMOCIONAL ÚNICA (CUADRADA EN MÓVIL, RECTANGULAR EN PC) -->
-        <section id="promo-single-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-4 bg-slate-900">
-            <div id="promo-track" class="w-full aspect-square sm:aspect-auto sm:h-64 md:h-72 relative">
-                <!-- Aquí se inyectará dinámicamente la única imagen promocional -->
+        <!-- CARRUSEL DE PROMOCIONES (REEMPLAZO DE LA IMAGEN ÚNICA) -->
+        <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-4 bg-slate-900">
+            <div id="promo-track" class="w-full aspect-square sm:aspect-auto sm:h-64 md:h-72 relative group">
+                <!-- Aquí se inyectarán dinámicamente las promociones -->
             </div>
         </section>
 
@@ -190,7 +190,7 @@
                     <button onclick="openAdminModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
                         <i class="fas fa-plus-circle"></i> + Agregar Producto
                     </button>
-                    <label class="cursor-pointer bg-amber-500 hover:bg-amber-600 text-black text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
+                    <label class="cursor-pointer bg-amber-50 hover:bg-amber-600 text-black text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
                         <i class="fas fa-file-excel"></i> 📄 Cargar desde Excel
                         <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" onchange="handleExcelImport(event)" class="hidden">
                     </label>
@@ -452,12 +452,12 @@
         </div>
     </div>
 
-    <!-- MODAL EDITAR IMAGEN PROMOCIONAL ÚNICA -->
+    <!-- MODAL EDITAR IMAGEN PROMOCIONAL (ADMIN CARRUSEL) -->
     <div id="promo-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-5 relative text-gray-800 shadow-2xl">
             <button onclick="closePromoModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
             <h3 id="promo-modal-title" class="font-cinzel text-base font-bold text-gray-900 mb-3 border-b pb-2 flex items-center gap-2">
-                <i class="fas fa-images text-amber-600"></i> Editar Promo Principal
+                <i class="fas fa-images text-amber-600"></i> Editar Promo
             </h3>
             <form id="promo-form" onsubmit="handlePromoSubmit(event)" class="space-y-3 text-xs">
                 <input type="hidden" id="promo-id">
@@ -762,6 +762,11 @@
         let products = [];
         let promoSlides = [];
         let timerInterval;
+        
+        // Variables para el Carrusel
+        let currentPromoIndex = 0;
+        let carouselInterval = null;
+
         let cart = JSON.parse(localStorage.getItem('parfums_luxury_cart')) || [];
         let isAdmin = false;
         let currentCategory = 'Todas';
@@ -857,7 +862,9 @@
                         endTime: Date.now() + (3 * 86400000)
                     }];
                 }
-                renderSinglePromo();
+                
+                if (currentPromoIndex >= promoSlides.length) currentPromoIndex = 0;
+                renderPromos();
             });
         }
 
@@ -879,23 +886,19 @@
             }
         }
 
-        function renderSinglePromo() {
+        // LÓGICA DEL CARRUSEL DE PROMOCIONES
+        function renderPromos() {
             const track = document.getElementById('promo-track');
-            if (promoSlides.length === 0) return;
+            if (promoSlides.length === 0) {
+                track.innerHTML = '';
+                return;
+            }
             
-            // Usamos solo la primera diapositiva como Imagen Única
-            const slide = promoSlides[0]; 
-
-            track.innerHTML = `
-                <div class="w-full h-full relative cursor-pointer group" onclick="navigateFromPromo('${slide.category}')">
-                    ${isAdmin ? `
-                        <div class="absolute top-3 right-3 z-30">
-                            <button onclick="event.stopPropagation(); editPromo('${slide.id}')" class="bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 rounded-xl shadow-lg flex items-center justify-center transition text-xs font-bold border border-amber-400">
-                                <i class="fas fa-edit mr-1.5"></i> Editar Promo
-                            </button>
-                        </div>
-                    ` : ''}
-                    <img src="${slide.image}" alt="${slide.title}" class="w-full h-full object-cover object-center transition duration-700 group-hover:scale-105">
+            const slidesHTML = promoSlides.map((slide, index) => {
+                const isActive = index === currentPromoIndex;
+                return `
+                <div class="absolute inset-0 w-full h-full transition-opacity duration-700 ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'} cursor-pointer" onclick="navigateFromPromo('${slide.category}')">
+                    <img src="${slide.image}" alt="${slide.title}" class="w-full h-full object-cover object-center transition duration-700 scale-100 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-4 sm:p-6 pointer-events-none">
                         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pointer-events-auto">
                             <div>
@@ -920,17 +923,61 @@
                         </div>
                     </div>
                 </div>
-            `;
+                `;
+            }).join('');
+
+            const adminControls = isAdmin ? `
+                <div class="absolute top-3 right-3 z-30 flex gap-2">
+                    <button onclick="event.stopPropagation(); editPromo('${promoSlides[currentPromoIndex].id}')" class="bg-amber-500 hover:bg-amber-600 text-black px-3 py-1.5 rounded-lg shadow-lg flex items-center justify-center transition text-[10px] font-bold border border-amber-400">
+                        <i class="fas fa-edit mr-1"></i> Editar
+                    </button>
+                    <button onclick="event.stopPropagation(); addNewPromo()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center justify-center transition text-[10px] font-bold border border-emerald-400">
+                        <i class="fas fa-plus mr-1"></i> Nueva
+                    </button>
+                    ${promoSlides.length > 1 ? `
+                    <button onclick="event.stopPropagation(); deletePromo('${promoSlides[currentPromoIndex].id}')" class="bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center justify-center transition text-[10px] font-bold border border-rose-400">
+                        <i class="fas fa-trash mr-1"></i> Eliminar
+                    </button>
+                    ` : ''}
+                </div>
+            ` : '';
+
+            const navControls = promoSlides.length > 1 ? `
+                <button onclick="event.stopPropagation(); prevPromo()" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/80 text-white w-8 h-8 rounded-full flex items-center justify-center backdrop-blur transition"><i class="fas fa-chevron-left"></i></button>
+                <button onclick="event.stopPropagation(); nextPromo()" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/80 text-white w-8 h-8 rounded-full flex items-center justify-center backdrop-blur transition"><i class="fas fa-chevron-right"></i></button>
+                <div class="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 pointer-events-none">
+                    ${promoSlides.map((_, i) => `<div class="w-2 h-2 rounded-full transition-all shadow ${i === currentPromoIndex ? 'bg-amber-500 w-4' : 'bg-white/50'}"></div>`).join('')}
+                </div>
+            ` : '';
+
+            track.innerHTML = slidesHTML + adminControls + navControls;
             startLiveTimers();
+            resetCarouselInterval();
+        }
+
+        function nextPromo() {
+            currentPromoIndex = (currentPromoIndex + 1) % promoSlides.length;
+            renderPromos();
+        }
+
+        function prevPromo() {
+            currentPromoIndex = (currentPromoIndex - 1 + promoSlides.length) % promoSlides.length;
+            renderPromos();
+        }
+
+        function resetCarouselInterval() {
+            clearInterval(carouselInterval);
+            if (promoSlides.length > 1) {
+                carouselInterval = setInterval(nextPromo, 5000);
+            }
         }
 
         function startLiveTimers() {
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 const now = Date.now();
-                // Solo iteramos para actualizar el DOM del elemento en pantalla
-                if (promoSlides.length > 0) {
-                    const slide = promoSlides[0];
+                // Iterar sobre TODAS las diapositivas
+                promoSlides.forEach(slide => {
                     if (slide.hasTimer && slide.endTime) {
                         const diff = Math.max(0, slide.endTime - now);
                         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -950,7 +997,7 @@
                             sEl.innerText = String(seconds).padStart(2, '0');
                         }
                     }
-                }
+                });
             }, 1000);
         }
 
@@ -1265,7 +1312,7 @@
                 }
             }
             renderProducts();
-            renderSinglePromo();
+            renderPromos();
         }
 
         function handleExcelImport(event) {
@@ -1464,9 +1511,21 @@
             }
         }
 
-        // FUNCIONES ADMIN: PROMO ÚNICA
+        // FUNCIONES ADMIN: CARRUSEL DE PROMOS
         function closePromoModal() { document.getElementById('promo-modal').classList.add('hidden'); }
         
+        function addNewPromo() {
+            document.getElementById('promo-id').value = '';
+            document.getElementById('promo-title').value = '';
+            document.getElementById('promo-image').value = '';
+            document.getElementById('promo-category').value = 'Promociones';
+            document.getElementById('promo-timer-enable').checked = false;
+            document.getElementById('promo-timer-date').value = '';
+            
+            document.getElementById('promo-modal-title').innerHTML = '<i class="fas fa-plus text-amber-600"></i> Agregar Nueva Promo';
+            document.getElementById('promo-modal').classList.remove('hidden');
+        }
+
         function editPromo(id) {
             const slide = promoSlides.find(s => s.id === id);
             if (!slide) return;
@@ -1484,6 +1543,7 @@
                 document.getElementById('promo-timer-date').value = '';
             }
 
+            document.getElementById('promo-modal-title').innerHTML = '<i class="fas fa-edit text-amber-600"></i> Editar Promo Actual';
             document.getElementById('promo-modal').classList.remove('hidden');
         }
         
@@ -1498,9 +1558,7 @@
         async function handlePromoSubmit(e) {
             e.preventDefault();
             
-            // Usamos la ID por defecto o la existente para sobrescribir y mantener una sola imagen
-            const id = document.getElementById('promo-id').value || 'default';
-            
+            const id = document.getElementById('promo-id').value;
             const title = document.getElementById('promo-title').value;
             const image = document.getElementById('promo-image').value;
             const category = document.getElementById('promo-category').value;
@@ -1515,11 +1573,27 @@
             const payload = { title, image, category, hasTimer, endTime };
 
             try {
-                await window.setDoc(window.doc(window.db, "promo_slides", id), payload, {merge: true});
-                showToast("Imagen Promocional actualizada exitosamente");
+                if (id) {
+                    await window.setDoc(window.doc(window.db, "promo_slides", id), payload, {merge: true});
+                    showToast("Imagen Promocional actualizada");
+                } else {
+                    await window.addDoc(window.collection(window.db, "promo_slides"), payload);
+                    showToast("Nueva Promoción agregada al carrusel");
+                }
                 closePromoModal();
             } catch(err) {
                 alert("Error guardando promo en Firebase: " + err.message);
+            }
+        }
+
+        async function deletePromo(id) {
+            if(!confirm("¿Estás seguro de eliminar esta promoción?")) return;
+            try {
+                await window.deleteDoc(window.doc(window.db, "promo_slides", id));
+                showToast("Promoción eliminada del carrusel");
+                currentPromoIndex = 0; 
+            } catch(err) {
+                alert("Error al eliminar promo: " + err.message);
             }
         }
         
