@@ -126,14 +126,11 @@
                 <h1 class="font-cinzel text-lg sm:text-2xl font-bold text-gray-900 tracking-widest uppercase leading-tight">FRAGATTAPARFUMS</h1>
             </div>
 
-            <!-- CONTENEDOR SUPERIOR DERECHA: CARRITO + BOTÓN DE ENVÍOS & GARANTÍAS DEBAJO -->
+            <!-- CONTENEDOR SUPERIOR DERECHA: CARRITO -->
             <div class="flex flex-col items-end gap-1.5">
                 <button onclick="toggleCartModal()" class="bg-luxury-dark hover:bg-black text-white px-3.5 py-1.5 rounded-full font-semibold text-xs flex items-center gap-2 border border-luxury-gold transition shadow">
                     <i class="fas fa-shopping-cart text-amber-400 text-xs"></i>
                     <span id="cart-badge" class="bg-amber-500 text-black text-[10px] w-5 h-5 rounded-full font-bold flex items-center justify-center">0</span>
-                </button>
-                <button onclick="openPoliciesModal()" class="bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-[10px] font-bold px-2.5 py-1 rounded-full transition shadow-sm flex items-center gap-1">
-                    <i class="fas fa-shield-alt text-amber-600"></i> Envíos & Garantías
                 </button>
             </div>
         </div>
@@ -169,7 +166,7 @@
         </section>
 
         <!-- CARRUSEL PROMOCIONAL CON CRONÓMETRO ADAPTATIVO MÓVIL -->
-        <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-6 bg-slate-900 group">
+        <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-4 bg-slate-900 group">
             <div id="carousel-track" class="flex transition-transform duration-500 ease-out h-52 sm:h-64 md:h-72 w-full"></div>
 
             <button onclick="prevSlide()" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black text-white w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition backdrop-blur-sm z-20">
@@ -187,6 +184,13 @@
                 </button>
             </div>
         </section>
+
+        <!-- BOTÓN DE ENVÍOS & GARANTÍAS REUBICADO -->
+        <div class="flex justify-center mb-6">
+            <button onclick="openPoliciesModal()" class="w-full sm:w-auto bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs sm:text-sm font-bold px-6 py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                <i class="fas fa-shield-alt text-amber-600 text-lg"></i> Políticas de Envíos & Garantías
+            </button>
+        </div>
 
         <!-- Barra Admin -->
         <section id="admin-toolbar" class="hidden bg-luxury-dark text-white p-4 rounded-xl mb-6 shadow-xl border border-luxury-gold/30">
@@ -222,13 +226,15 @@
                     <button onclick="setPriorityFilter('TOP VIRAL', this)" id="prio-btn-viral" class="prio-btn bg-yellow-50 text-yellow-900 border border-yellow-300 hover:bg-yellow-400 px-3 py-1.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap shadow-sm">
                         <i class="fas fa-bolt text-yellow-600"></i> ⚡ TOP VIRAL
                     </button>
+                    <button onclick="toggleInactiveView(this)" id="btn-view-inactive" class="hidden prio-btn bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-800 hover:text-white px-3 py-1.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap shadow-sm">
+                        <i class="fas fa-eye-slash text-gray-500"></i> INACTIVOS
+                    </button>
                 </div>
             </div>
 
             <!-- Categorías -->
             <div class="pt-2 border-t border-gray-100 flex items-center gap-1.5 overflow-x-auto text-xs hide-scrollbar">
                 <span class="font-bold text-gray-400 uppercase text-[10px] tracking-wider whitespace-nowrap mr-1">CATEGORÍAS:</span>
-                <!-- NOTA: Añadida la clase ring-2 inicial al botón Todas para que se vea activo por defecto -->
                 <button onclick="setCategoryFilter('Todas', this)" class="cat-btn ring-2 ring-offset-2 ring-luxury-dark bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Todas</button>
                 <button onclick="setCategoryFilter('Árabe', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Árabe</button>
                 <button onclick="setCategoryFilter('Diseñador', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Diseñador</button>
@@ -243,7 +249,6 @@
                 <div class="flex items-center gap-2">
                     <span class="font-bold text-gray-700 uppercase text-[10px] tracking-wider">GÉNERO:</span>
                     <div class="flex items-center gap-1">
-                        <!-- NOTA: Añadida la clase ring-2 inicial al botón Todos -->
                         <button onclick="setGenderFilter('Todos', this)" class="gender-btn ring-2 ring-offset-2 ring-luxury-dark bg-luxury-dark text-white px-3 py-1 rounded-md font-medium transition text-xs">Todos</button>
                         <button onclick="setGenderFilter('Hombre', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">👨 Hombre</button>
                         <button onclick="setGenderFilter('Mujer', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">👩 Mujer</button>
@@ -317,7 +322,6 @@
 
             <!-- CONTENEDOR DESLIZABLE INTERNO CON TODAS LAS POLÍTICAS -->
             <div class="space-y-4 text-xs leading-relaxed text-gray-600 pr-1">
-                
                 <p class="text-gray-700">
                     En <strong>FRAGATTAPARFUMS</strong> trabajamos para ofrecerte la máxima excelencia en perfumería fina y cosmética de alta fijación. Todas nuestras transacciones y procesos de atención se rigen bajo los parámetros del Estatuto del Consumidor en Colombia (Ley 1480 de 2011, Decreto 735 de 2013 y Ley 2439 de 2024). Ninguna disposición limita los derechos irrenunciables de nuestros clientes.
                 </p>
@@ -442,15 +446,12 @@
                         <span>📹</span> <strong>¡Ojo al Dato! - Garantiza tu envío:</strong> Una vez despachado, la transportadora asume la custodia del producto. Para poder escalar rápidamente cualquier eventualidad por robo, daño visible o manipulación indebida, debes notificarnos a nuestro WhatsApp oficial <strong>+57 310 539 0115</strong> con fotos/videos dentro de las <strong>24 horas siguientes</strong> a la recepción para hacer efectivo el seguro.
                     </div>
                 </div>
-
             </div>
-
             <div class="mt-5 pt-3 border-t border-gray-100 flex justify-center">
                 <button onclick="closePoliciesModal()" class="bg-luxury-dark hover:bg-black text-white font-bold text-xs px-8 py-2.5 rounded-xl transition shadow-md">
                     Entendido y Cerrar
                 </button>
             </div>
-
         </div>
     </div>
 
@@ -781,6 +782,7 @@
         let currentCategory = 'Todas';
         let currentPriority = 'Todas';
         let currentGender = 'Todos';
+        let showInactive = false; // Estado para ver productos inactivos (Modo Admin)
 
         let calculatedShippingCost = 0;
 
@@ -804,7 +806,6 @@
             updateCartUI();
         });
 
-        // FUNCIÓN CRIPTOGRÁFICA PARA CALCULAR LA FIRMA SHA-256 EXIGIDA POR WOMPI
         async function generateWompiSignature(reference, amountInCents, currency) {
             const chain = `${reference}${amountInCents}${currency}${WOMPI_INTEGRITY_SECRET}`;
             const encoder = new TextEncoder();
@@ -831,7 +832,8 @@
                         priority: data.featured ? 'TOP VIRAL' : (data.priority || 'NINGUNA'),
                         image: data.image || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
                         notes: data.notes || '',
-                        description: data.description || ''
+                        description: data.description || '',
+                        isActive: data.isActive !== false // Por defecto true si no existe
                     };
                 });
                 renderProducts();
@@ -959,15 +961,20 @@
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             const emptyState = document.getElementById('empty-state');
-            const searchVal = document.getElementById('search-input').value; // CORRECCIÓN: Se omite el .trim().toLowerCase() inicial para usar la nueva lógica sin tildes.
+            const searchVal = document.getElementById('search-input').value;
 
             let filtered = products.filter(p => {
+                if (showInactive) {
+                    if (p.isActive) return false; // Solo muestra inactivos
+                } else {
+                    if (!p.isActive) return false; // Oculta inactivos normalmente
+                }
+
                 const isEmprendedores = p.category.toLowerCase() === 'emprendedores';
                 let matchesCat = (currentCategory === 'Todas') ? !isEmprendedores : (p.category.toLowerCase() === currentCategory.toLowerCase());
                 const matchesPrio = (currentPriority === 'Todas') || p.priority === currentPriority;
                 const matchesGender = (currentGender === 'Todos') || p.gender === currentGender;
                 
-                // CORRECCIÓN: Búsqueda avanzada ignorando tildes y mayúsculas
                 const normalize = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
                 const searchTerms = normalize(searchVal).split(' ').filter(t => t);
 
@@ -1011,13 +1018,13 @@
                         </div>
                     </div>
 
-                    <!-- MANTENIENDO EL COLOR EXACTO DE LA CASILLA + CARRITO ORIGINAL -->
                     <div class="space-y-1.5 pt-2 border-t border-gray-100">
                         <button onclick="addToCart('${p.id}')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-semibold py-2 rounded-xl transition">+ Carrito</button>
 
                         ${isAdmin ? `
-                        <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-gray-100">
+                        <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-gray-100">
                             <button onclick="openEditModal('${p.id}')" class="text-[10px] bg-blue-50 text-blue-600 font-semibold py-1 rounded">Editar</button>
+                            <button onclick="toggleProductActive('${p.id}', ${p.isActive})" class="text-[10px] ${p.isActive ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'} font-semibold py-1 rounded">${p.isActive ? 'Ocultar' : 'Activar'}</button>
                             <button onclick="deleteProductFromFirebase('${p.id}')" class="text-[10px] bg-rose-50 text-rose-600 font-semibold py-1 rounded">Eliminar</button>
                         </div>
                         ` : ''}
@@ -1025,6 +1032,29 @@
                 </div>
                 `;
             }).join('');
+        }
+
+        async function toggleProductActive(id, currentState) {
+            try {
+                await window.updateDoc(window.doc(window.db, "products", id), {
+                    isActive: !currentState
+                });
+                showToast(currentState ? "Producto ocultado" : "Producto activado");
+            } catch(err) {
+                alert("Error al cambiar estado: " + err.message);
+            }
+        }
+
+        function toggleInactiveView(btn) {
+            showInactive = !showInactive;
+            if (showInactive) {
+                btn.classList.add('ring-2', 'ring-offset-2', 'ring-gray-800', 'bg-gray-800', 'text-white');
+                btn.classList.remove('bg-gray-100', 'text-gray-700');
+            } else {
+                btn.classList.remove('ring-2', 'ring-offset-2', 'ring-gray-800', 'bg-gray-800', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            }
+            renderProducts();
         }
 
         function addToCart(id) {
@@ -1190,7 +1220,6 @@
             const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + calculatedShippingCost) * 0.05) : 0;
             const grandTotal = subtotal + calculatedShippingCost + codFee;
 
-            // CONSTRUCCIÓN DEL MENSAJE COMPLETO DIRECTO A WHATSAPP
             let msg = `*NUEVO PEDIDO - FRAGATTAPARFUMS*\n\n`;
             msg += `*DATOS DE ENVÍO:*\n`;
             msg += `• Nombre: ${name}\n• Cédula: ${doc}\n• Teléfono: ${phone}\n• Ciudad: ${city}\n• Dirección: ${address}\n\n`;
@@ -1215,12 +1244,15 @@
             if (isAdmin) {
                 isAdmin = false;
                 document.getElementById('admin-toolbar').classList.add('hidden');
+                document.getElementById('btn-view-inactive').classList.add('hidden');
+                showInactive = false;
                 showToast("Sesión cerrada");
             } else {
                 const pass = prompt("Ingrese contraseña de Administrador:");
                 if (pass === ADMIN_PASSWORD) {
                     isAdmin = true;
                     document.getElementById('admin-toolbar').classList.remove('hidden');
+                    document.getElementById('btn-view-inactive').classList.remove('hidden');
                     showToast("¡Modo Administrador Activo!");
                 }
             }
@@ -1264,7 +1296,8 @@
                             featured: (row.PRIORIDAD === 'TOP VIRAL'),
                             image: row.IMAGEN || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
                             notes: row.NOTAS || '',
-                            description: row.DESCRIPCION || ''
+                            description: row.DESCRIPCION || '',
+                            isActive: true
                         };
 
                         await window.addDoc(window.collection(window.db, "products"), payload);
@@ -1280,7 +1313,6 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // CORRECCIÓN: Funciones actualizadas para reflejar visualmente los filtros seleccionados
         function setCategoryFilter(cat, btn = null) { 
             currentCategory = cat; 
             if(btn) {
@@ -1310,13 +1342,14 @@
             currentCategory = 'Todas'; 
             currentPriority = 'Todas'; 
             currentGender = 'Todos'; 
+            showInactive = false;
             document.getElementById('search-input').value = ''; 
             
-            document.querySelectorAll('.cat-btn, .prio-btn, .gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark', 'ring-amber-500'));
+            document.querySelectorAll('.cat-btn, .prio-btn, .gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark', 'ring-amber-500', 'ring-gray-800', 'bg-gray-800', 'text-white'));
             
-            // Volver a iluminar los predeterminados
             document.querySelector('.cat-btn').classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
             document.querySelector('.gender-btn').classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
+            document.getElementById('btn-view-inactive').classList.add('bg-gray-100', 'text-gray-700');
             
             renderProducts(); 
         }
@@ -1333,7 +1366,6 @@
             setTimeout(() => toast.remove(), 2500);
         }
 
-        // --- CORRECCIÓN: FUNCIONES DE ADMINISTRACIÓN INTEGRADAS ---
         function openAdminModal() {
             document.getElementById('product-form').reset();
             document.getElementById('prod-id').value = '';
@@ -1400,6 +1432,7 @@
                     await window.updateDoc(window.doc(window.db, "products", id), payload);
                     showToast("Producto editado exitosamente");
                 } else {
+                    payload.isActive = true;
                     await window.addDoc(window.collection(window.db, "products"), payload);
                     showToast("Nuevo producto agregado");
                 }
@@ -1451,7 +1484,48 @@
         function promptBannerUrl() { showToast("Función url banner"); }
         function handleBannerUpload(e) { showToast("Banner subido"); }
         function applyCustomBannerBlur(url) { document.getElementById('banner-bg-blur').style.backgroundImage = `url(${url})`; }
-        function openDetailModal(id) { showToast("Detalle del producto en desarrollo"); }
+        
+        function openDetailModal(id) {
+            const p = products.find(prod => prod.id === id);
+            if (!p) return;
+            
+            const detailContent = document.getElementById('detail-content');
+            const notesList = p.notes ? p.notes.split(',').map(n => `<span class="inline-flex items-center gap-1 text-[11px] text-gray-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-100"><i class="fas fa-leaf text-amber-500"></i>${n.trim()}</span>`).join('') : '';
+
+            detailContent.innerHTML = `
+                <div class="relative w-full h-64 sm:h-80 bg-gray-50 rounded-t-3xl overflow-hidden flex justify-center items-center">
+                    <img src="${p.image}" alt="${p.title}" class="object-cover h-full w-full">
+                    ${p.oldPrice ? `<div class="absolute top-4 left-4 z-10"><span class="bg-rose-600 text-white font-extrabold text-xs px-3 py-1 rounded-full shadow">OFERTA</span></div>` : ''}
+                </div>
+                <div class="p-5 sm:p-7 space-y-4">
+                    <div>
+                        <span class="text-xs font-bold text-amber-600 block uppercase tracking-wider mb-1">${p.brand}</span>
+                        <h2 class="font-cinzel font-bold text-xl sm:text-2xl text-gray-900 tracking-tight uppercase leading-tight">${p.title}</h2>
+                    </div>
+                    
+                    <div class="flex items-baseline gap-2">
+                        ${p.oldPrice ? `<span class="text-sm text-gray-400 line-through font-normal">${formatPrice(p.oldPrice)}</span>` : ''}
+                        <span class="text-2xl font-extrabold text-rose-600">${formatPrice(p.price)}</span>
+                    </div>
+
+                    ${notesList ? `<div class="flex flex-wrap gap-1.5 pt-2">${notesList}</div>` : ''}
+                    
+                    <div class="pt-2">
+                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-1.5">Descripción</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">${p.description || 'Fragancia exclusiva de alta calidad.'}</p>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100 mt-4">
+                        <button onclick="addToCart('${p.id}'); closeDetailModal();" class="w-full bg-luxury-dark hover:bg-black text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg">
+                            <i class="fas fa-shopping-cart text-amber-400"></i> Añadir al Carrito - ${formatPrice(p.price)}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
         function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
     </script>
 </body>
