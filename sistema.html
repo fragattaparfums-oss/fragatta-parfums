@@ -1449,8 +1449,8 @@
                     querySnapshot.forEach((doc) => {
                         const data = doc.data();
                         const parsedStock = parseInt(data.stock);
-                        const parsedCost = parseFloat(data.cost);
-                        const parsedPrice = parseFloat(data.price);
+                        const parsedCost = parseFloat(data.cost || data.originalPrice || 0);
+                        const parsedPrice = parseFloat(data.price || 0);
 
                         cloudProds.push({
                             id: String(doc.id),
@@ -1488,6 +1488,7 @@
             });
         }
 
+        // FUNCIÓN CORREGIDA DE IMPORTACIÓN DESDE WEB (FRAGATTAWEB)
         function importarDesdeWeb() {
             if (!db) return showToast("Firebase no está conectado", "error");
             if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Esta es una copia independiente y no afectará tu página web al editar o borrar.")) return;
@@ -1496,14 +1497,19 @@
                 let cont = 0;
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    const parsedStock = parseInt(data.stock);
-                    const parsedCost = parseFloat(data.cost);
-                    const parsedPrice = parseFloat(data.price);
+
+                    // LECTURA FLEXIBLE DE CAMPOS (name o title, price, cost u originalPrice)
+                    const prodName = (data.name || data.title || "").trim();
+                    if (!prodName) return; // Ignorar si no tiene nombre
+
+                    const parsedPrice = parseFloat(data.price || 0);
+                    const parsedCost = parseFloat(data.originalPrice || data.costPrice || data.cost || 0);
+                    const parsedStock = data.stock !== undefined ? parseInt(data.stock) : 10;
 
                     const newProd = {
                         id: String(doc.id),
                         sku: (data.sku && data.sku !== "undefined") ? data.sku : generateAutoSKU(),
-                        name: data.name || data.title || "Perfume Importado",
+                        name: prodName.toUpperCase(),
                         category: data.category || "Árabes",
                         cost: isNaN(parsedCost) ? 0 : parsedCost,
                         price: isNaN(parsedPrice) ? 0 : parsedPrice,
