@@ -18,13 +18,13 @@
     <!-- SCRIPT OFICIAL DEL CHECKOUT DE WOMPI -->
     <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
 
-    <!-- Firebase SDK con Puente Integrado -->
+    <!-- Firebase SDK (Solo Base Nueva FRAGATTAWEB) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, getDocs, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // 1. BASE DE DATOS NUEVA (FRAGATTAWEB) - ACTIVA PARA LA WEB
-        const firebaseConfigNew = {
+        // CONEXIÓN ÚNICA A LA NUEVA BASE DE DATOS (FRAGATTAWEB)
+        const firebaseConfig = {
             apiKey: "AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0",
             authDomain: "fragattaweb.firebaseapp.com",
             projectId: "fragattaweb",
@@ -34,24 +34,10 @@
             measurementId: "G-973P7Z8SN3"
         };
 
-        // 2. BASE DE DATOS VIEJA (fragattaparfums-29064) - PUENTE DE LECTURA
-        const firebaseConfigOld = {
-            apiKey: "AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0",
-            authDomain: "fragattaparfums-29064.firebaseapp.com",
-            projectId: "fragattaparfums-29064",
-            storageBucket: "fragattaparfums-29064.firebasestorage.app",
-            messagingSenderId: "664676301597",
-            appId: "1:664676301597:web:3c704ebc6c21fd50553ff4"
-        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-        const appNew = initializeApp(firebaseConfigNew, "NEW_APP");
-        const dbNew = getFirestore(appNew);
-
-        const appOld = initializeApp(firebaseConfigOld, "OLD_APP");
-        const dbOld = getFirestore(appOld);
-
-        // Exponer la base de datos activa
-        window.db = dbNew;
+        window.db = db;
         window.collection = collection;
         window.onSnapshot = onSnapshot;
         window.addDoc = addDoc;
@@ -59,31 +45,6 @@
         window.updateDoc = updateDoc;
         window.deleteDoc = deleteDoc;
         window.setDoc = setDoc;
-
-        // FUNCIÓN DEL PUENTE DE MIGRACIÓN AUTOMÁTICA
-        window.ejecutarPuenteMigracion = async function() {
-            try {
-                showToast("Leyendo productos de la base de datos anterior...");
-                const oldSnapshot = await getDocs(collection(dbOld, "products"));
-                if (oldSnapshot.empty) {
-                    alert("No se encontraron productos en la base de datos anterior.");
-                    return;
-                }
-
-                let totalCopiados = 0;
-                for (const itemDoc of oldSnapshot.docs) {
-                    const data = itemDoc.data();
-                    await addDoc(collection(dbNew, "products"), data);
-                    totalCopiados++;
-                }
-
-                alert(`¡ÉXITO TOTAL! Se han transferido ${totalCopiados} productos a tu nueva base de datos FRAGATTAWEB.`);
-                window.location.reload();
-            } catch (error) {
-                console.error("Error en la migración:", error);
-                alert("Ocurrió un detalle en la transferencia: " + error.message);
-            }
-        };
     </script>
 
     <script>
@@ -208,11 +169,11 @@
         <!-- CARRUSEL DE PROMOCIONES -->
         <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-4 bg-slate-900">
             <div id="promo-track" class="w-full aspect-square sm:aspect-auto sm:h-64 md:h-72 relative group">
-                <!-- Promociones inyectadas dinámicamente -->
+                <!-- Aquí se inyectarán dinámicamente las promociones -->
             </div>
         </section>
 
-        <!-- BOTÓN DE ENVÍOS & GARANTÍAS REUBICADO -->
+        <!-- BOTÓN DE ENVÍOS & GARANTÍAS -->
         <div class="flex justify-center mb-6">
             <button onclick="openPoliciesModal()" class="w-full sm:w-auto bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs sm:text-sm font-bold px-6 py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
                 <i class="fas fa-shield-alt text-amber-600 text-lg"></i> Políticas de Envíos & Garantías
@@ -227,10 +188,6 @@
                     <span class="text-xs text-emerald-400 font-bold"><i class="fas fa-database"></i> Firebase Conectado</span>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <!-- BOTÓN MORADO PARA MIGRACIÓN AUTOMÁTICA -->
-                    <button onclick="ejecutarPuenteMigracion()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow border border-purple-400">
-                        <i class="fas fa-sync-alt"></i> 🚀 MIGRAR DE BASE VIEJA A NUEVA
-                    </button>
                     <button onclick="openAdminModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
                         <i class="fas fa-plus-circle"></i> + Agregar Producto
                     </button>
@@ -334,7 +291,7 @@
         </div>
     </footer>
 
-    <!-- MODAL POLÍTICAS Y GARANTÍAS DESLIZABLE COMPLETO -->
+    <!-- MODAL POLÍTICAS Y GARANTÍAS DE FRAGATTAPARFUMS DESLIZABLE COMPLETO -->
     <div id="policies-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
         <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto shadow-2xl border border-amber-100 relative text-gray-800 p-5 sm:p-7">
             
@@ -351,6 +308,7 @@
                 </h2>
             </div>
 
+            <!-- CONTENEDOR DESLIZABLE INTERNO CON TODAS LAS POLÍTICAS -->
             <div class="space-y-4 text-xs leading-relaxed text-gray-600 pr-1">
                 <p class="text-gray-700">
                     En <strong>FRAGATTAPARFUMS</strong> trabajamos para ofrecerte la máxima excelencia en perfumería fina y cosmética de alta fijación. Todas nuestras transacciones y procesos de atención se rigen bajo los parámetros del Estatuto del Consumidor en Colombia (Ley 1480 de 2011, Decreto 735 de 2013 y Ley 2439 de 2024). Ninguna disposición limita los derechos irrenunciables de nuestros clientes.
@@ -453,7 +411,7 @@
                     <p class="text-[11px]">Si pagaste de forma electrónica (Tarjetas/PSE), puedes exigir reversión si fuiste víctima de fraude, o si no recibiste el pedido, según estipula el artículo 51 de la Ley 1480.</p>
                 </div>
 
-                <!-- SECCIÓN DE ENVÍOS -->
+                <!-- SECCIÓN DE ENVÍOS DESTACADA CON STICKERS -->
                 <div class="bg-slate-900 text-white p-4 rounded-2xl space-y-3 border border-amber-500/30 mt-4">
                     <h3 class="font-bold text-amber-400 text-sm flex items-center gap-1.5 uppercase tracking-wider">
                         <span>🚚</span> Políticas de Envío y Entregas
