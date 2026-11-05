@@ -423,11 +423,11 @@
                                     <option value="Dama">Dama</option>
                                     <option value="Caballero">Caballero</option>
                                     <option value="Árabes">Árabes</option>
+                                    <option value="Diseñador">Diseñador</option>
                                     <option value="Body Spray">Body Spray</option>
-                                    <option value="Por Mayor">Por Mayor</option>
+                                    <option value="Combos">Combos</option>
                                     <option value="Promociones">Promociones</option>
-                                    <option value="Kits">Kits</option>
-                                    <option value="Emprendedor">Emprendedor</option>
+                                    <option value="Por Mayor">Por Mayor</option>
                                 </select>
                             </div>
 
@@ -463,6 +463,14 @@
                                                 </label>
                                                 <input type="number" id="pos-discount-amount" value="0" min="0" onchange="renderCart()" class="w-full bg-purple-50 border border-purple-200 text-purple-800 rounded-xl px-2 py-1 text-xs font-bold text-right focus:outline-none">
                                             </div>
+                                        </div>
+
+                                        <div class="flex items-center justify-between pt-1">
+                                            <label class="text-xs text-slate-600 font-bold">Tipo de Venta:</label>
+                                            <select id="pos-sale-type" class="bg-white border border-slate-200 text-slate-800 rounded-xl px-2 py-1 text-xs font-bold focus:outline-none">
+                                                <option value="DETAL">Venta al Detal</option>
+                                                <option value="POR_MAYOR">Venta Por Mayor</option>
+                                            </select>
                                         </div>
 
                                         <div class="flex items-center justify-between pt-1">
@@ -511,15 +519,23 @@
 
                 <!-- 3. MES ACTUAL -->
                 <section id="tab-mes-actual" class="tab-content hidden space-y-6">
-                    <div class="flex justify-between items-center">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <h2 class="text-2xl font-black text-slate-900 tracking-tight">Operaciones del Mes Actual</h2>
-                        <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">Filtro Automático Mensual</span>
+                        <div class="flex items-center gap-3">
+                            <select id="filter-sales-type-mes" onchange="renderTablesViews()" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:outline-none shadow-sm">
+                                <option value="ALL">Todas las Ventas (Detal + Mayor)</option>
+                                <option value="DETAL">Solo Ventas al Detal</option>
+                                <option value="POR_MAYOR">Solo Ventas Por Mayor</option>
+                            </select>
+                            <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">Filtro Mensual</span>
+                        </div>
                     </div>
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
                                     <th class="p-4">N° Factura</th>
+                                    <th class="p-4">Tipo</th>
                                     <th class="p-4">Fecha</th>
                                     <th class="p-4">Cliente</th>
                                     <th class="p-4">Total</th>
@@ -535,17 +551,23 @@
 
                 <!-- 4. HISTÓRICO COMPLETO -->
                 <section id="tab-historico-completo" class="tab-content hidden space-y-6">
-                    <div class="flex justify-between items-center">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Histórico Completo de Ventas</h2>
                             <p class="text-xs text-slate-500">Modo Admin te permite corregir clientes, fechas, montos y descuentos de ventas pasadas.</p>
                         </div>
+                        <select id="filter-sales-type-hist" onchange="renderTablesViews()" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:outline-none shadow-sm">
+                            <option value="ALL">Todas las Ventas (Detal + Mayor)</option>
+                            <option value="DETAL">Solo Ventas al Detal</option>
+                            <option value="POR_MAYOR">Solo Ventas Por Mayor</option>
+                        </select>
                     </div>
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
                                     <th class="p-4">N° Factura</th>
+                                    <th class="p-4">Tipo</th>
                                     <th class="p-4">Fecha Exacta</th>
                                     <th class="p-4">Cliente / Contacto</th>
                                     <th class="p-4">Total</th>
@@ -561,7 +583,14 @@
 
                 <!-- 5. GANANCIAS MES A MES -->
                 <section id="tab-ganancias-mes" class="tab-content hidden space-y-6">
-                    <h2 class="text-2xl font-black text-slate-900 tracking-tight">Análisis de Ganancias Mes a Mes</h2>
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Análisis de Ganancias Mes a Mes</h2>
+                        <select id="filter-sales-type-gan" onchange="renderTablesViews()" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:outline-none shadow-sm">
+                            <option value="ALL">Consolidado (Detal + Por Mayor)</option>
+                            <option value="DETAL">Solo Ventas al Detal</option>
+                            <option value="POR_MAYOR">Solo Ventas Por Mayor</option>
+                        </select>
+                    </div>
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden p-6">
                         <div id="table-ganancias-monthly" class="overflow-x-auto"></div>
                     </div>
@@ -616,11 +645,11 @@
                             <option value="Dama">Dama</option>
                             <option value="Caballero">Caballero</option>
                             <option value="Árabes">Árabes</option>
+                            <option value="Diseñador">Diseñador</option>
                             <option value="Body Spray">Body Spray</option>
-                            <option value="Por Mayor">Por Mayor</option>
+                            <option value="Combos">Combos</option>
                             <option value="Promociones">Promociones</option>
-                            <option value="Kits">Kits</option>
-                            <option value="Emprendedor">Emprendedor</option>
+                            <option value="Por Mayor">Por Mayor</option>
                         </select>
                     </div>
 
@@ -914,9 +943,8 @@
                     <div>
                         <label class="block font-bold text-slate-600 mb-1">Categoría Combo:</label>
                         <select id="combo-category" onchange="updateComboLimitsInfo()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none font-bold">
+                            <option value="Combos">Combos (Sueltos)</option>
                             <option value="Promociones">Promociones (Máx 3 prod.)</option>
-                            <option value="Kits">Kits (Sueltos)</option>
-                            <option value="Emprendedor">Emprendedor (Máx 20 prod.)</option>
                         </select>
                     </div>
                     <div>
@@ -968,6 +996,22 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
+                        <label class="block font-bold text-slate-600 mb-1">Tipo de Venta:</label>
+                        <select id="edit-sale-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none font-bold">
+                            <option value="DETAL">Venta al Detal</option>
+                            <option value="POR_MAYOR">Venta Por Mayor</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">Estado Pago:</label>
+                        <select id="edit-sale-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                            <option value="PAGADO">Pagado Completo</option>
+                            <option value="ABONO">Con Abono / Pendiente</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
                         <label class="block font-bold text-slate-600 mb-1">Costo Envío ($):</label>
                         <input type="number" id="edit-sale-shipping" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                     </div>
@@ -976,18 +1020,9 @@
                         <input type="number" id="edit-sale-discount" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-bold text-slate-600 mb-1">Estado Pago:</label>
-                        <select id="edit-sale-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
-                            <option value="PAGADO">Pagado Completo</option>
-                            <option value="ABONO">Con Abono / Pendiente</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-600 mb-1">Monto Cobrado ($):</label>
-                        <input type="number" id="edit-sale-paid" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
-                    </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Monto Cobrado ($):</label>
+                    <input type="number" id="edit-sale-paid" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                 </div>
                 <div class="pt-2 flex justify-end gap-2">
                     <button type="button" onclick="closeSaleEditModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
@@ -1016,12 +1051,15 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block font-bold text-slate-600 mb-1">Categoría:</label>
-                        <select id="prod-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                        <label class="block font-bold text-slate-600 mb-1">Categoría Web:</label>
+                        <select id="prod-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none font-bold">
                             <option value="Dama">Dama</option>
                             <option value="Caballero">Caballero</option>
                             <option value="Árabes">Árabes</option>
+                            <option value="Diseñador">Diseñador</option>
                             <option value="Body Spray">Body Spray</option>
+                            <option value="Combos">Combos</option>
+                            <option value="Promociones">Promociones</option>
                             <option value="Por Mayor">Por Mayor</option>
                         </select>
                     </div>
@@ -1184,6 +1222,7 @@
                         <div class="text-right">
                             <p><strong>Nº:</strong> <span id="print-invoice-id"></span></p>
                             <p><strong>Fecha/Hora:</strong> <span id="print-invoice-date"></span></p>
+                            <p><strong>Tipo Venta:</strong> <span id="print-invoice-sale-type" class="font-bold text-purple-700"></span></p>
                             <p><strong>Estado:</strong> <span id="print-invoice-status" class="font-bold"></span></p>
                         </div>
                     </div>
@@ -1478,7 +1517,9 @@
                 if (!querySnapshot.empty) {
                     let cloudSales = [];
                     querySnapshot.forEach((doc) => {
-                        cloudSales.push(doc.data());
+                        const sData = doc.data();
+                        if (!sData.saleType) sData.saleType = 'DETAL';
+                        cloudSales.push(sData);
                     });
                     sales = cloudSales;
                     saveDataLocalOnly();
@@ -1488,7 +1529,6 @@
             });
         }
 
-        // FUNCIÓN CORREGIDA DE IMPORTACIÓN DESDE WEB (FRAGATTAWEB)
         function importarDesdeWeb() {
             if (!db) return showToast("Firebase no está conectado", "error");
             if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Esta es una copia independiente y no afectará tu página web al editar o borrar.")) return;
@@ -1497,10 +1537,8 @@
                 let cont = 0;
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-
-                    // LECTURA FLEXIBLE DE CAMPOS (name o title, price, cost u originalPrice)
                     const prodName = (data.name || data.title || "").trim();
-                    if (!prodName) return; // Ignorar si no tiene nombre
+                    if (!prodName) return;
 
                     const parsedPrice = parseFloat(data.price || 0);
                     const parsedCost = parseFloat(data.originalPrice || data.costPrice || data.cost || 0);
@@ -1780,12 +1818,12 @@
             filtered.forEach(p => {
                 const safePrice = parseFloat(p.price) || 0;
                 const safeStock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
-                const isCombo = ['Promociones', 'Kits', 'Emprendedor'].includes(p.category);
+                const isCombo = ['Combos', 'Promociones'].includes(p.category);
                 
                 container.innerHTML += `
                     <div onclick="addToCart('${p.id}')" class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm hover:border-purple-400 cursor-pointer transition flex flex-col justify-between">
                         <div>
-                            <span class="text-[9px] font-bold ${isCombo ? 'text-amber-700 bg-amber-50' : 'text-purple-600 bg-purple-50'} px-2 py-0.5 rounded-full">${p.category}</span>
+                            <span class="text-[9px] font-bold ${isCombo ? 'text-amber-700 bg-amber-50' : (p.category === 'Por Mayor' ? 'text-blue-700 bg-blue-50' : 'text-purple-600 bg-purple-50')} px-2 py-0.5 rounded-full">${p.category}</span>
                             <h4 class="font-bold text-slate-800 text-xs mt-1.5 line-clamp-2">${p.name}</h4>
                             <p class="text-[10px] text-slate-400 font-mono mt-0.5">${p.sku}</p>
                         </div>
@@ -1804,13 +1842,13 @@
 
             const safeStock = isNaN(parseInt(product.stock)) ? 0 : parseInt(product.stock);
 
-            if (!['Promociones', 'Kits', 'Emprendedor'].includes(product.category) && safeStock <= 0) {
+            if (!['Combos', 'Promociones'].includes(product.category) && safeStock <= 0) {
                 return showToast('Sin existencias en stock', 'error');
             }
 
             const existing = cart.find(item => String(item.id) === String(productId));
             if (existing) {
-                if (!['Promociones', 'Kits', 'Emprendedor'].includes(product.category) && existing.qty + 1 > safeStock) {
+                if (!['Combos', 'Promociones'].includes(product.category) && existing.qty + 1 > safeStock) {
                     return showToast('Excede el stock disponible', 'error');
                 }
                 existing.qty++;
@@ -1836,9 +1874,13 @@
             }
 
             let totalProds = 0;
+            let hasWholesaleItem = false;
+
             cart.forEach(item => {
                 const sub = (parseFloat(item.price) || 0) * item.qty;
                 totalProds += sub;
+                if (item.category === 'Por Mayor') hasWholesaleItem = true;
+
                 container.innerHTML += `
                     <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 text-xs">
                         <div class="flex-1 pr-2">
@@ -1852,6 +1894,14 @@
                     </div>
                 `;
             });
+
+            // Ajustar automáticamente el selector de Tipo de Venta según el contenido del carrito
+            const saleTypeSelect = document.getElementById('pos-sale-type');
+            if (saleTypeSelect) {
+                if (hasWholesaleItem) {
+                    saleTypeSelect.value = 'POR_MAYOR';
+                }
+            }
 
             if (shippingCost > 0) {
                 container.innerHTML += `
@@ -1894,6 +1944,7 @@
             const client = document.getElementById('pos-client-name')?.value.trim() || "Cliente General";
             const phone = document.getElementById('pos-client-phone')?.value.trim() || "N/A";
             const addr = document.getElementById('pos-client-address')?.value.trim() || "N/A";
+            const saleType = document.getElementById('pos-sale-type')?.value || 'DETAL';
             const status = document.getElementById('pos-payment-status')?.value || 'PAGADO';
             const abonoInput = parseFloat(document.getElementById('pos-abono-amount')?.value) || 0;
             const customDate = document.getElementById('pos-sale-date')?.value;
@@ -1909,20 +1960,21 @@
             const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
             const saleId = `FAC-${1000 + sales.length + 1}`;
 
+            // DESCUENTO DIRECTO E INSTANTÁNEO DE STOCK
             cart.forEach(cItem => {
                 const p = products.find(prod => String(prod.id) === String(cItem.id));
                 if (p) {
-                    if (['Promociones', 'Kits', 'Emprendedor'].includes(p.category) && p.items && p.items.length > 0) {
+                    if (['Combos', 'Promociones'].includes(p.category) && p.items && p.items.length > 0) {
                         p.items.forEach(cSub => {
                             const subProd = products.find(sp => String(sp.id) === String(cSub.prodId));
                             if (subProd) {
                                 const currentSubStock = isNaN(parseInt(subProd.stock)) ? 0 : parseInt(subProd.stock);
-                                subProd.stock = currentSubStock - (cSub.qty * cItem.qty);
+                                subProd.stock = Math.max(0, currentSubStock - (cSub.qty * cItem.qty));
                             }
                         });
                     } else {
                         const currentStock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
-                        p.stock = currentStock - cItem.qty;
+                        p.stock = Math.max(0, currentStock - cItem.qty);
                     }
                 }
             });
@@ -1934,6 +1986,7 @@
                 clientName: client,
                 clientPhone: phone,
                 clientAddr: addr,
+                saleType: saleType,
                 items: [...cart],
                 shipping: shippingCost,
                 discount: discountAmount,
@@ -1992,6 +2045,7 @@
                 if (document.getElementById('print-client-name')) document.getElementById('print-client-name').innerText = data.clientName;
                 if (document.getElementById('print-client-phone')) document.getElementById('print-client-phone').innerText = data.clientPhone;
                 if (document.getElementById('print-client-addr')) document.getElementById('print-client-addr').innerText = data.clientAddr;
+                if (document.getElementById('print-invoice-sale-type')) document.getElementById('print-invoice-sale-type').innerText = data.saleType === 'POR_MAYOR' ? 'POR MAYOR' : 'DETAL';
                 if (document.getElementById('print-invoice-status')) document.getElementById('print-invoice-status').innerText = data.status;
 
                 const tbody = document.getElementById('print-items-body');
@@ -2058,19 +2112,32 @@
             const now = new Date();
             const currentMonthYear = now.getMonth() + "-" + now.getFullYear();
 
+            const filterMes = document.getElementById('filter-sales-type-mes')?.value || 'ALL';
+            const filterHist = document.getElementById('filter-sales-type-hist')?.value || 'ALL';
+            const filterGan = document.getElementById('filter-sales-type-gan')?.value || 'ALL';
+
             const mesSales = sales.filter(s => {
                 const d = new Date(s.rawDate || Date.now());
-                return (d.getMonth() + "-" + d.getFullYear()) === currentMonthYear;
+                const matchesDate = (d.getMonth() + "-" + d.getFullYear()) === currentMonthYear;
+                const matchesType = (filterMes === 'ALL') || (s.saleType || 'DETAL') === filterMes;
+                return matchesDate && matchesType;
+            });
+
+            const histSales = sales.filter(s => {
+                return (filterHist === 'ALL') || (s.saleType || 'DETAL') === filterHist;
             });
 
             const mesBody = document.getElementById('mes-actual-body');
             if (mesBody) mesBody.innerHTML = generateSalesTableRows(mesSales);
             
             const histBody = document.getElementById('historico-completo-body');
-            if (histBody) histBody.innerHTML = generateSalesTableRows(sales);
+            if (histBody) histBody.innerHTML = generateSalesTableRows(histSales);
 
             const monthsMap = {};
             sales.forEach(s => {
+                const sType = s.saleType || 'DETAL';
+                if (filterGan !== 'ALL' && sType !== filterGan) return;
+
                 const d = new Date(s.rawDate || Date.now());
                 const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                 if (!monthsMap[key]) monthsMap[key] = { ventas: 0, costo: 0, ganancia: 0 };
@@ -2109,13 +2176,17 @@
         }
 
         function generateSalesTableRows(salesArr) {
-            if (salesArr.length === 0) return `<tr><td colspan="7" class="p-4 text-center text-slate-400">Sin registros para mostrar</td></tr>`;
+            if (salesArr.length === 0) return `<tr><td colspan="8" class="p-4 text-center text-slate-400">Sin registros para mostrar</td></tr>`;
             return salesArr.slice().reverse().map(s => {
                 const totalVal = parseFloat(s.total) || 0;
                 const paidVal = parseFloat(s.paid) || 0;
+                const sType = s.saleType || 'DETAL';
+                const isMayor = sType === 'POR_MAYOR';
+
                 return `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 font-mono font-bold text-purple-600">${s.id}</td>
+                        <td class="p-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-black ${isMayor ? 'bg-amber-100 text-amber-800' : 'bg-purple-100 text-purple-800'}">${isMayor ? 'POR MAYOR' : 'DETAL'}</span></td>
                         <td class="p-4 text-slate-500 font-mono">${s.date}</td>
                         <td class="p-4 font-bold text-slate-800">${s.clientName}</td>
                         <td class="p-4 font-bold text-slate-800">$${totalVal.toLocaleString('es-CO')}</td>
@@ -2139,6 +2210,7 @@
                 if (document.getElementById('edit-sale-client')) document.getElementById('edit-sale-client').value = s.clientName || '';
                 if (document.getElementById('edit-sale-phone')) document.getElementById('edit-sale-phone').value = s.clientPhone || '';
                 if (document.getElementById('edit-sale-addr')) document.getElementById('edit-sale-addr').value = s.clientAddr || '';
+                if (document.getElementById('edit-sale-type')) document.getElementById('edit-sale-type').value = s.saleType || 'DETAL';
                 if (document.getElementById('edit-sale-shipping')) document.getElementById('edit-sale-shipping').value = s.shipping || 0;
                 if (document.getElementById('edit-sale-discount')) document.getElementById('edit-sale-discount').value = s.discount || 0;
                 if (document.getElementById('edit-sale-status')) document.getElementById('edit-sale-status').value = s.status || 'PAGADO';
@@ -2161,6 +2233,7 @@
                 s.clientName = document.getElementById('edit-sale-client')?.value.trim() || 'Cliente General';
                 s.clientPhone = document.getElementById('edit-sale-phone')?.value.trim() || 'N/A';
                 s.clientAddr = document.getElementById('edit-sale-addr')?.value.trim() || 'N/A';
+                s.saleType = document.getElementById('edit-sale-type')?.value || 'DETAL';
                 s.shipping = parseFloat(document.getElementById('edit-sale-shipping')?.value) || 0;
                 s.discount = parseFloat(document.getElementById('edit-sale-discount')?.value) || 0;
                 s.status = document.getElementById('edit-sale-status')?.value || 'PAGADO';
@@ -2213,7 +2286,7 @@
 
             let updatedCount = 0;
             products.forEach(p => {
-                if (!['Promociones', 'Kits', 'Emprendedor'].includes(p.category)) {
+                if (!['Combos', 'Promociones'].includes(p.category)) {
                     p.stock = newStockVal;
                     updatedCount++;
                 }
@@ -2227,11 +2300,11 @@
             showToast(`¡Se actualizó el stock a ${newStockVal} unidades en ${updatedCount} productos!`);
         }
 
-        // FUNCIONES DE DUPLICACIÓN A MÓDULO POR MAYOR
+        // FUNCIÓN CORREGIDA DE DUPLICACIÓN TOTAL AL MÓDULO POR MAYOR (CORRIGE EL ERROR DE DUPLICAR SOLO 1)
         function duplicateAllToWholesale() {
             if (!isAdmin) return showToast('Desbloquea el Modo Admin', 'error');
 
-            const baseProducts = products.filter(p => p.category !== 'Por Mayor' && !['Promociones', 'Kits', 'Emprendedor'].includes(p.category));
+            const baseProducts = products.filter(p => p.category !== 'Por Mayor' && !['Combos', 'Promociones'].includes(p.category));
 
             if (baseProducts.length === 0) {
                 return showToast('No hay productos base para duplicar', 'error');
@@ -2242,14 +2315,16 @@
             }
 
             let duplicatedCount = 0;
-            baseProducts.forEach(p => {
+            baseProducts.forEach((p, idx) => {
                 const wholesaleName = `${p.name} - Por Mayor`;
-                const existing = products.find(existingProd => existingProd.name === wholesaleName || (existingProd.category === 'Por Mayor' && existingProd.sku === `${p.sku}-PM`));
+                const expectedSku = `${p.sku}-PM`;
+                
+                const existing = products.find(existingProd => existingProd.name === wholesaleName || (existingProd.category === 'Por Mayor' && existingProd.sku === expectedSku));
 
                 if (!existing) {
                     const wholesaleProd = {
-                        id: String(Date.now() + Math.random()),
-                        sku: `${p.sku}-PM`,
+                        id: `PM-${p.id}`,
+                        sku: expectedSku,
                         name: wholesaleName,
                         category: 'Por Mayor',
                         cost: parseFloat(p.cost) || 0,
@@ -2265,7 +2340,7 @@
             renderInventoryTable();
             renderWholesaleTable();
             renderPosProducts();
-            showToast(`¡Se duplicaron ${duplicatedCount} productos al Módulo Por Mayor!`);
+            showToast(`¡Se duplicaron exitosamente los ${duplicatedCount} productos al Módulo Por Mayor!`);
         }
 
         function renderWholesaleTable() {
@@ -2327,7 +2402,7 @@
                 const costVal = parseFloat(p.cost) || 0;
                 const priceVal = parseFloat(p.price) || 0;
                 const safeStock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
-                const isCombo = ['Promociones', 'Kits', 'Emprendedor'].includes(p.category);
+                const isCombo = ['Combos', 'Promociones'].includes(p.category);
 
                 tbody.innerHTML += `
                     <tr id="inv-row-${p.id}" class="hover:bg-slate-50 transition border-b border-slate-100">
@@ -2355,6 +2430,7 @@
             });
         }
 
+        // ACTUALIZACIÓN DE STOCK RÁPIDA E INSTANTÁNEA
         function adjustStock(id, delta) {
             const p = products.find(prod => String(prod.id) === String(id));
             if (p) {
@@ -2384,7 +2460,7 @@
             const p = products.find(item => String(item.id) === String(id));
             if (p) {
                 const newWholesale = {
-                    id: String(Date.now()),
+                    id: `PM-${p.id}`,
                     sku: `${p.sku}-PM`,
                     name: `${p.name} - Por Mayor`,
                     category: 'Por Mayor',
@@ -2472,583 +2548,4 @@
         }
 
         function deleteProduct(id) {
-            if (!isAdmin) return alert("Solo el Administrador puede eliminar perfumes.");
-            if (!confirm("¿Deseas eliminar este producto del inventario del POS?\n\n*Tranquilo: Tu página web NO se verá afectada.")) return;
-            products = products.filter(p => String(p.id) !== String(id));
-            
-            if (isFirebaseConnected && db) {
-                db.collection("pos_products").doc(String(id)).delete();
-            }
-
-            saveData();
-            renderInventoryTable();
-            renderWholesaleTable();
-            renderPosProducts();
-            updateDashboard();
-            showToast('Producto eliminado únicamente del POS');
-        }
-
-        function openComboModal() {
-            if (document.getElementById('combo-name')) document.getElementById('combo-name').value = '';
-            if (document.getElementById('combo-price')) document.getElementById('combo-price').value = '';
-            if (document.getElementById('combo-category')) document.getElementById('combo-category').value = 'Promociones';
-            if (document.getElementById('combo-items-container')) document.getElementById('combo-items-container').innerHTML = '';
-            updateComboLimitsInfo();
-            addComboProductRow();
-            const m = document.getElementById('combo-modal');
-            if (m) m.classList.remove('hidden');
-        }
-
-        function closeComboModal() {
-            const m = document.getElementById('combo-modal');
-            if (m) m.classList.add('hidden');
-        }
-
-        function updateComboLimitsInfo() {
-            const cat = document.getElementById('combo-category')?.value;
-            const label = document.getElementById('combo-limit-text');
-            if (label) {
-                if (cat === 'Promociones') label.innerText = 'Límite: Máx 3 productos';
-                else if (cat === 'Emprendedor') label.innerText = 'Límite: Máx 20 productos';
-                else label.innerText = 'Kit sin límite estructurado';
-            }
-        }
-
-        function addComboProductRow() {
-            const container = document.getElementById('combo-items-container');
-            if (!container) return;
-            const cat = document.getElementById('combo-category')?.value;
-            const currentRows = container.children.length;
-
-            if (cat === 'Promociones' && currentRows >= 3) return showToast('Promociones permite máximo 3 productos', 'error');
-            if (cat === 'Emprendedor' && currentRows >= 20) return showToast('Emprendedor permite máximo 20 productos', 'error');
-
-            const div = document.createElement('div');
-            div.className = "flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200";
-
-            let optionsHtml = '';
-            products.filter(p => !['Promociones', 'Kits', 'Emprendedor'].includes(p.category)).forEach(prod => {
-                optionsHtml += `<option value="${prod.id}">${prod.name} (${prod.category})</option>`;
-            });
-
-            div.innerHTML = `
-                <select class="combo-prod-select flex-1 bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-none">
-                    ${optionsHtml}
-                </select>
-                <input type="number" value="1" min="1" class="combo-prod-qty w-16 bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-bold text-center">
-                <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 font-bold px-2 hover:text-rose-700">✕</button>
-            `;
-            container.appendChild(div);
-        }
-
-        function saveCombo(e) {
-            e.preventDefault();
-            const name = document.getElementById('combo-name')?.value.trim() || '';
-            const category = document.getElementById('combo-category')?.value || 'Promociones';
-            const price = parseFloat(document.getElementById('combo-price')?.value) || 0;
-
-            const container = document.getElementById('combo-items-container');
-            if (!container) return;
-            const selects = container.querySelectorAll('.combo-prod-select');
-            const qtys = container.querySelectorAll('.combo-prod-qty');
-
-            if (selects.length === 0) return showToast('Añade al menos un producto al combo', 'error');
-
-            let comboItems = [];
-            let totalCost = 0;
-
-            selects.forEach((sel, idx) => {
-                const prodId = sel.value;
-                const qty = parseInt(qtys[idx].value) || 1;
-                const p = products.find(prod => String(prod.id) === String(prodId));
-                if (p) {
-                    comboItems.push({ prodId, qty, name: p.name });
-                    totalCost += ((parseFloat(p.cost) || 0) * qty);
-                }
-            });
-
-            const newCombo = {
-                id: String(Date.now()),
-                sku: generateAutoSKU(),
-                name,
-                category,
-                price,
-                cost: totalCost,
-                stock: 999,
-                items: comboItems
-            };
-
-            products.push(newCombo);
-            saveData();
-            closeComboModal();
-            renderInventoryTable();
-            renderPosProducts();
-            showToast('¡Combo guardado en el POS!');
-        }
-
-        function triggerExcelImport() {
-            const el = document.getElementById('excel-file-input');
-            if(el) el.click();
-        }
-
-        function importExcelCatalog(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const json = XLSX.utils.sheet_to_json(worksheet);
-
-                products = [];
-
-                let importedCount = 0;
-                json.forEach(row => {
-                    const name = row.Nombre || row.PERFUME || row.Producto;
-                    if (name) {
-                        const sku = row.SKU || generateAutoSKU();
-                        const category = row.Categoria || row.CATEGORIA || row.Categoría || 'Árabes';
-                        
-                        let rawStock = row.STOCK !== undefined ? row.STOCK : (row.Stock !== undefined ? row.Stock : row.Cantidad);
-                        const stock = rawStock !== undefined && !isNaN(rawStock) ? parseInt(rawStock) : 10;
-                        
-                        let rawCost = row.COSTO !== undefined ? row.COSTO : (row.Costo !== undefined ? row.Costo : row.PrecioCompra);
-                        const cost = rawCost !== undefined && !isNaN(rawCost) ? parseFloat(rawCost) : 0;
-
-                        let rawPrice = row.PRECIO !== undefined ? row.PRECIO : (row.Precio !== undefined ? row.Precio : row.PrecioVenta);
-                        const price = rawPrice !== undefined && !isNaN(rawPrice) ? parseFloat(rawPrice) : 0;
-
-                        products.push({ id: String(Date.now() + Math.random()), sku, name, category, stock, cost, price });
-                        importedCount++;
-                    }
-                });
-
-                saveData();
-                renderInventoryTable();
-                renderWholesaleTable();
-                renderPosProducts();
-                updateDashboard();
-                showToast(`¡Se importaron ${importedCount} perfumes al POS!`);
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function renderDebtsTable() {
-            const tbody = document.getElementById('debts-table-body');
-            if (!tbody) return;
-
-            tbody.innerHTML = '';
-            debts.slice().reverse().forEach(d => {
-                const amountVal = parseFloat(d.amount) || 0;
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="p-4 text-slate-500 font-mono">${d.date}</td>
-                        <td class="p-4 font-bold text-purple-600">${d.saleId || 'Gral'}</td>
-                        <td class="p-4 font-bold text-slate-800">${d.client}</td>
-                        <td class="p-4 text-slate-600">${d.concept}</td>
-                        <td class="p-4 font-black text-emerald-600">$${amountVal.toLocaleString('es-CO')}</td>
-                        <td class="p-4 text-center">
-                            ${isAdmin ? `<button onclick="deleteDebt('${d.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Abono (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function openDebtModal() {
-            const select = document.getElementById('debt-sale-select');
-            if (select) {
-                select.innerHTML = '<option value="">Abono General</option>';
-                const pendingSales = sales.filter(s => s.status === 'ABONO' || s.paid < s.total);
-                pendingSales.forEach(s => {
-                    const pend = (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0);
-                    select.innerHTML += `<option value="${s.id}">${s.id} - ${s.clientName} (Pendiente: $${pend.toLocaleString('es-CO')})</option>`;
-                });
-            }
-            const m = document.getElementById('debt-modal');
-            if (m) m.classList.remove('hidden');
-        }
-
-        function autoFillDebtClient() {
-            const saleId = document.getElementById('debt-sale-select')?.value;
-            if (saleId) {
-                const s = sales.find(sale => sale.id === saleId);
-                if (s) {
-                    if (document.getElementById('debt-client')) document.getElementById('debt-client').value = s.clientName;
-                    if (document.getElementById('debt-concept')) document.getElementById('debt-concept').value = `Abono parcial a factura ${s.id}`;
-                }
-            }
-        }
-
-        function closeDebtModal() {
-            const m = document.getElementById('debt-modal');
-            if (m) m.classList.add('hidden');
-        }
-
-        function saveDebtPayment(e) {
-            e.preventDefault();
-            const saleId = document.getElementById('debt-sale-select')?.value;
-            const client = document.getElementById('debt-client')?.value || '';
-            const concept = document.getElementById('debt-concept')?.value || '';
-            const amount = parseFloat(document.getElementById('debt-amount')?.value) || 0;
-
-            const now = new Date();
-            const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
-
-            if (saleId) {
-                const s = sales.find(sale => sale.id === saleId);
-                if (s) {
-                    s.paid = (parseFloat(s.paid) || 0) + amount;
-                    if (s.paid >= s.total) s.status = 'PAGADO';
-                }
-            }
-
-            debts.push({ id: 'ABO-' + Date.now(), date: fullDateTime, saleId: saleId || 'Gral', client, concept, amount });
-            saveData();
-            closeDebtModal();
-            renderDebtsTable();
-            renderTablesViews();
-            updateDashboard();
-            showToast('Abono registrado exitosamente');
-        }
-
-        function deleteDebt(id) {
-            if (!isAdmin) return alert("Solo el Administrador puede eliminar abonos.");
-            if (!confirm("¿Desea eliminar este abono de cliente?")) return;
-            debts = debts.filter(d => d.id !== id);
-            saveData();
-            renderDebtsTable();
-            renderTablesViews();
-            updateDashboard();
-            showToast('Abono eliminado por el Administrador');
-        }
-
-        function renderPayablesTable() {
-            const tbody = document.getElementById('payables-table-body');
-            if (!tbody) return;
-
-            tbody.innerHTML = '';
-            payables.forEach(p => {
-                const totalVal = parseFloat(p.total) || 0;
-                const paidVal = parseFloat(p.paid) || 0;
-                const pending = Math.max(0, totalVal - paidVal);
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="p-4 font-mono font-bold text-rose-600">${p.invoiceNum}</td>
-                        <td class="p-4 font-bold text-slate-800">${p.supplier}</td>
-                        <td class="p-4 text-slate-500 font-mono">${p.date}</td>
-                        <td class="p-4 font-bold text-slate-800">$${totalVal.toLocaleString('es-CO')}</td>
-                        <td class="p-4 font-bold text-emerald-600">$${paidVal.toLocaleString('es-CO')}</td>
-                        <td class="p-4 font-black ${pending > 0 ? 'text-rose-600' : 'text-slate-400'}">$${pending.toLocaleString('es-CO')}</td>
-                        <td class="p-4 text-center space-x-1">
-                            ${pending > 0 ? `<button onclick="openPayableAbonoModal('${p.id}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl text-xs transition">+ Abonar</button>` : '<span class="text-xs font-bold text-emerald-600 px-2">PAGADO</span>'}
-                            ${isAdmin ? `<button onclick="editPayable('${p.id}')" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar Deuda (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
-                            ${isAdmin ? `<button onclick="deletePayable('${p.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Factura (Admin)"><i class="fa-solid fa-trash"></i></button>` : ''}
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function openPayableModal() {
-            if (document.getElementById('pay-id')) document.getElementById('pay-id').value = '';
-            if (document.getElementById('payable-modal-title')) document.getElementById('payable-modal-title').innerText = "Registrar Deuda a Proveedor";
-            const m = document.getElementById('payable-modal');
-            if (m) m.classList.remove('hidden');
-        }
-
-        function closePayableModal() {
-            const m = document.getElementById('payable-modal');
-            if (m) m.classList.add('hidden');
-        }
-
-        function editPayable(id) {
-            if (!isAdmin) return;
-            const p = payables.find(item => item.id === id);
-            if (p) {
-                if (document.getElementById('pay-id')) document.getElementById('pay-id').value = p.id;
-                if (document.getElementById('pay-supplier')) document.getElementById('pay-supplier').value = p.supplier;
-                if (document.getElementById('pay-invoice-num')) document.getElementById('pay-invoice-num').value = p.invoiceNum;
-                if (document.getElementById('pay-total')) document.getElementById('pay-total').value = parseFloat(p.total) || 0;
-                if (document.getElementById('pay-abono')) document.getElementById('pay-abono').value = parseFloat(p.paid) || 0;
-                if (document.getElementById('payable-modal-title')) document.getElementById('payable-modal-title').innerText = "Editar Deuda de Proveedor (Admin)";
-                const m = document.getElementById('payable-modal');
-                if (m) m.classList.remove('hidden');
-            }
-        }
-
-        function savePayable(e) {
-            e.preventDefault();
-            const id = document.getElementById('pay-id')?.value;
-            const supplier = document.getElementById('pay-supplier')?.value.trim() || '';
-            const invoiceNum = document.getElementById('pay-invoice-num')?.value.trim() || '';
-            const total = parseFloat(document.getElementById('pay-total')?.value) || 0;
-            const abono = parseFloat(document.getElementById('pay-abono')?.value) || 0;
-
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('es-CO');
-
-            if (id) {
-                const p = payables.find(item => item.id === id);
-                if (p) {
-                    p.supplier = supplier;
-                    p.invoiceNum = invoiceNum;
-                    p.total = total;
-                    p.paid = abono;
-                }
-            } else {
-                payables.push({
-                    id: 'PAY-' + Date.now(),
-                    date: dateStr,
-                    supplier,
-                    invoiceNum,
-                    total,
-                    paid: abono
-                });
-            }
-
-            saveData();
-            closePayableModal();
-            renderPayablesTable();
-            updateDashboard();
-            showToast('Factura de proveedor guardada');
-        }
-
-        function openPayableAbonoModal(id) {
-            const p = payables.find(item => item.id === id);
-            if (p) {
-                if (document.getElementById('pay-abono-id')) document.getElementById('pay-abono-id').value = p.id;
-                if (document.getElementById('pay-abono-info')) document.getElementById('pay-abono-info').value = `${p.supplier} (${p.invoiceNum})`;
-                if (document.getElementById('pay-abono-amount')) document.getElementById('pay-abono-amount').value = '';
-                const m = document.getElementById('payable-abono-modal');
-                if (m) m.classList.remove('hidden');
-            }
-        }
-
-        function closePayableAbonoModal() {
-            const m = document.getElementById('payable-abono-modal');
-            if (m) m.classList.add('hidden');
-        }
-
-        function savePayableAbono(e) {
-            e.preventDefault();
-            const id = document.getElementById('pay-abono-id')?.value;
-            const amount = parseFloat(document.getElementById('pay-abono-amount')?.value) || 0;
-
-            const p = payables.find(item => item.id === id);
-            if (p && amount > 0) {
-                p.paid = (parseFloat(p.paid) || 0) + amount;
-                saveData();
-                closePayableAbonoModal();
-                renderPayablesTable();
-                updateDashboard();
-                showToast('Abono a proveedor procesado');
-            }
-        }
-
-        function deletePayable(id) {
-            if (!isAdmin) return alert("Solo el Administrador puede eliminar deudas a proveedores.");
-            if (!confirm("¿Deseas eliminar esta factura por pagar?")) return;
-            payables = payables.filter(p => p.id !== id);
-            saveData();
-            renderPayablesTable();
-            updateDashboard();
-            showToast('Deuda a proveedor eliminada');
-        }
-
-        function renderExpensesTable() {
-            const tbody = document.getElementById('expenses-table-body');
-            if (!tbody) return;
-
-            tbody.innerHTML = '';
-            expenses.slice().reverse().forEach(exp => {
-                const amountVal = parseFloat(exp.amount) || 0;
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="p-4 text-slate-500 font-mono">${exp.date}</td>
-                        <td class="p-4 font-bold text-slate-800">${exp.desc}</td>
-                        <td class="p-4 font-black text-rose-600">$${amountVal.toLocaleString('es-CO')}</td>
-                        <td class="p-4 text-center">
-                            ${isAdmin ? `<button onclick="deleteExpense('${exp.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Gasto (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function openExpenseModal() {
-            if (document.getElementById('exp-desc')) document.getElementById('exp-desc').value = '';
-            if (document.getElementById('exp-amount')) document.getElementById('exp-amount').value = '';
-            const m = document.getElementById('expense-modal');
-            if (m) m.classList.remove('hidden');
-        }
-
-        function closeExpenseModal() {
-            const m = document.getElementById('expense-modal');
-            if (m) m.classList.add('hidden');
-        }
-
-        function saveExpense(e) {
-            e.preventDefault();
-            const desc = document.getElementById('exp-desc')?.value.trim() || '';
-            const amount = parseFloat(document.getElementById('exp-amount')?.value) || 0;
-
-            const now = new Date();
-            const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
-
-            expenses.push({
-                id: 'EXP-' + Date.now(),
-                date: fullDateTime,
-                desc,
-                amount
-            });
-
-            saveData();
-            closeExpenseModal();
-            renderExpensesTable();
-            updateDashboard();
-            showToast('Gasto operativo registrado');
-        }
-
-        function deleteExpense(id) {
-            if (!isAdmin) return alert("Solo el Administrador puede eliminar gastos.");
-            if (!confirm("¿Deseas eliminar este gasto?")) return;
-            expenses = expenses.filter(exp => exp.id !== id);
-            saveData();
-            renderExpensesTable();
-            updateDashboard();
-            showToast('Gasto eliminado');
-        }
-
-        function updateDashboard() {
-            const filter = document.getElementById('dash-month-filter')?.value || 'CURRENT';
-            const now = new Date();
-            const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-            let filteredSales = sales;
-            if (filter === 'CURRENT') {
-                filteredSales = sales.filter(s => {
-                    const d = new Date(s.rawDate || Date.now());
-                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === currentMonthKey;
-                });
-            } else if (filter !== 'ALL') {
-                filteredSales = sales.filter(s => {
-                    const d = new Date(s.rawDate || Date.now());
-                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === filter;
-                });
-            }
-
-            const totalSalesVal = filteredSales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
-            const totalCostVal = filteredSales.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
-            const netProfitVal = totalSalesVal - totalCostVal;
-
-            const customerDebtsVal = sales.reduce((sum, s) => {
-                const pend = (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0);
-                return sum + Math.max(0, pend);
-            }, 0);
-
-            const stockCostVal = products.reduce((sum, p) => {
-                const stock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
-                const cost = parseFloat(p.cost) || 0;
-                return sum + (stock * cost);
-            }, 0);
-
-            const payablesVal = payables.reduce((sum, p) => {
-                const pend = (parseFloat(p.total) || 0) - (parseFloat(p.paid) || 0);
-                return sum + Math.max(0, pend);
-            }, 0);
-
-            if (document.getElementById('dash-total-sales')) document.getElementById('dash-total-sales').innerText = `$${totalSalesVal.toLocaleString('es-CO')}`;
-            if (document.getElementById('dash-net-profit')) document.getElementById('dash-net-profit').innerText = `$${netProfitVal.toLocaleString('es-CO')}`;
-            if (document.getElementById('dash-total-customer-debts')) document.getElementById('dash-total-customer-debts').innerText = `$${customerDebtsVal.toLocaleString('es-CO')}`;
-            if (document.getElementById('dash-stock-cost')) document.getElementById('dash-stock-cost').innerText = `$${stockCostVal.toLocaleString('es-CO')}`;
-            if (document.getElementById('dash-total-payables')) document.getElementById('dash-total-payables').innerText = `$${payablesVal.toLocaleString('es-CO')}`;
-
-            // CONTROL FINANCIERO ADMIN
-            const historicalPaidSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
-            const totalWithdrawals = withdrawals.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
-            const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-            const totalPayablesPaid = payables.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
-
-            const totalExpected = bankSavings + historicalPaidSales - totalExpenses - totalPayablesPaid - totalWithdrawals;
-
-            if (document.getElementById('admin-total-historical-sales')) document.getElementById('admin-total-historical-sales').innerText = `$${historicalPaidSales.toLocaleString('es-CO')}`;
-            if (document.getElementById('admin-total-withdrawals')) document.getElementById('admin-total-withdrawals').innerText = `$${totalWithdrawals.toLocaleString('es-CO')}`;
-            if (document.getElementById('admin-total-expected-money')) document.getElementById('admin-total-expected-money').innerText = `$${totalExpected.toLocaleString('es-CO')}`;
-
-            const baseMissing = Math.max(0, baseTarget - baseCurrent);
-            if (document.getElementById('base-missing-val')) document.getElementById('base-missing-val').innerText = `$${baseMissing.toLocaleString('es-CO')}`;
-
-            // REPARTO DE SOCIOS
-            const historicalProfit = sales.reduce((sum, s) => sum + ((parseFloat(s.total) || 0) - (parseFloat(s.cost) || 0)), 0) - totalExpenses;
-            const socioHalfProfit = Math.max(0, historicalProfit / 2);
-
-            const wSocio1 = withdrawals.filter(w => w.partner === 'socio1').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
-            const wSocio2 = withdrawals.filter(w => w.partner === 'socio2').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
-
-            if (document.getElementById('socio1-earned')) document.getElementById('socio1-earned').innerText = `$${socioHalfProfit.toLocaleString('es-CO')}`;
-            if (document.getElementById('socio1-withdrawn')) document.getElementById('socio1-withdrawn').innerText = `$${wSocio1.toLocaleString('es-CO')}`;
-            if (document.getElementById('socio1-available')) document.getElementById('socio1-available').innerText = `$${(socioHalfProfit - wSocio1).toLocaleString('es-CO')}`;
-
-            if (document.getElementById('socio2-earned')) document.getElementById('socio2-earned').innerText = `$${socioHalfProfit.toLocaleString('es-CO')}`;
-            if (document.getElementById('socio2-withdrawn')) document.getElementById('socio2-withdrawn').innerText = `$${wSocio2.toLocaleString('es-CO')}`;
-            if (document.getElementById('socio2-available')) document.getElementById('socio2-available').innerText = `$${(socioHalfProfit - wSocio2).toLocaleString('es-CO')}`;
-
-            // ALERTA STOCK BAJO
-            const lowStockList = document.getElementById('dash-low-stock-list');
-            if (lowStockList) {
-                lowStockList.innerHTML = '';
-                const lowItems = products.filter(p => !['Promociones', 'Kits', 'Emprendedor'].includes(p.category) && (isNaN(parseInt(p.stock)) || parseInt(p.stock) <= 3));
-                
-                if (lowItems.length === 0) {
-                    lowStockList.innerHTML = `<p class="text-xs text-slate-400 italic">Todo el stock en niveles óptimos</p>`;
-                } else {
-                    lowItems.forEach(p => {
-                        lowStockList.innerHTML += `
-                            <div class="flex items-center justify-between p-2 bg-amber-50 rounded-xl border border-amber-200/60 text-xs">
-                                <span class="font-bold text-amber-900 truncate max-w-[150px]">${p.name}</span>
-                                <span class="font-extrabold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full">${p.stock} unid.</span>
-                            </div>
-                        `;
-                    });
-                }
-            }
-
-            renderChart(totalSalesVal, totalCostVal, netProfitVal);
-        }
-
-        function renderChart(salesVal, costVal, profitVal) {
-            const ctx = document.getElementById('financeChart');
-            if (!ctx) return;
-
-            if (financeChart) financeChart.destroy();
-
-            financeChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Ventas Brutas', 'Costo Mercancía', 'Ganancia Neta'],
-                    datasets: [{
-                        data: [salesVal, costVal, profitVal],
-                        backgroundColor: ['#10b981', '#f59e0b', '#a855f7'],
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
-        }
-
-        // AUTO-INIT AL CARGAR PÁGINA
-        window.addEventListener('DOMContentLoaded', () => {
-            loadMemory();
-        });
-    </script>
-</body>
-</html>
+            if (!isAdmin
