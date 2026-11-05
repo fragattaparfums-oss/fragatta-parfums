@@ -18,14 +18,14 @@
     <!-- SCRIPT OFICIAL DEL CHECKOUT DE WOMPI -->
     <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK con Puente Integrado -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, getDocs, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // CREDENTIONALES CONECTADAS AL NUEVO PROYECTO PERSONAL (FRAGATTAWEB)
-        const firebaseConfig = {
-            apiKey: "AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0", 
+        // 1. BASE DE DATOS NUEVA (FRAGATTAWEB) - ACTIVA PARA LA WEB
+        const firebaseConfigNew = {
+            apiKey: "AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0",
             authDomain: "fragattaweb.firebaseapp.com",
             projectId: "fragattaweb",
             storageBucket: "fragattaweb.firebasestorage.app",
@@ -34,10 +34,24 @@
             measurementId: "G-973P7Z8SN3"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // 2. BASE DE DATOS VIEJA (fragattaparfums-29064) - PUENTE DE LECTURA
+        const firebaseConfigOld = {
+            apiKey: "AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0",
+            authDomain: "fragattaparfums-29064.firebaseapp.com",
+            projectId: "fragattaparfums-29064",
+            storageBucket: "fragattaparfums-29064.firebasestorage.app",
+            messagingSenderId: "664676301597",
+            appId: "1:664676301597:web:3c704ebc6c21fd50553ff4"
+        };
 
-        window.db = db;
+        const appNew = initializeApp(firebaseConfigNew, "NEW_APP");
+        const dbNew = getFirestore(appNew);
+
+        const appOld = initializeApp(firebaseConfigOld, "OLD_APP");
+        const dbOld = getFirestore(appOld);
+
+        // Exponer la base de datos activa
+        window.db = dbNew;
         window.collection = collection;
         window.onSnapshot = onSnapshot;
         window.addDoc = addDoc;
@@ -45,6 +59,31 @@
         window.updateDoc = updateDoc;
         window.deleteDoc = deleteDoc;
         window.setDoc = setDoc;
+
+        // FUNCIÓN DEL PUENTE DE MIGRACIÓN AUTOMÁTICA
+        window.ejecutarPuenteMigracion = async function() {
+            try {
+                showToast("Leyendo productos de la base de datos anterior...");
+                const oldSnapshot = await getDocs(collection(dbOld, "products"));
+                if (oldSnapshot.empty) {
+                    alert("No se encontraron productos en la base de datos anterior.");
+                    return;
+                }
+
+                let totalCopiados = 0;
+                for (const itemDoc of oldSnapshot.docs) {
+                    const data = itemDoc.data();
+                    await addDoc(collection(dbNew, "products"), data);
+                    totalCopiados++;
+                }
+
+                alert(`¡ÉXITO TOTAL! Se han transferido ${totalCopiados} productos a tu nueva base de datos FRAGATTAWEB.`);
+                window.location.reload();
+            } catch (error) {
+                console.error("Error en la migración:", error);
+                alert("Ocurrió un detalle en la transferencia: " + error.message);
+            }
+        };
     </script>
 
     <script>
@@ -166,10 +205,10 @@
             </div>
         </section>
 
-        <!-- CARRUSEL DE PROMOCIONES (REEMPLAZO DE LA IMAGEN ÚNICA) -->
+        <!-- CARRUSEL DE PROMOCIONES -->
         <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-4 bg-slate-900">
             <div id="promo-track" class="w-full aspect-square sm:aspect-auto sm:h-64 md:h-72 relative group">
-                <!-- Aquí se inyectarán dinámicamente las promociones -->
+                <!-- Promociones inyectadas dinámicamente -->
             </div>
         </section>
 
@@ -188,6 +227,10 @@
                     <span class="text-xs text-emerald-400 font-bold"><i class="fas fa-database"></i> Firebase Conectado</span>
                 </div>
                 <div class="flex flex-wrap gap-2">
+                    <!-- BOTÓN MORADO PARA MIGRACIÓN AUTOMÁTICA -->
+                    <button onclick="ejecutarPuenteMigracion()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow border border-purple-400">
+                        <i class="fas fa-sync-alt"></i> 🚀 MIGRAR DE BASE VIEJA A NUEVA
+                    </button>
                     <button onclick="openAdminModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
                         <i class="fas fa-plus-circle"></i> + Agregar Producto
                     </button>
@@ -291,7 +334,7 @@
         </div>
     </footer>
 
-    <!-- MODAL POLÍTICAS Y GARANTÍAS DE FRAGATTAPARFUMS DESLIZABLE COMPLETO -->
+    <!-- MODAL POLÍTICAS Y GARANTÍAS DESLIZABLE COMPLETO -->
     <div id="policies-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
         <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto shadow-2xl border border-amber-100 relative text-gray-800 p-5 sm:p-7">
             
@@ -308,7 +351,6 @@
                 </h2>
             </div>
 
-            <!-- CONTENEDOR DESLIZABLE INTERNO CON TODAS LAS POLÍTICAS -->
             <div class="space-y-4 text-xs leading-relaxed text-gray-600 pr-1">
                 <p class="text-gray-700">
                     En <strong>FRAGATTAPARFUMS</strong> trabajamos para ofrecerte la máxima excelencia en perfumería fina y cosmética de alta fijación. Todas nuestras transacciones y procesos de atención se rigen bajo los parámetros del Estatuto del Consumidor en Colombia (Ley 1480 de 2011, Decreto 735 de 2013 y Ley 2439 de 2024). Ninguna disposición limita los derechos irrenunciables de nuestros clientes.
@@ -411,7 +453,7 @@
                     <p class="text-[11px]">Si pagaste de forma electrónica (Tarjetas/PSE), puedes exigir reversión si fuiste víctima de fraude, o si no recibiste el pedido, según estipula el artículo 51 de la Ley 1480.</p>
                 </div>
 
-                <!-- SECCIÓN DE ENVÍOS DESTACADA CON STICKERS -->
+                <!-- SECCIÓN DE ENVÍOS -->
                 <div class="bg-slate-900 text-white p-4 rounded-2xl space-y-3 border border-amber-500/30 mt-4">
                     <h3 class="font-bold text-amber-400 text-sm flex items-center gap-1.5 uppercase tracking-wider">
                         <span>🚚</span> Políticas de Envío y Entregas
@@ -764,7 +806,6 @@
         let promoSlides = [];
         let timerInterval;
         
-        // Variables para el Carrusel
         let currentPromoIndex = 0;
         let carouselInterval = null;
 
@@ -780,7 +821,6 @@
         const ADMIN_PASSWORD = "J.p12022013";
         let WHATSAPP_NUMBER = "573105390115";
         
-        // CLAVES DE WOMPI INTEGRADAS
         const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYwPw5VP27yidk0s1ULSHh6";
         const WOMPI_INTEGRITY_SECRET = "prod_integrity_9QPykHUQT2g8dTwNJzrKraJAABsNGReM"; 
 
@@ -887,7 +927,6 @@
             }
         }
 
-        // LÓGICA DEL CARRUSEL DE PROMOCIONES
         function renderPromos() {
             const track = document.getElementById('promo-track');
             if (promoSlides.length === 0) {
@@ -977,7 +1016,6 @@
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 const now = Date.now();
-                // Iterar sobre TODAS las diapositivas
                 promoSlides.forEach(slide => {
                     if (slide.hasTimer && slide.endTime) {
                         const diff = Math.max(0, slide.endTime - now);
@@ -1002,7 +1040,6 @@
             }, 1000);
         }
 
-        // LÓGICA PARA INTERCALAR DAR PRIORIDAD A LO NUEVO, TOP VIRAL Y OFERTAS EN LA PÁGINA PRINCIPAL
         function interleaveProducts(items) {
             const nuevos = items.filter(p => p.priority === 'LO NUEVO');
             const virales = items.filter(p => p.priority === 'TOP VIRAL');
@@ -1051,7 +1088,6 @@
                 return matchesCat && matchesPrio && matchesGender && matchesSearch;
             });
 
-            // Aplicar ordenación o intercalado prioritario según el filtro
             if (sortVal === 'price-asc') {
                 filtered.sort((a, b) => a.price - b.price);
             } else if (sortVal === 'price-desc') {
@@ -1059,7 +1095,6 @@
             } else if (sortVal === 'name') {
                 filtered.sort((a, b) => a.title.localeCompare(b.title));
             } else if (currentPriority === 'Todas') {
-                // Si la prioridad es 'Todas', intercalar dando prioridad principal a LO NUEVO y TOP VIRAL
                 filtered = interleaveProducts(filtered);
             }
 
@@ -1074,7 +1109,6 @@
             grid.innerHTML = filtered.map(p => {
                 const notesList = p.notes ? p.notes.split(',').slice(0, 3).map(n => `<span class="inline-flex items-center gap-1 text-[10px] text-gray-500 mr-1.5"><i class="fas fa-glass-martini-alt text-[8px] text-amber-500"></i>${n.trim()}</span>`).join('') : '';
 
-                // Definir las insignias visuales dinámicas (LO NUEVO / TOP VIRAL / OFERTA)
                 let badgeHTML = '';
                 if (p.priority === 'LO NUEVO') {
                     badgeHTML = `<span class="bg-amber-500 text-slate-900 font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">🔥 LO NUEVO</span>`;
@@ -1554,7 +1588,6 @@
             }
         }
 
-        // FUNCIONES ADMIN: CARRUSEL DE PROMOS
         function closePromoModal() { document.getElementById('promo-modal').classList.add('hidden'); }
         
         function addNewPromo() {
@@ -1640,7 +1673,6 @@
             }
         }
         
-        // FUNCIONES ADMIN: REDES, LOGO, BANNER
         async function promptSocialLinks() {
             const ig = prompt("URL de Instagram (deja vacío para no cambiar):", document.getElementById('link-instagram').href);
             const wa = prompt("Número de WhatsApp sin el '+' (Ej: 573105390115):", WHATSAPP_NUMBER);
