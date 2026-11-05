@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Fragancias</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0",
+            authDomain: "fragattaparfums-29064.firebaseapp.com",
+            projectId: "fragattaparfums-29064",
+            storageBucket: "fragattaparfums-29064.firebasestorage.app",
+            messagingSenderId: "664676301597",
+            appId: "1:664676301597:web:3c704ebc6c21fd50553ff4",
+            measurementId: "G-973P7Z8SN3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.collection = collection;
+        window.onSnapshot = onSnapshot;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
+    </script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'luxury-dark': '#111315',
+                        'luxury-gold': '#d4af37',
+                    },
+                    fontFamily: {
+                        serif: ['Cinzel', 'serif'],
+                        sans: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #f6f7f9; color: #1f2937; }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        ::-webkit-scrollbar { height: 4px; width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased bg-[#f6f7f9]">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header Minimalista: Solo Título y Carrito -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+            <h1 class="font-cinzel text-base sm:text-xl font-bold text-gray-900 tracking-wider uppercase">Catálogo de Perfumes</h1>
+
+            <div class="flex items-center gap-3">
+                <button id="admin-lock-btn" onclick="handleAdminToggle()" title="Acceso Admin" class="text-gray-400 hover:text-amber-500 transition p-1 text-sm">
+                    <i id="admin-lock-icon" class="fas fa-lock"></i>
+                </button>
+                <button onclick="toggleCartModal()" class="bg-luxury-dark hover:bg-black text-white px-3.5 py-1.5 rounded-full font-semibold text-xs flex items-center gap-2 border border-luxury-gold transition shadow">
+                    <i class="fas fa-shopping-cart text-amber-400 text-xs"></i>
+                    <span id="cart-badge" class="bg-amber-500 text-black text-[10px] w-5 h-5 rounded-full font-bold flex items-center justify-center">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Barra de Estado Admin (Solo visible en Modo Admin) -->
+    <div id="admin-banner" class="hidden bg-luxury-dark text-amber-400 text-xs py-2 px-4 border-b border-amber-500/30">
+        <div class="max-w-7xl mx-auto flex items-center justify-between font-bold">
+            <span><i class="fas fa-user-shield mr-1.5"></i> MODO ADMIN ACTIVO: Haz clic en "Ocultar" o "Activar" en cada producto para controlar su visibilidad global.</span>
+            <button onclick="toggleInactiveView(this)" id="btn-view-inactive" class="bg-amber-500 text-black px-2.5 py-0.5 rounded text-[11px] font-extrabold hover:bg-amber-400">
+                Ver Inactivos
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+
+        <!-- Filtros -->
+        <section class="bg-white p-3.5 sm:p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 space-y-3.5">
+            <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
+                <div class="relative w-full sm:w-72 flex-shrink-0">
+                    <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    <input type="text" id="search-input" oninput="applyFilters()" placeholder="Buscar fragancia, marca..." class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white transition">
+                </div>
+
+                <div class="flex items-center gap-1.5 text-xs font-bold ml-auto sm:ml-0 flex-shrink-0">
+                    <button onclick="setPriorityFilter('LO NUEVO', this)" id="prio-btn-nuevo" class="prio-btn bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-400 hover:text-white px-3 py-1.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap shadow-sm">
+                        <i class="fas fa-fire text-amber-500"></i> 🔥 LO NUEVO
+                    </button>
+                    <button onclick="setPriorityFilter('TOP VIRAL', this)" id="prio-btn-viral" class="prio-btn bg-yellow-50 text-yellow-900 border border-yellow-300 hover:bg-yellow-400 px-3 py-1.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap shadow-sm">
+                        <i class="fas fa-bolt text-yellow-600"></i> ⚡ TOP VIRAL
+                    </button>
+                </div>
+            </div>
+
+            <!-- Categorías -->
+            <div class="pt-2 border-t border-gray-100 flex items-center gap-1.5 overflow-x-auto text-xs hide-scrollbar">
+                <span class="font-bold text-gray-400 uppercase text-[10px] tracking-wider whitespace-nowrap mr-1">CATEGORÍAS:</span>
+                <button onclick="setCategoryFilter('Todas', this)" class="cat-btn ring-2 ring-offset-2 ring-luxury-dark bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Todas</button>
+                <button onclick="setCategoryFilter('Árabe', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Árabe</button>
+                <button onclick="setCategoryFilter('Diseñador', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Diseñador</button>
+                <button onclick="setCategoryFilter('Nicho', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Nicho</button>
+                <button onclick="setCategoryFilter('Body Spray', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Body Spray</button>
+                <button onclick="setCategoryFilter('Kids', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Kids</button>
+                <button onclick="setCategoryFilter('Emprendedores', this)" class="cat-btn bg-amber-100 border border-amber-300 hover:bg-amber-200 text-amber-900 font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Emprendedores 🚀</button>
+                <button onclick="setCategoryFilter('Promociones', this)" class="cat-btn bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Promociones 🏷️</button>
+            </div>
+
+            <div class="pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-gray-700 uppercase text-[10px] tracking-wider">GÉNERO:</span>
+                    <div class="flex items-center gap-1">
+                        <button onclick="setGenderFilter('Todos', this)" class="gender-btn ring-2 ring-offset-2 ring-luxury-dark bg-luxury-dark text-white px-3 py-1 rounded-md font-medium transition text-xs">Todos</button>
+                        <button onclick="setGenderFilter('Hombre', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">👨 Hombre</button>
+                        <button onclick="setGenderFilter('Mujer', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">👩 Mujer</button>
+                        <button onclick="setGenderFilter('Unisex', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">✨ Unisex</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 ml-auto">
+                    <label for="sort-select" class="text-xs text-gray-500 font-medium">Ordenar por:</label>
+                    <select id="sort-select" onchange="applyFilters()" class="bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-amber-400">
+                        <option value="featured">🔥 Prioridad</option>
+                        <option value="price-asc">Precio: Menor a Mayor</option>
+                        <option value="price-desc">Precio: Mayor a Menor</option>
+                        <option value="name">Nombre (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rejilla de Productos -->
+        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
+            <div class="col-span-full text-center py-12 text-gray-500 text-sm">
+                <i class="fas fa-spinner fa-spin text-amber-500 text-2xl mb-2"></i>
+                <p>Cargando productos...</p>
+            </div>
+        </div>
+
+        <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-gray-300">
+            <i class="fas fa-search-minus text-4xl text-gray-300 mb-3"></i>
+            <h3 class="font-cinzel text-lg font-bold text-gray-700">No se encontraron fragancias</h3>
+            <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Restablecer Filtros</button>
+        </div>
+
+    </main>
+
+    <!-- Footer Simple -->
+    <footer class="bg-luxury-dark text-gray-400 text-xs py-6 border-t border-gray-800 mt-12 text-center">
+        <p class="text-[11px]">© 2026 Catálogo de Perfumería Fina. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- MODAL DETALLE PRODUCTO -->
+    <div id="detail-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-gray-100 relative text-gray-800">
+            <button onclick="closeDetailModal()" class="absolute top-3 right-3 bg-white/80 hover:bg-white text-gray-700 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition z-20 border border-gray-200">
+                <i class="fas fa-times text-base"></i>
+            </button>
+            <div id="detail-content"></div>
+        </div>
+    </div>
+
+    <!-- MODAL CARRITO & CHECKOUT (WhatsApp) -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-end hidden">
+        <div class="bg-white w-full max-w-lg h-full flex flex-col shadow-2xl relative">
+            
+            <div class="p-4 bg-luxury-dark text-white flex items-center justify-between border-b border-luxury-gold/40">
+                <div class="flex items-center gap-3">
+                    <div id="step-indicator-1" class="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+                        <span class="w-5 h-5 rounded-full bg-amber-400 text-slate-900 flex items-center justify-center text-[10px]">1</span> Carrito
+                    </div>
+                    <i class="fas fa-chevron-right text-[10px] text-gray-600"></i>
+                    <div id="step-indicator-2" class="flex items-center gap-1.5 text-xs font-medium text-gray-400">
+                        <span class="w-5 h-5 rounded-full bg-gray-800 text-gray-400 flex items-center justify-center text-[10px]">2</span> Datos y Pedido
+                    </div>
+                </div>
+                <button onclick="toggleCartModal()" class="text-gray-400 hover:text-white text-lg"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- PASO 1: SELECCIÓN -->
+            <div id="checkout-step-1" class="flex-grow overflow-y-auto p-4 flex flex-col justify-between">
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Productos Seleccionados</h4>
+                    <div id="cart-items" class="space-y-3"></div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-200 bg-gray-50 p-4 rounded-xl space-y-2 mt-4">
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Total sin descuento:</span>
+                        <span id="step1-original-total" class="line-through font-medium text-gray-400">$0</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-amber-600 font-semibold">
+                        <span>Descuentos aplicados:</span>
+                        <span id="step1-discount-total">-$0</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-bold text-gray-900 pt-2 border-t border-gray-200">
+                        <span>Subtotal:</span>
+                        <span id="step1-final-subtotal" class="text-amber-600 text-base">$0</span>
+                    </div>
+
+                    <button onclick="goToStep2()" id="btn-to-step2" class="w-full mt-3 bg-luxury-dark hover:bg-black text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-md">
+                        <span>Continuar a Finalizar</span> <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PASO 2: FORMULARIO Y ENVÍO A WHATSAPP -->
+            <div id="checkout-step-2" class="flex-grow overflow-y-auto p-4 hidden flex-col justify-between space-y-4">
+                <div>
+                    <button onclick="goToStep1()" class="inline-flex items-center text-xs font-bold text-amber-700 hover:underline mb-3">
+                        <i class="fas fa-arrow-left mr-1"></i> Volver a la lista
+                    </button>
+
+                    <form id="shipping-form" onsubmit="event.preventDefault();" class="space-y-3 text-xs">
+                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider border-b pb-1">
+                            Información del Cliente
+                        </h4>
+                        <div>
+                            <label class="block font-semibold text-gray-700 mb-0.5">Nombre Completo *</label>
+                            <input type="text" id="ship-name" required placeholder="Ej: Juan Pérez" class="w-full p-2 border border-gray-300 rounded-lg">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block font-semibold text-gray-700 mb-0.5">Teléfono *</label>
+                                <input type="tel" id="ship-phone" required placeholder="3105390115" class="w-full p-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-gray-700 mb-0.5">Ciudad *</label>
+                                <input type="text" id="ship-city" required placeholder="Ej: Medellín" class="w-full p-2 border border-gray-300 rounded-lg">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-700 mb-0.5">Dirección *</label>
+                            <input type="text" id="ship-address" required placeholder="Calle 10 # 43A - 15" class="w-full p-2 border border-gray-300 rounded-lg">
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-slate-900 text-white p-4 rounded-xl space-y-2 text-xs mt-4">
+                    <div class="flex justify-between text-sm font-bold text-white pt-1">
+                        <span>TOTAL A PAGAR:</span>
+                        <span id="final-grand-total" class="text-amber-400 text-base">$0</span>
+                    </div>
+
+                    <button onclick="processFinalOrder()" class="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-lg">
+                        <i class="fab fa-whatsapp text-sm"></i> <span>Enviar Pedido por WhatsApp</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let products = [];
+        let cart = JSON.parse(localStorage.getItem('parfums_luxury_cart')) || [];
+        let isAdmin = false;
+        let currentCategory = 'Todas';
+        let currentPriority = 'Todas';
+        let currentGender = 'Todos';
+        let showInactive = false;
+
+        const ADMIN_PASSWORD = "J.p12022013";
+        const WHATSAPP_NUMBER = "573105390115";
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const checkFirebase = setInterval(() => {
+                if (window.db) {
+                    clearInterval(checkFirebase);
+                    initFirebaseListener();
+                }
+            }, 200);
+
+            updateCartUI();
+        });
+
+        function initFirebaseListener() {
+            const productsRef = window.collection(window.db, "products");
+            window.onSnapshot(productsRef, (snapshot) => {
+                products = snapshot.docs.map(docSnap => {
+                    const data = docSnap.data();
+                    return {
+                        id: docSnap.id,
+                        brand: data.brand || 'LUXURY',
+                        title: data.name || data.title || 'FRAGANCIA',
+                        gender: data.gender || 'Unisex',
+                        category: data.category || 'Árabe',
+                        price: Number(data.price) || 0,
+                        oldPrice: data.originalPrice ? Number(data.originalPrice) : (data.oldPrice ? Number(data.oldPrice) : null),
+                        priority: data.featured ? 'TOP VIRAL' : (data.priority || 'NINGUNA'),
+                        image: data.image || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
+                        notes: data.notes || '',
+                        description: data.description || '',
+                        isActive: data.isActive !== false
+                    };
+                });
+                renderProducts();
+            });
+        }
+
+        function interleaveProducts(items) {
+            const nuevos = items.filter(p => p.priority === 'LO NUEVO');
+            const virales = items.filter(p => p.priority === 'TOP VIRAL');
+            const ofertas = items.filter(p => p.oldPrice && p.priority !== 'LO NUEVO' && p.priority !== 'TOP VIRAL');
+            const otros = items.filter(p => p.priority !== 'LO NUEVO' && p.priority !== 'TOP VIRAL' && !p.oldPrice);
+
+            const result = [];
+            const maxLength = Math.max(nuevos.length, virales.length, ofertas.length);
+
+            for (let i = 0; i < maxLength; i++) {
+                if (i < nuevos.length) result.push(nuevos[i]);
+                if (i < virales.length) result.push(virales[i]);
+                if (i < ofertas.length) result.push(ofertas[i]);
+            }
+
+            return [...result, ...otros];
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            const emptyState = document.getElementById('empty-state');
+            const searchVal = document.getElementById('search-input').value;
+            const sortVal = document.getElementById('sort-select').value;
+
+            let filtered = products.filter(p => {
+                if (showInactive) {
+                    if (p.isActive) return false;
+                } else {
+                    if (!p.isActive) return false;
+                }
+
+                const isEmprendedores = p.category.toLowerCase() === 'emprendedores';
+                let matchesCat = (currentCategory === 'Todas') ? !isEmprendedores : (p.category.toLowerCase() === currentCategory.toLowerCase());
+                const matchesPrio = (currentPriority === 'Todas') || p.priority === currentPriority;
+                const matchesGender = (currentGender === 'Todos') || p.gender === currentGender;
+                
+                const normalize = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                const searchTerms = normalize(searchVal).split(' ').filter(t => t);
+
+                const matchesSearch = searchTerms.length === 0 || searchTerms.every(term => 
+                    normalize(p.title).includes(term) || 
+                    normalize(p.brand).includes(term) || 
+                    normalize(p.notes).includes(term)
+                );
+
+                return matchesCat && matchesPrio && matchesGender && matchesSearch;
+            });
+
+            if (sortVal === 'price-asc') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sortVal === 'price-desc') {
+                filtered.sort((a, b) => b.price - a.price);
+            } else if (sortVal === 'name') {
+                filtered.sort((a, b) => a.title.localeCompare(b.title));
+            } else if (currentPriority === 'Todas') {
+                filtered = interleaveProducts(filtered);
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(p => {
+                const notesList = p.notes ? p.notes.split(',').slice(0, 3).map(n => `<span class="inline-flex items-center gap-1 text-[10px] text-gray-500 mr-1.5"><i class="fas fa-glass-martini-alt text-[8px] text-amber-500"></i>${n.trim()}</span>`).join('') : '';
+
+                let badgeHTML = '';
+                if (p.priority === 'LO NUEVO') {
+                    badgeHTML = `<span class="bg-amber-500 text-slate-900 font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">🔥 LO NUEVO</span>`;
+                } else if (p.priority === 'TOP VIRAL') {
+                    badgeHTML = `<span class="bg-yellow-400 text-slate-900 font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">⚡ TOP VIRAL</span>`;
+                } else if (p.oldPrice) {
+                    badgeHTML = `<span class="bg-rose-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">OFERTA</span>`;
+                }
+
+                return `
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group p-2.5 sm:p-4">
+                    <div class="cursor-pointer" onclick="openDetailModal('${p.id}')">
+                        <div class="relative w-full h-36 sm:h-48 overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center mb-2">
+                            ${badgeHTML ? `<div class="absolute top-2 left-2 z-10">${badgeHTML}</div>` : ''}
+                            <img src="${p.image}" alt="${p.title}" class="object-cover h-full w-full group-hover:scale-105 transition duration-500">
+                        </div>
+
+                        <span class="text-[10px] font-bold text-amber-600 block uppercase tracking-wider mb-0.5">${p.brand}</span>
+                        <h3 class="font-cinzel font-bold text-xs sm:text-sm text-gray-900 tracking-tight uppercase group-hover:text-amber-600 transition leading-tight mb-1 line-clamp-1">${p.title}</h3>
+
+                        <div class="flex flex-wrap items-center mb-1.5 min-h-[20px]">${notesList}</div>
+                        <p class="text-[10px] sm:text-[11px] text-gray-400 line-clamp-1 mb-2 font-normal">${p.description || 'Fragancia exclusiva.'}</p>
+
+                        <div class="flex items-baseline gap-1.5 mb-2">
+                            ${p.oldPrice ? `<span class="text-[10px] sm:text-xs text-gray-400 line-through font-normal">${formatPrice(p.oldPrice)}</span>` : ''}
+                            <span class="text-sm sm:text-base font-extrabold text-rose-600">${formatPrice(p.price)}</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5 pt-2 border-t border-gray-100">
+                        <button onclick="addToCart('${p.id}')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-semibold py-2 rounded-xl transition">+ Carrito</button>
+
+                        ${isAdmin ? `
+                        <div class="pt-1.5 border-t border-gray-100">
+                            <button onclick="toggleProductActive('${p.id}', ${p.isActive})" class="w-full text-[10px] ${p.isActive ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'} font-bold py-1.5 rounded transition">
+                                ${p.isActive ? '👁️ Ocultar Producto' : '✅ Activar Producto'}
+                            </button>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        async function toggleProductActive(id, currentState) {
+            try {
+                await window.updateDoc(window.doc(window.db, "products", id), {
+                    isActive: !currentState
+                });
+                showToast(currentState ? "Producto ocultado en ambas páginas" : "Producto activado en ambas páginas");
+            } catch(err) {
+                alert("Error al cambiar estado: " + err.message);
+            }
+        }
+
+        function handleAdminToggle() {
+            if (isAdmin) {
+                isAdmin = false;
+                document.getElementById('admin-banner').classList.add('hidden');
+                document.getElementById('admin-lock-icon').className = 'fas fa-lock';
+                showInactive = false;
+                showToast("Sesión Admin cerrada");
+            } else {
+                const pass = prompt("Ingrese contraseña de Administrador:");
+                if (pass === ADMIN_PASSWORD) {
+                    isAdmin = true;
+                    document.getElementById('admin-banner').classList.remove('hidden');
+                    document.getElementById('admin-lock-icon').className = 'fas fa-unlock text-amber-500';
+                    showToast("Modo Admin Activado (Solo Activar/Ocultar)");
+                }
+            }
+            renderProducts();
+        }
+
+        function toggleInactiveView(btn) {
+            showInactive = !showInactive;
+            btn.innerText = showInactive ? "Ver Activos" : "Ver Inactivos";
+            renderProducts();
+        }
+
+        function addToCart(id) {
+            const prod = products.find(p => p.id === id);
+            if (!prod) return;
+            const existing = cart.find(i => i.id === id);
+            if (existing) existing.quantity += 1;
+            else cart.push({ ...prod, quantity: 1 });
+            saveCart();
+            updateCartUI();
+            showToast(`Añadido al carrito`);
+        }
+
+        function saveCart() { localStorage.setItem('parfums_luxury_cart', JSON.stringify(cart)); }
+
+        function updateCartUI() {
+            document.getElementById('cart-badge').innerText = cart.reduce((s, i) => s + i.quantity, 0);
+            const container = document.getElementById('cart-items');
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">Tu carrito está vacío.</p>`;
+                document.getElementById('step1-original-total').innerText = '$0';
+                document.getElementById('step1-discount-total').innerText = '-$0';
+                document.getElementById('step1-final-subtotal').innerText = '$0';
+                return;
+            }
+
+            let originalTotal = 0;
+            let finalSubtotal = 0;
+
+            container.innerHTML = cart.map(item => {
+                const itemOriginal = (item.oldPrice || item.price) * item.quantity;
+                const itemFinal = item.price * item.quantity;
+
+                originalTotal += itemOriginal;
+                finalSubtotal += itemFinal;
+
+                return `
+                    <div class="flex items-center gap-3 text-xs py-2 border-b">
+                        <img src="${item.image}" class="w-10 h-10 object-cover rounded-lg">
+                        <div class="flex-grow">
+                            <div class="font-bold text-gray-800">${item.title}</div>
+                            <div class="text-rose-600 font-bold">${formatPrice(item.price)}</div>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="updateCartQuantity('${item.id}', -1)" class="w-5 h-5 bg-gray-200 rounded font-bold">-</button>
+                            <span class="px-1">${item.quantity}</span>
+                            <button onclick="updateCartQuantity('${item.id}', 1)" class="w-5 h-5 bg-gray-200 rounded font-bold">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const discount = originalTotal - finalSubtotal;
+            document.getElementById('step1-original-total').innerText = formatPrice(originalTotal);
+            document.getElementById('step1-discount-total').innerText = `-${formatPrice(discount)}`;
+            document.getElementById('step1-final-subtotal').innerText = formatPrice(finalSubtotal);
+            document.getElementById('final-grand-total').innerText = formatPrice(finalSubtotal);
+        }
+
+        function updateCartQuantity(id, change) {
+            const item = cart.find(i => i.id === id);
+            if (!item) return;
+            item.quantity += change;
+            if (item.quantity <= 0) cart = cart.filter(i => i.id !== id);
+            saveCart();
+            updateCartUI();
+        }
+
+        function toggleCartModal() { document.getElementById('cart-modal').classList.toggle('hidden'); goToStep1(); }
+        function goToStep1() {
+            document.getElementById('checkout-step-1').classList.remove('hidden');
+            document.getElementById('checkout-step-2').classList.add('hidden');
+        }
+
+        function goToStep2() {
+            if (cart.length === 0) return alert("Tu carrito está vacío");
+            document.getElementById('checkout-step-1').classList.add('hidden');
+            document.getElementById('checkout-step-2').classList.remove('hidden');
+        }
+
+        function processFinalOrder() {
+            const name = document.getElementById('ship-name').value.trim();
+            const phone = document.getElementById('ship-phone').value.trim();
+            const city = document.getElementById('ship-city').value.trim();
+            const address = document.getElementById('ship-address').value.trim();
+
+            if (!name || !phone || !city || !address) {
+                return alert("Por favor completa todos los datos.");
+            }
+
+            const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+
+            let msg = `*NUEVO PEDIDO DE CATÁLOGO*\n\n`;
+            msg += `*DATOS DE ENVÍO:*\n`;
+            msg += `• Nombre: ${name}\n• Teléfono: ${phone}\n• Ciudad: ${city}\n• Dirección: ${address}\n\n`;
+            msg += `*PRODUCTOS SOLICITADOS:*\n`;
+            cart.forEach(i => { msg += `• ${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
+            msg += `\n*TOTAL:* ${formatPrice(subtotal)}`;
+
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+            toggleCartModal();
+            cart = []; saveCart(); updateCartUI();
+        }
+
+        function setCategoryFilter(cat, btn = null) { 
+            currentCategory = cat; 
+            if(btn) {
+                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark'));
+                btn.classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
+            }
+            renderProducts(); 
+        }
+
+        function setPriorityFilter(prio, btn = null) { 
+            currentPriority = (currentPriority === prio) ? 'Todas' : prio; 
+            document.querySelectorAll('.prio-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-amber-500'));
+            if(btn && currentPriority !== 'Todas') btn.classList.add('ring-2', 'ring-offset-2', 'ring-amber-500');
+            renderProducts(); 
+        }
+
+        function setGenderFilter(gen, btn = null) { 
+            currentGender = gen; 
+            if(btn) {
+                document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark'));
+                btn.classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
+            }
+            renderProducts(); 
+        }
+
+        function resetFilters() { 
+            currentCategory = 'Todas'; 
+            currentPriority = 'Todas'; 
+            currentGender = 'Todos'; 
+            showInactive = false;
+            document.getElementById('search-input').value = ''; 
+            document.querySelectorAll('.cat-btn, .prio-btn, .gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark', 'ring-amber-500'));
+            renderProducts(); 
+        }
+
+        function applyFilters() { renderProducts(); }
+        function formatPrice(amt) { return '$' + Number(amt).toLocaleString('es-CO'); }
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold border border-amber-500/30 shadow-lg`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        function openDetailModal(id) {
+            const p = products.find(prod => prod.id === id);
+            if (!p) return;
+            
+            const detailContent = document.getElementById('detail-content');
+            const notesList = p.notes ? p.notes.split(',').map(n => `<span class="inline-flex items-center gap-1 text-[11px] text-gray-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-100"><i class="fas fa-leaf text-amber-500"></i>${n.trim()}</span>`).join('') : '';
+
+            detailContent.innerHTML = `
+                <div class="relative w-full h-64 sm:h-80 bg-gray-50 rounded-t-3xl overflow-hidden flex justify-center items-center">
+                    <img src="${p.image}" alt="${p.title}" class="object-cover h-full w-full">
+                    ${p.oldPrice ? `<div class="absolute top-4 left-4 z-10"><span class="bg-rose-600 text-white font-extrabold text-xs px-3 py-1 rounded-full shadow">OFERTA</span></div>` : ''}
+                </div>
+                <div class="p-5 sm:p-7 space-y-4">
+                    <div>
+                        <span class="text-xs font-bold text-amber-600 block uppercase tracking-wider mb-1">${p.brand}</span>
+                        <h2 class="font-cinzel font-bold text-xl sm:text-2xl text-gray-900 tracking-tight uppercase leading-tight">${p.title}</h2>
+                    </div>
+                    
+                    <div class="flex items-baseline gap-2">
+                        ${p.oldPrice ? `<span class="text-sm text-gray-400 line-through font-normal">${formatPrice(p.oldPrice)}</span>` : ''}
+                        <span class="text-2xl font-extrabold text-rose-600">${formatPrice(p.price)}</span>
+                    </div>
+
+                    ${notesList ? `<div class="flex flex-wrap gap-1.5 pt-2">${notesList}</div>` : ''}
+                    
+                    <div class="pt-2">
+                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-1.5">Descripción</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">${p.description || 'Fragancia exclusiva de alta calidad.'}</p>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100 mt-4">
+                        <button onclick="addToCart('${p.id}'); closeDetailModal();" class="w-full bg-luxury-dark hover:bg-black text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg">
+                            <i class="fas fa-shopping-cart text-amber-400"></i> Añadir al Carrito - ${formatPrice(p.price)}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
+    </script>
+</body>
+</html>
