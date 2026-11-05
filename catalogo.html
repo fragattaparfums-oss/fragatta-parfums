@@ -145,8 +145,6 @@
                     <label for="sort-select" class="text-xs text-gray-500 font-medium">Ordenar por:</label>
                     <select id="sort-select" onchange="applyFilters()" class="bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-amber-400">
                         <option value="featured">🔥 Prioridad</option>
-                        <option value="price-asc">Precio: Menor a Mayor</option>
-                        <option value="price-desc">Precio: Mayor a Menor</option>
                         <option value="name">Nombre (A-Z)</option>
                     </select>
                 </div>
@@ -209,19 +207,6 @@
                 </div>
 
                 <div class="pt-4 border-t border-gray-200 bg-gray-50 p-4 rounded-xl space-y-2 mt-4">
-                    <div class="flex justify-between text-xs text-gray-500">
-                        <span>Total sin descuento:</span>
-                        <span id="step1-original-total" class="line-through font-medium text-gray-400">$0</span>
-                    </div>
-                    <div class="flex justify-between text-xs text-amber-600 font-semibold">
-                        <span>Descuentos aplicados:</span>
-                        <span id="step1-discount-total">-$0</span>
-                    </div>
-                    <div class="flex justify-between text-sm font-bold text-gray-900 pt-2 border-t border-gray-200">
-                        <span>Subtotal:</span>
-                        <span id="step1-final-subtotal" class="text-amber-600 text-base">$0</span>
-                    </div>
-
                     <button onclick="goToStep2()" id="btn-to-step2" class="w-full mt-3 bg-luxury-dark hover:bg-black text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-md">
                         <span>Continuar a Finalizar</span> <i class="fas fa-arrow-right"></i>
                     </button>
@@ -261,11 +246,6 @@
                 </div>
 
                 <div class="bg-slate-900 text-white p-4 rounded-xl space-y-2 text-xs mt-4">
-                    <div class="flex justify-between text-sm font-bold text-white pt-1">
-                        <span>TOTAL A PAGAR:</span>
-                        <span id="final-grand-total" class="text-amber-400 text-base">$0</span>
-                    </div>
-
                     <button onclick="processFinalOrder()" class="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-lg">
                         <i class="fab fa-whatsapp text-sm"></i> <span>Enviar Pedido por WhatsApp</span>
                     </button>
@@ -308,8 +288,6 @@
                         title: data.name || data.title || 'FRAGANCIA',
                         gender: data.gender || 'Unisex',
                         category: data.category || 'Árabe',
-                        price: Number(data.price) || 0,
-                        oldPrice: data.originalPrice ? Number(data.originalPrice) : (data.oldPrice ? Number(data.oldPrice) : null),
                         priority: data.featured ? 'TOP VIRAL' : (data.priority || 'NINGUNA'),
                         image: data.image || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
                         notes: data.notes || '',
@@ -324,16 +302,14 @@
         function interleaveProducts(items) {
             const nuevos = items.filter(p => p.priority === 'LO NUEVO');
             const virales = items.filter(p => p.priority === 'TOP VIRAL');
-            const ofertas = items.filter(p => p.oldPrice && p.priority !== 'LO NUEVO' && p.priority !== 'TOP VIRAL');
-            const otros = items.filter(p => p.priority !== 'LO NUEVO' && p.priority !== 'TOP VIRAL' && !p.oldPrice);
+            const otros = items.filter(p => p.priority !== 'LO NUEVO' && p.priority !== 'TOP VIRAL');
 
             const result = [];
-            const maxLength = Math.max(nuevos.length, virales.length, ofertas.length);
+            const maxLength = Math.max(nuevos.length, virales.length);
 
             for (let i = 0; i < maxLength; i++) {
                 if (i < nuevos.length) result.push(nuevos[i]);
                 if (i < virales.length) result.push(virales[i]);
-                if (i < ofertas.length) result.push(ofertas[i]);
             }
 
             return [...result, ...otros];
@@ -369,11 +345,7 @@
                 return matchesCat && matchesPrio && matchesGender && matchesSearch;
             });
 
-            if (sortVal === 'price-asc') {
-                filtered.sort((a, b) => a.price - b.price);
-            } else if (sortVal === 'price-desc') {
-                filtered.sort((a, b) => b.price - a.price);
-            } else if (sortVal === 'name') {
+            if (sortVal === 'name') {
                 filtered.sort((a, b) => a.title.localeCompare(b.title));
             } else if (currentPriority === 'Todas') {
                 filtered = interleaveProducts(filtered);
@@ -395,8 +367,6 @@
                     badgeHTML = `<span class="bg-amber-500 text-slate-900 font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">🔥 LO NUEVO</span>`;
                 } else if (p.priority === 'TOP VIRAL') {
                     badgeHTML = `<span class="bg-yellow-400 text-slate-900 font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">⚡ TOP VIRAL</span>`;
-                } else if (p.oldPrice) {
-                    badgeHTML = `<span class="bg-rose-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">OFERTA</span>`;
                 }
 
                 return `
@@ -412,11 +382,6 @@
 
                         <div class="flex flex-wrap items-center mb-1.5 min-h-[20px]">${notesList}</div>
                         <p class="text-[10px] sm:text-[11px] text-gray-400 line-clamp-1 mb-2 font-normal">${p.description || 'Fragancia exclusiva.'}</p>
-
-                        <div class="flex items-baseline gap-1.5 mb-2">
-                            ${p.oldPrice ? `<span class="text-[10px] sm:text-xs text-gray-400 line-through font-normal">${formatPrice(p.oldPrice)}</span>` : ''}
-                            <span class="text-sm sm:text-base font-extrabold text-rose-600">${formatPrice(p.price)}</span>
-                        </div>
                     </div>
 
                     <div class="space-y-1.5 pt-2 border-t border-gray-100">
@@ -490,28 +455,15 @@
 
             if (cart.length === 0) {
                 container.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">Tu carrito está vacío.</p>`;
-                document.getElementById('step1-original-total').innerText = '$0';
-                document.getElementById('step1-discount-total').innerText = '-$0';
-                document.getElementById('step1-final-subtotal').innerText = '$0';
                 return;
             }
 
-            let originalTotal = 0;
-            let finalSubtotal = 0;
-
             container.innerHTML = cart.map(item => {
-                const itemOriginal = (item.oldPrice || item.price) * item.quantity;
-                const itemFinal = item.price * item.quantity;
-
-                originalTotal += itemOriginal;
-                finalSubtotal += itemFinal;
-
                 return `
                     <div class="flex items-center gap-3 text-xs py-2 border-b">
                         <img src="${item.image}" class="w-10 h-10 object-cover rounded-lg">
                         <div class="flex-grow">
                             <div class="font-bold text-gray-800">${item.title}</div>
-                            <div class="text-rose-600 font-bold">${formatPrice(item.price)}</div>
                         </div>
                         <div class="flex items-center gap-1">
                             <button onclick="updateCartQuantity('${item.id}', -1)" class="w-5 h-5 bg-gray-200 rounded font-bold">-</button>
@@ -521,12 +473,6 @@
                     </div>
                 `;
             }).join('');
-
-            const discount = originalTotal - finalSubtotal;
-            document.getElementById('step1-original-total').innerText = formatPrice(originalTotal);
-            document.getElementById('step1-discount-total').innerText = `-${formatPrice(discount)}`;
-            document.getElementById('step1-final-subtotal').innerText = formatPrice(finalSubtotal);
-            document.getElementById('final-grand-total').innerText = formatPrice(finalSubtotal);
         }
 
         function updateCartQuantity(id, change) {
@@ -560,14 +506,11 @@
                 return alert("Por favor completa todos los datos.");
             }
 
-            const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-
             let msg = `*NUEVO PEDIDO DE CATÁLOGO*\n\n`;
             msg += `*DATOS DE ENVÍO:*\n`;
             msg += `• Nombre: ${name}\n• Teléfono: ${phone}\n• Ciudad: ${city}\n• Dirección: ${address}\n\n`;
             msg += `*PRODUCTOS SOLICITADOS:*\n`;
-            cart.forEach(i => { msg += `• ${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
-            msg += `\n*TOTAL:* ${formatPrice(subtotal)}`;
+            cart.forEach(i => { msg += `• ${i.title} x${i.quantity}\n`; });
 
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
             toggleCartModal();
@@ -610,7 +553,6 @@
         }
 
         function applyFilters() { renderProducts(); }
-        function formatPrice(amt) { return '$' + Number(amt).toLocaleString('es-CO'); }
 
         function showToast(msg) {
             const container = document.getElementById('toast-container');
@@ -631,17 +573,11 @@
             detailContent.innerHTML = `
                 <div class="relative w-full h-64 sm:h-80 bg-gray-50 rounded-t-3xl overflow-hidden flex justify-center items-center">
                     <img src="${p.image}" alt="${p.title}" class="object-cover h-full w-full">
-                    ${p.oldPrice ? `<div class="absolute top-4 left-4 z-10"><span class="bg-rose-600 text-white font-extrabold text-xs px-3 py-1 rounded-full shadow">OFERTA</span></div>` : ''}
                 </div>
                 <div class="p-5 sm:p-7 space-y-4">
                     <div>
                         <span class="text-xs font-bold text-amber-600 block uppercase tracking-wider mb-1">${p.brand}</span>
                         <h2 class="font-cinzel font-bold text-xl sm:text-2xl text-gray-900 tracking-tight uppercase leading-tight">${p.title}</h2>
-                    </div>
-                    
-                    <div class="flex items-baseline gap-2">
-                        ${p.oldPrice ? `<span class="text-sm text-gray-400 line-through font-normal">${formatPrice(p.oldPrice)}</span>` : ''}
-                        <span class="text-2xl font-extrabold text-rose-600">${formatPrice(p.price)}</span>
                     </div>
 
                     ${notesList ? `<div class="flex flex-wrap gap-1.5 pt-2">${notesList}</div>` : ''}
@@ -653,7 +589,7 @@
 
                     <div class="pt-4 border-t border-gray-100 mt-4">
                         <button onclick="addToCart('${p.id}'); closeDetailModal();" class="w-full bg-luxury-dark hover:bg-black text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg">
-                            <i class="fas fa-shopping-cart text-amber-400"></i> Añadir al Carrito - ${formatPrice(p.price)}
+                            <i class="fas fa-shopping-cart text-amber-400"></i> Añadir al Carrito
                         </button>
                     </div>
                 </div>
