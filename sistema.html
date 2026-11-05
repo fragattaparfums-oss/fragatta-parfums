@@ -137,6 +137,11 @@
                         <span>Catálogo & Inventario</span>
                     </button>
 
+                    <button onclick="switchTab('wholesale')" id="nav-wholesale" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all">
+                        <i class="fa-solid fa-box-open w-4 text-center text-amber-500"></i>
+                        <span>Módulo Por Mayor</span>
+                    </button>
+
                     <button onclick="switchTab('debts')" id="nav-debts" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all">
                         <i class="fa-solid fa-hand-holding-dollar w-4 text-center"></i>
                         <span>Abonos de Clientes</span>
@@ -585,6 +590,25 @@
                         </div>
                     </div>
 
+                    <!-- CASILLA INDEPENDIENTE ADMIN: MODIFICAR STOCK GLOBAL (CATÁLOGO E INVENTARIO) -->
+                    <div class="admin-only hidden bg-gradient-to-r from-purple-900 to-indigo-900 text-white p-5 rounded-3xl shadow-lg border border-purple-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="p-3 bg-purple-600/40 rounded-2xl border border-purple-400/40 text-amber-300">
+                                <i class="fa-solid fa-cubes-stacked text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-extrabold text-sm text-white">Control Global de Stock en Nube (Modo Admin)</h4>
+                                <p class="text-xs text-purple-200">Asigna cualquier número de unidades (ej: 0, 1, 5, 10, 50) a todos los perfumes del catálogo e inventario al mismo tiempo.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <input type="number" id="admin-global-stock-input" min="0" value="10" placeholder="Cant. Stock" class="w-28 bg-slate-900 border border-purple-400/60 rounded-xl px-3 py-2 text-sm font-black text-amber-400 text-center focus:outline-none">
+                            <button onclick="applyGlobalStock()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl transition shadow-md whitespace-nowrap flex items-center gap-1.5">
+                                <i class="fa-solid fa-bolt"></i> Aplicar Stock a Todo
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row gap-3">
                         <input type="text" id="inv-search" oninput="renderInventoryTable()" placeholder="Buscar por SKU o Nombre..." class="flex-1 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500">
                         <select id="inv-filter-cat" onchange="renderInventoryTable()" class="bg-slate-50 border border-slate-200 text-slate-700 font-bold rounded-xl px-3 py-2 text-xs focus:outline-none">
@@ -614,6 +638,48 @@
                                 </tr>
                             </thead>
                             <tbody id="inventory-table-body" class="divide-y divide-slate-100 text-xs font-medium text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 6.B MÓDULO SEPARADO POR MAYOR (NUEVO SECTOR INDEPENDIENTE) -->
+                <section id="tab-wholesale" class="tab-content hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                                <i class="fa-solid fa-box-open text-amber-500"></i> Módulo Independiente Por Mayor
+                            </h2>
+                            <p class="text-xs text-slate-500 font-medium">Gestión aislada de productos al por mayor para no saturar el catálogo principal</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="duplicateAllToWholesale()" class="admin-only hidden bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs transition shadow-md flex items-center gap-2">
+                                <i class="fa-solid fa-clone"></i> ✨ Duplicar Todo el Inventario a Por Mayor
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 text-xs text-amber-900 space-y-1">
+                        <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-amber-600"></i> Protección de Precio Base Costo Fabricante:</p>
+                        <p class="text-[11px] text-amber-800">Al duplicar la mercancía, el sistema mantiene intacto tu **Precio Costo de Fabricante**. Se creará un nuevo registro en la categoría "Por Mayor" con un precio de venta al público ajustado con un 25% de descuento mayorista que puedes modificar individualmente en cualquier momento.</p>
+                    </div>
+
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <input type="text" id="wholesale-search" oninput="renderWholesaleTable()" placeholder="Buscar producto por mayor..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                    <th class="p-4">SKU</th>
+                                    <th class="p-4">Nombre Perfume (Por Mayor)</th>
+                                    <th class="p-4 admin-only-cell" style="display:none;">P. Costo Base (Fabricante)</th>
+                                    <th class="p-4">P. Venta Por Mayor</th>
+                                    <th class="p-4">Stock Disponible</th>
+                                    <th class="p-4 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="wholesale-table-body" class="divide-y divide-slate-100 text-xs font-medium text-slate-700"></tbody>
                         </table>
                     </div>
                 </section>
@@ -1180,7 +1246,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CORREGIDO Y COMPLETO -->
+    <!-- JAVASCRIPT CORREGIDO Y COMPLETO CON NUEVAS FUNCIONES DE STOCK MASIVO Y DUPLICACIÓN -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -1382,12 +1448,14 @@
                             category: data.category || "Árabes",
                             cost: isNaN(parsedCost) ? 0 : parsedCost,
                             price: isNaN(parsedPrice) ? 0 : parsedPrice,
-                            stock: isNaN(parsedStock) ? 10 : parsedStock
+                            stock: isNaN(parsedStock) ? 10 : parsedStock,
+                            items: data.items || []
                         });
                     });
                     products = cloudProds;
                     saveDataLocalOnly();
                     renderInventoryTable();
+                    renderWholesaleTable();
                     renderPosProducts();
                     updateDashboard();
                 } else {
@@ -1537,6 +1605,7 @@
             if (currentEl) currentEl.value = baseCurrent;
             
             renderInventoryTable();
+            renderWholesaleTable();
             renderTablesViews();
             renderExpensesTable();
             renderDebtsTable();
@@ -1593,6 +1662,7 @@
             renderPosProducts();
             renderCart();
             renderInventoryTable();
+            renderWholesaleTable();
             renderDebtsTable();
             renderPayablesTable();
             renderExpensesTable();
@@ -1872,6 +1942,7 @@
             renderCart();
             renderPosProducts();
             renderInventoryTable();
+            renderWholesaleTable();
             renderTablesViews();
             populateMonthFilterOptions();
             updateDashboard();
@@ -2087,6 +2158,119 @@
             return `FRAG-${nextNum}`;
         }
 
+        // FUNCIONES DE CONTROL GLOBAL Y EDICIÓN MASIVA DE STOCK
+        function applyGlobalStock() {
+            if (!isAdmin) return showToast('Desbloquea el Modo Admin', 'error');
+            const stockInput = document.getElementById('admin-global-stock-input');
+            const newStockVal = parseInt(stockInput ? stockInput.value : 10);
+            
+            if (isNaN(newStockVal) || newStockVal < 0) {
+                return showToast('Ingresa un número de stock válido (0 o mayor)', 'error');
+            }
+
+            if (!confirm(`¿Estás seguro de cambiar el stock a ${newStockVal} unidades para TODOS los productos del catálogo e inventario?`)) {
+                return;
+            }
+
+            let updatedCount = 0;
+            products.forEach(p => {
+                if (!['Promociones', 'Kits', 'Emprendedor'].includes(p.category)) {
+                    p.stock = newStockVal;
+                    updatedCount++;
+                }
+            });
+
+            saveData();
+            renderInventoryTable();
+            renderWholesaleTable();
+            renderPosProducts();
+            updateDashboard();
+            showToast(`¡Se actualizó el stock a ${newStockVal} unidades en ${updatedCount} productos!`);
+        }
+
+        // FUNCIONES DE DUPLICACIÓN A MÓDULO POR MAYOR
+        function duplicateAllToWholesale() {
+            if (!isAdmin) return showToast('Desbloquea el Modo Admin', 'error');
+
+            const baseProducts = products.filter(p => p.category !== 'Por Mayor' && !['Promociones', 'Kits', 'Emprendedor'].includes(p.category));
+
+            if (baseProducts.length === 0) {
+                return showToast('No hay productos base para duplicar', 'error');
+            }
+
+            if (!confirm(`¿Deseas duplicar todos los (${baseProducts.length}) perfumes al módulo 'Por Mayor'?\n\n*Nota: Tu precio base de costo se conservará intacto y se generará un precio por mayor sugerido.`)) {
+                return;
+            }
+
+            let duplicatedCount = 0;
+            baseProducts.forEach(p => {
+                const wholesaleName = `${p.name} - Por Mayor`;
+                const existing = products.find(existingProd => existingProd.name === wholesaleName || (existingProd.category === 'Por Mayor' && existingProd.sku === `${p.sku}-PM`));
+
+                if (!existing) {
+                    const wholesaleProd = {
+                        id: String(Date.now() + Math.random()),
+                        sku: `${p.sku}-PM`,
+                        name: wholesaleName,
+                        category: 'Por Mayor',
+                        cost: parseFloat(p.cost) || 0,
+                        price: Math.round((parseFloat(p.price) || 0) * 0.75),
+                        stock: isNaN(parseInt(p.stock)) ? 10 : parseInt(p.stock)
+                    };
+                    products.push(wholesaleProd);
+                    duplicatedCount++;
+                }
+            });
+
+            saveData();
+            renderInventoryTable();
+            renderWholesaleTable();
+            renderPosProducts();
+            showToast(`¡Se duplicaron ${duplicatedCount} productos al Módulo Por Mayor!`);
+        }
+
+        function renderWholesaleTable() {
+            const searchInput = document.getElementById('wholesale-search');
+            const tbody = document.getElementById('wholesale-table-body');
+            if (!tbody) return;
+
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+            tbody.innerHTML = '';
+
+            const wholesaleProducts = products.filter(p => p.category === 'Por Mayor' && ((p.name || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search)));
+
+            if (wholesaleProducts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">No hay productos al Por Mayor registrados. Presiona "Duplicar Todo el Inventario a Por Mayor".</td></tr>`;
+                return;
+            }
+
+            wholesaleProducts.forEach(p => {
+                const costVal = parseFloat(p.cost) || 0;
+                const priceVal = parseFloat(p.price) || 0;
+                const safeStock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-amber-50/50 transition border-b border-slate-100">
+                        <td class="p-4 font-mono font-bold text-amber-600">${p.sku}</td>
+                        <td class="p-4 font-bold text-slate-800">${p.name}</td>
+                        <td class="p-4 admin-only-cell text-amber-700 font-bold" style="${isAdmin ? '' : 'display:none;'}">$${costVal.toLocaleString('es-CO')}</td>
+                        <td class="p-4 font-black text-emerald-600">$${priceVal.toLocaleString('es-CO')}</td>
+                        <td class="p-4 font-bold">
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="adjustStock('${p.id}', -1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">-</button>
+                                <span id="stock-val-ws-${p.id}" class="px-1.5">${safeStock}</span>
+                                <button onclick="adjustStock('${p.id}', 1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center transition">+</button>
+                            </div>
+                        </td>
+                        <td class="p-4 text-center space-x-1">
+                            ${isAdmin ? `<button onclick="editProduct('${p.id}')" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar Precio Por Mayor"><i class="fa-solid fa-pen"></i></button>` : ''}
+                            ${isAdmin ? `<button onclick="deleteProduct('${p.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
         function renderInventoryTable() {
             const searchInput = document.getElementById('inv-search');
             const catSelect = document.getElementById('inv-filter-cat');
@@ -2145,6 +2329,9 @@
                 const stockEl = document.getElementById(`stock-val-${id}`);
                 if (stockEl) stockEl.innerText = p.stock;
 
+                const stockWsEl = document.getElementById(`stock-val-ws-${id}`);
+                if (stockWsEl) stockWsEl.innerText = p.stock;
+
                 const posStockEl = document.getElementById(`pos-stock-${id}`);
                 if (posStockEl) posStockEl.innerText = `Stock: ${p.stock}`;
 
@@ -2159,7 +2346,7 @@
             if (p) {
                 const newWholesale = {
                     id: String(Date.now()),
-                    sku: generateAutoSKU(),
+                    sku: `${p.sku}-PM`,
                     name: `${p.name} - Por Mayor`,
                     category: 'Por Mayor',
                     stock: isNaN(parseInt(p.stock)) ? 10 : parseInt(p.stock),
@@ -2169,6 +2356,7 @@
                 products.push(newWholesale);
                 saveData();
                 renderInventoryTable();
+                renderWholesaleTable();
                 renderPosProducts();
                 showToast(`¡Copiado a Por Mayor! Guardado en POS.`);
             }
@@ -2235,6 +2423,7 @@
             saveData();
             closeProductModal();
             renderInventoryTable();
+            renderWholesaleTable();
             renderPosProducts();
             updateDashboard();
             showToast('Producto guardado exclusivamente en el POS');
@@ -2251,6 +2440,7 @@
 
             saveData();
             renderInventoryTable();
+            renderWholesaleTable();
             renderPosProducts();
             updateDashboard();
             showToast('Producto eliminado únicamente del POS');
@@ -2391,6 +2581,7 @@
 
                 saveData();
                 renderInventoryTable();
+                renderWholesaleTable();
                 renderPosProducts();
                 updateDashboard();
                 showToast(`¡Se importaron ${importedCount} perfumes al POS!`);
@@ -2617,191 +2808,3 @@
         function renderExpensesTable() {
             const tbody = document.getElementById('expenses-table-body');
             if (!tbody) return;
-
-            tbody.innerHTML = '';
-            expenses.slice().reverse().forEach(exp => {
-                const amountVal = parseFloat(exp.amount) || 0;
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="p-4 text-slate-500 font-mono">${exp.date}</td>
-                        <td class="p-4 font-bold text-slate-800">${exp.desc}</td>
-                        <td class="p-4 font-black text-rose-600">$${amountVal.toLocaleString('es-CO')}</td>
-                        <td class="p-4 text-center">
-                            ${isAdmin ? `<button onclick="deleteExpense('${exp.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Gasto (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function openExpenseModal() {
-            document.getElementById('exp-desc').value = '';
-            document.getElementById('exp-amount').value = '';
-            document.getElementById('expense-modal').classList.remove('hidden');
-        }
-
-        function closeExpenseModal() {
-            document.getElementById('expense-modal').classList.add('hidden');
-        }
-
-        function saveExpense(e) {
-            e.preventDefault();
-            const desc = document.getElementById('exp-desc').value.trim();
-            const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
-
-            const now = new Date();
-            const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
-
-            expenses.push({
-                id: 'EXP-' + Date.now(),
-                date: fullDateTime,
-                desc,
-                amount
-            });
-
-            saveData();
-            closeExpenseModal();
-            renderExpensesTable();
-            updateDashboard();
-            showToast('Gasto operativo registrado');
-        }
-
-        function deleteExpense(id) {
-            if (!isAdmin) return alert("Solo el Administrador puede eliminar gastos.");
-            if (!confirm("¿Deseas eliminar este gasto?")) return;
-            expenses = expenses.filter(exp => exp.id !== id);
-            saveData();
-            renderExpensesTable();
-            updateDashboard();
-            showToast('Gasto eliminado');
-        }
-
-        function updateDashboard() {
-            const filter = document.getElementById('dash-month-filter')?.value || 'CURRENT';
-            const now = new Date();
-            const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-            let filteredSales = sales;
-            if (filter === 'CURRENT') {
-                filteredSales = sales.filter(s => {
-                    const d = new Date(s.rawDate || Date.now());
-                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === currentMonthKey;
-                });
-            } else if (filter !== 'ALL') {
-                filteredSales = sales.filter(s => {
-                    const d = new Date(s.rawDate || Date.now());
-                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === filter;
-                });
-            }
-
-            const totalSalesVal = filteredSales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
-            const totalCostVal = filteredSales.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
-            const netProfitVal = totalSalesVal - totalCostVal;
-
-            const customerDebtsVal = sales.reduce((sum, s) => {
-                const pend = (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0);
-                return sum + Math.max(0, pend);
-            }, 0);
-
-            const stockCostVal = products.reduce((sum, p) => {
-                const stock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
-                const cost = parseFloat(p.cost) || 0;
-                return sum + (stock * cost);
-            }, 0);
-
-            const payablesVal = payables.reduce((sum, p) => {
-                const pend = (parseFloat(p.total) || 0) - (parseFloat(p.paid) || 0);
-                return sum + Math.max(0, pend);
-            }, 0);
-
-            if (document.getElementById('dash-total-sales')) document.getElementById('dash-total-sales').innerText = `$${totalSalesVal.toLocaleString('es-CO')}`;
-            if (document.getElementById('dash-net-profit')) document.getElementById('dash-net-profit').innerText = `$${netProfitVal.toLocaleString('es-CO')}`;
-            if (document.getElementById('dash-total-customer-debts')) document.getElementById('dash-total-customer-debts').innerText = `$${customerDebtsVal.toLocaleString('es-CO')}`;
-            if (document.getElementById('dash-stock-cost')) document.getElementById('dash-stock-cost').innerText = `$${stockCostVal.toLocaleString('es-CO')}`;
-            if (document.getElementById('dash-total-payables')) document.getElementById('dash-total-payables').innerText = `$${payablesVal.toLocaleString('es-CO')}`;
-
-            // CONTROL FINANCIERO ADMIN
-            const historicalPaidSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
-            const totalWithdrawals = withdrawals.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
-            const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-            const totalPayablesPaid = payables.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
-
-            const totalExpected = bankSavings + historicalPaidSales - totalExpenses - totalPayablesPaid - totalWithdrawals;
-
-            if (document.getElementById('admin-total-historical-sales')) document.getElementById('admin-total-historical-sales').innerText = `$${historicalPaidSales.toLocaleString('es-CO')}`;
-            if (document.getElementById('admin-total-withdrawals')) document.getElementById('admin-total-withdrawals').innerText = `$${totalWithdrawals.toLocaleString('es-CO')}`;
-            if (document.getElementById('admin-total-expected-money')) document.getElementById('admin-total-expected-money').innerText = `$${totalExpected.toLocaleString('es-CO')}`;
-
-            const baseMissing = Math.max(0, baseTarget - baseCurrent);
-            if (document.getElementById('base-missing-val')) document.getElementById('base-missing-val').innerText = `$${baseMissing.toLocaleString('es-CO')}`;
-
-            // REPARTO DE SOCIOS
-            const historicalProfit = sales.reduce((sum, s) => sum + ((parseFloat(s.total) || 0) - (parseFloat(s.cost) || 0)), 0) - totalExpenses;
-            const socioHalfProfit = Math.max(0, historicalProfit / 2);
-
-            const wSocio1 = withdrawals.filter(w => w.partner === 'socio1').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
-            const wSocio2 = withdrawals.filter(w => w.partner === 'socio2').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
-
-            if (document.getElementById('socio1-earned')) document.getElementById('socio1-earned').innerText = `$${socioHalfProfit.toLocaleString('es-CO')}`;
-            if (document.getElementById('socio1-withdrawn')) document.getElementById('socio1-withdrawn').innerText = `$${wSocio1.toLocaleString('es-CO')}`;
-            if (document.getElementById('socio1-available')) document.getElementById('socio1-available').innerText = `$${(socioHalfProfit - wSocio1).toLocaleString('es-CO')}`;
-
-            if (document.getElementById('socio2-earned')) document.getElementById('socio2-earned').innerText = `$${socioHalfProfit.toLocaleString('es-CO')}`;
-            if (document.getElementById('socio2-withdrawn')) document.getElementById('socio2-withdrawn').innerText = `$${wSocio2.toLocaleString('es-CO')}`;
-            if (document.getElementById('socio2-available')) document.getElementById('socio2-available').innerText = `$${(socioHalfProfit - wSocio2).toLocaleString('es-CO')}`;
-
-            // ALERTA STOCK BAJO
-            const lowStockList = document.getElementById('dash-low-stock-list');
-            if (lowStockList) {
-                lowStockList.innerHTML = '';
-                const lowItems = products.filter(p => !['Promociones', 'Kits', 'Emprendedor'].includes(p.category) && (isNaN(parseInt(p.stock)) || parseInt(p.stock) <= 3));
-                
-                if (lowItems.length === 0) {
-                    lowStockList.innerHTML = `<p class="text-xs text-slate-400 italic">Todo el stock en niveles óptimos</p>`;
-                } else {
-                    lowItems.forEach(p => {
-                        lowStockList.innerHTML += `
-                            <div class="flex items-center justify-between p-2 bg-amber-50 rounded-xl border border-amber-200/60 text-xs">
-                                <span class="font-bold text-amber-900 truncate max-w-[150px]">${p.name}</span>
-                                <span class="font-extrabold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full">${p.stock} unid.</span>
-                            </div>
-                        `;
-                    });
-                }
-            }
-
-            renderChart(totalSalesVal, totalCostVal, netProfitVal);
-        }
-
-        function renderChart(salesVal, costVal, profitVal) {
-            const ctx = document.getElementById('financeChart');
-            if (!ctx) return;
-
-            if (financeChart) financeChart.destroy();
-
-            financeChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Ventas Brutas', 'Costo Mercancía', 'Ganancia Neta'],
-                    datasets: [{
-                        data: [salesVal, costVal, profitVal],
-                        backgroundColor: ['#10b981', '#f59e0b', '#a855f7'],
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
-        }
-
-        // AUTO-INIT AL CARGAR PÁGINA
-        window.addEventListener('DOMContentLoaded', () => {
-            loadMemory();
-        });
-    </script>
-</body>
-</html>
