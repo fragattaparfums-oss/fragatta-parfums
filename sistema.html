@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fragatta Parfums - Sistema POS & Gestión Nube (Ultra Optimizado)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (XLSX Import Library) -->
+    <!-- SheetJS (XLSX Import/Export Library) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <!-- FIREBASE SDK COMPAT (v9) -->
@@ -35,7 +35,7 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; overscroll-behavior-y: contain; }
         
         @media print {
             body * { visibility: hidden; }
@@ -50,7 +50,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+<body class="bg-slate-50 text-slate-800 antialiased">
 
     <!-- PANTALLA DE BLOQUEO / LOGIN -->
     <div id="login-screen" class="fixed inset-0 bg-gradient-to-br from-purple-900 via-slate-900 to-fuchsia-950 flex items-center justify-center p-4 z-50">
@@ -85,8 +85,8 @@
     <div id="app-content" class="hidden min-h-screen flex flex-col md:flex-row">
         
         <!-- BARRA LATERAL -->
-        <aside class="w-full md:w-64 bg-white text-slate-700 flex-shrink-0 no-print flex flex-col justify-between border-r border-slate-200/80 shadow-sm">
-            <div>
+        <aside class="w-full md:w-64 bg-white text-slate-700 flex-shrink-0 no-print flex flex-col justify-between border-r border-slate-200/80 shadow-sm md:h-screen md:sticky md:top-0">
+            <div class="overflow-y-auto">
                 <div class="p-5 flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-purple-50/50 to-fuchsia-50/50">
                     <div class="flex items-center gap-3">
                         <div class="bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white p-2.5 rounded-xl shadow-md shadow-purple-500/20">
@@ -166,8 +166,8 @@
             </div>
         </aside>
 
-        <!-- ÁREA PRINCIPAL -->
-        <main class="flex-1 flex flex-col min-w-0 overflow-y-auto max-h-screen bg-slate-50">
+        <!-- ÁREA PRINCIPAL CON SCROLL INDEPENDIENTE (Y PADDING BOTTOM EXTRA PARA MOVILES) -->
+        <main class="flex-1 flex flex-col h-screen overflow-y-auto bg-slate-50 pb-32">
             
             <div id="toast" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-100px] opacity-0 pointer-events-none">
                 <div id="toast-content" class="bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-800">
@@ -182,7 +182,7 @@
                 <div class="admin-only hidden bg-white border border-purple-200 rounded-3xl p-5 shadow-sm space-y-3">
                     <div class="flex justify-between items-center border-b pb-2">
                         <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-fire text-amber-500"></i> Conexión a Nube Firebase (Persistencia de Productos)
+                            <i class="fa-solid fa-fire text-amber-500"></i> Conexión a Nube Firebase (Tiempo Real)
                         </h3>
                         <div class="flex gap-2">
                             <button onclick="importarDesdeWeb()" class="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-xs rounded-xl shadow-md flex items-center gap-1">
@@ -193,7 +193,7 @@
                             </button>
                         </div>
                     </div>
-                    <p class="text-xs text-slate-500">Configura Firebase una sola vez. Al estar conectado, tus productos y ventas se respaldan en la nube de forma independiente a tu página web.</p>
+                    <p class="text-xs text-slate-500">Configura Firebase una sola vez. Al estar conectado, todos los movimientos se sincronizan en vivo en todos tus dispositivos.</p>
                 </div>
 
                 <!-- 1. DASHBOARD & CORTE FINANCIERO -->
@@ -203,12 +203,19 @@
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Dashboard & Arqueo de Caja</h2>
                             <p class="text-xs text-slate-500 font-medium">Control financiero, cortes mensuales y proyección de cuenta bancaria</p>
                         </div>
-                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border border-slate-200 shadow-sm">
-                            <i class="fa-regular fa-calendar text-purple-600"></i>
-                            <select id="dash-month-filter" onchange="updateDashboard()" class="bg-transparent text-xs font-bold text-slate-700 focus:outline-none">
-                                <option value="CURRENT">Mes Actual</option>
-                                <option value="ALL">Histórico Completo (A la fecha)</option>
-                            </select>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <!-- NUEVO BOTÓN: EXCEL MES PASADO -->
+                            <button onclick="exportLastMonthExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition shadow-md flex items-center gap-1.5 mr-2">
+                                <i class="fa-solid fa-file-excel"></i> Exportar Mes Pasado
+                            </button>
+
+                            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border border-slate-200 shadow-sm">
+                                <i class="fa-regular fa-calendar text-purple-600"></i>
+                                <select id="dash-month-filter" onchange="updateDashboard()" class="bg-transparent text-xs font-bold text-slate-700 focus:outline-none">
+                                    <option value="CURRENT">Mes Actual</option>
+                                    <option value="ALL">Histórico Completo (A la fecha)</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -431,7 +438,7 @@
                                 </select>
                             </div>
 
-                            <div id="pos-products-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[580px] overflow-y-auto p-1"></div>
+                            <div id="pos-products-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto max-h-[65vh] p-1"></div>
                         </div>
 
                         <div class="lg:col-span-5">
@@ -491,7 +498,7 @@
                                         </div>
                                     </div>
 
-                                    <div id="pos-cart-items" class="space-y-2 max-h-44 overflow-y-auto pr-1"></div>
+                                    <div id="pos-cart-items" class="space-y-2 max-h-[40vh] overflow-y-auto pr-1"></div>
                                 </div>
 
                                 <div class="border-t border-slate-100 pt-4 space-y-3">
@@ -531,8 +538,8 @@
                             <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">Filtro Mensual</span>
                         </div>
                     </div>
-                    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
-                        <table class="w-full text-left text-xs">
+                    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-x-auto">
+                        <table class="w-full text-left text-xs whitespace-nowrap min-w-max">
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
                                     <th class="p-4">N° Factura</th>
@@ -563,8 +570,8 @@
                             <option value="POR_MAYOR">Solo Ventas Por Mayor</option>
                         </select>
                     </div>
-                    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
-                        <table class="w-full text-left text-xs">
+                    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-x-auto">
+                        <table class="w-full text-left text-xs whitespace-nowrap min-w-max">
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
                                     <th class="p-4">N° Factura</th>
@@ -628,13 +635,13 @@
                             </div>
                             <div>
                                 <h4 class="font-extrabold text-sm text-white">Control Global de Stock en Nube (Modo Admin)</h4>
-                                <p class="text-xs text-purple-200">Asigna cualquier número de unidades (ej: 0, 1, 5, 10, 50) a todos los perfumes del catálogo e inventario al mismo tiempo.</p>
+                                <p class="text-xs text-purple-200">Asigna cualquier número de unidades a todos los perfumes del catálogo e inventario al mismo tiempo.</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 w-full sm:w-auto">
                             <input type="number" id="admin-global-stock-input" min="0" value="10" placeholder="Cant. Stock" class="w-28 bg-slate-900 border border-purple-400/60 rounded-xl px-3 py-2 text-sm font-black text-amber-400 text-center focus:outline-none">
                             <button onclick="applyGlobalStock()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl transition shadow-md whitespace-nowrap flex items-center gap-1.5">
-                                <i class="fa-solid fa-bolt"></i> Aplicar Stock a Todo
+                                <i class="fa-solid fa-bolt"></i> Aplicar a Todo
                             </button>
                         </div>
                     </div>
@@ -655,7 +662,7 @@
                     </div>
 
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse whitespace-nowrap min-w-max">
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                     <th class="p-4">SKU</th>
@@ -698,7 +705,7 @@
                     </div>
 
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse whitespace-nowrap min-w-max">
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                     <th class="p-4">SKU</th>
@@ -729,7 +736,7 @@
                     </div>
 
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-x-auto">
-                        <table class="w-full text-left text-xs">
+                        <table class="w-full text-left text-xs whitespace-nowrap min-w-max">
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
                                     <th class="p-4">Fecha y Hora</th>
@@ -760,7 +767,7 @@
                     </div>
 
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-x-auto">
-                        <table class="w-full text-left text-xs">
+                        <table class="w-full text-left text-xs whitespace-nowrap min-w-max">
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
                                     <th class="p-4">Nº Factura Prov.</th>
@@ -789,8 +796,8 @@
                         </button>
                     </div>
 
-                    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
-                        <table class="w-full text-left text-xs">
+                    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-x-auto">
+                        <table class="w-full text-left text-xs whitespace-nowrap min-w-max">
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
                                     <th class="p-4">Fecha y Hora</th>
@@ -1286,7 +1293,6 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CORREGIDO, ULTRA RÁPIDO Y TOTALMENTE ESTABLE -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -1295,6 +1301,7 @@
 
         let db = null;
         let isFirebaseConnected = false;
+        let firebaseUnsubs = [];
 
         const INITIAL_PRODUCTS = [
             { id: '1', sku: 'FRAG-1001', name: '1 MILLION RABANNE - PACO RABANNE', category: 'Caballero', cost: 45000, price: 115000, stock: 10 },
@@ -1334,6 +1341,19 @@
             }
         }
 
+        // GUARDADO OPTIMIZADO: Local. Firebase ahora se actualiza unitariamente.
+        function saveDataLocalOnly() {
+            localStorage.setItem('fragatta_products', JSON.stringify(products));
+            localStorage.setItem('fragatta_sales', JSON.stringify(sales));
+            localStorage.setItem('fragatta_expenses', JSON.stringify(expenses));
+            localStorage.setItem('fragatta_debts', JSON.stringify(debts));
+            localStorage.setItem('fragatta_payables', JSON.stringify(payables));
+            localStorage.setItem('fragatta_withdrawals', JSON.stringify(withdrawals));
+            localStorage.setItem('fragatta_bank_savings', bankSavings.toString());
+            localStorage.setItem('fragatta_base_target', baseTarget.toString());
+            localStorage.setItem('fragatta_base_current', baseCurrent.toString());
+        }
+
         function togglePasswordVisibility(inputId, iconId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
@@ -1364,7 +1384,7 @@
             const inputPass = inputField ? inputField.value.trim() : '';
             if (inputPass === RESET_PASS) {
                 localStorage.clear();
-                showToast('Memoria borrada exitosamente');
+                showToast('Memoria local borrada exitosamente');
                 setTimeout(() => location.reload(), 1000);
             } else {
                 alert("Contraseña de Reset incorrecta. (Recuerda que es 123456)");
@@ -1396,15 +1416,19 @@
             const now = new Date();
             const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
 
-            withdrawals.push({
+            const newW = {
                 id: 'WIT-' + Date.now(),
                 date: fullDateTime,
                 partner: partner,
                 concept: concept,
                 amount: amount
-            });
+            };
 
-            saveData();
+            withdrawals.push(newW);
+            saveDataLocalOnly();
+
+            if(isFirebaseConnected && db) db.collection("withdrawals").doc(String(newW.id)).set(newW, { merge: true });
+
             closeWithdrawalModal();
             updateDashboard();
             showToast('Retiro de socio registrado correctamente');
@@ -1423,7 +1447,7 @@
                         isFirebaseConnected = true;
                         const badge = document.getElementById('cloud-status-badge');
                         if (badge) {
-                            badge.innerText = "Nube Firebase Activa";
+                            badge.innerText = "Nube Activa (Real-Time)";
                             badge.className = "text-[10px] font-bold uppercase tracking-wider text-emerald-600";
                         }
                         syncWithFirebase();
@@ -1480,120 +1504,152 @@
             initFirebase();
         }
 
+        // SINCRONIZACIÓN ULTRA RÁPIDA (Real-Time a través de todo el sistema)
         function syncWithFirebase() {
             if (!db) return;
             
-            db.collection("pos_products").get().then((querySnapshot) => {
-                if (!querySnapshot.empty) {
-                    let cloudProds = [];
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        const parsedStock = parseInt(data.stock);
-                        const parsedCost = parseFloat(data.cost || data.originalPrice || 0);
-                        const parsedPrice = parseFloat(data.price || 0);
+            // Limpiar listeners antiguos
+            firebaseUnsubs.forEach(unsub => unsub());
+            firebaseUnsubs = [];
 
-                        cloudProds.push({
-                            id: String(doc.id),
-                            sku: (data.sku && data.sku !== "undefined") ? data.sku : generateAutoSKU(),
-                            name: data.name || data.title || "Perfume sin Nombre",
-                            category: data.category || "Árabes",
-                            cost: isNaN(parsedCost) ? 0 : parsedCost,
-                            price: isNaN(parsedPrice) ? 0 : parsedPrice,
-                            stock: isNaN(parsedStock) ? 10 : parsedStock,
-                            items: data.items || []
-                        });
+            // Productos
+            firebaseUnsubs.push(db.collection("pos_products").onSnapshot((snap) => {
+                let cloudProds = [];
+                snap.forEach((doc) => {
+                    const data = doc.data();
+                    cloudProds.push({
+                        id: String(doc.id),
+                        sku: (data.sku && data.sku !== "undefined") ? data.sku : generateAutoSKU(),
+                        name: data.name || data.title || "Perfume sin Nombre",
+                        category: data.category || "Árabes",
+                        cost: isNaN(parseFloat(data.cost)) ? 0 : parseFloat(data.cost),
+                        price: isNaN(parseFloat(data.price)) ? 0 : parseFloat(data.price),
+                        stock: isNaN(parseInt(data.stock)) ? 10 : parseInt(data.stock),
+                        items: data.items || []
                     });
-                    products = cloudProds;
-                    saveDataLocalOnly();
-                    renderInventoryTable();
-                    renderWholesaleTable();
-                    renderPosProducts();
-                    updateDashboard();
-                } else {
-                    saveData();
-                }
-            }).catch(err => console.log("Error consultando productos POS:", err));
+                });
+                if(cloudProds.length > 0) products = cloudProds;
+                saveDataLocalOnly();
+                renderInventoryTable();
+                renderWholesaleTable();
+                renderPosProducts();
+                updateDashboard();
+            }));
 
-            db.collection("sales").get().then((querySnapshot) => {
-                if (!querySnapshot.empty) {
-                    let cloudSales = [];
-                    querySnapshot.forEach((doc) => {
-                        const sData = doc.data();
-                        if (!sData.saleType) sData.saleType = 'DETAL';
-                        cloudSales.push(sData);
-                    });
-                    sales = cloudSales;
+            // Ventas
+            firebaseUnsubs.push(db.collection("sales").onSnapshot((snap) => {
+                let cloudSales = [];
+                snap.forEach((doc) => {
+                    const sData = doc.data();
+                    if (!sData.saleType) sData.saleType = 'DETAL';
+                    cloudSales.push(sData);
+                });
+                if(cloudSales.length > 0) sales = cloudSales;
+                saveDataLocalOnly();
+                renderTablesViews();
+                updateDashboard();
+            }));
+
+            // Gastos Operativos
+            firebaseUnsubs.push(db.collection("expenses").onSnapshot((snap) => {
+                let items = [];
+                snap.forEach(doc => items.push(doc.data()));
+                if(items.length > 0) expenses = items;
+                saveDataLocalOnly();
+                renderExpensesTable();
+                updateDashboard();
+            }));
+
+            // Deudas / Abonos Clientes
+            firebaseUnsubs.push(db.collection("debts").onSnapshot((snap) => {
+                let items = [];
+                snap.forEach(doc => items.push(doc.data()));
+                if(items.length > 0) debts = items;
+                saveDataLocalOnly();
+                renderDebtsTable();
+                updateDashboard();
+            }));
+
+            // Cuentas por Pagar Proveedores
+            firebaseUnsubs.push(db.collection("payables").onSnapshot((snap) => {
+                let items = [];
+                snap.forEach(doc => items.push(doc.data()));
+                if(items.length > 0) payables = items;
+                saveDataLocalOnly();
+                renderPayablesTable();
+                updateDashboard();
+            }));
+
+            // Retiros de Socios
+            firebaseUnsubs.push(db.collection("withdrawals").onSnapshot((snap) => {
+                let items = [];
+                snap.forEach(doc => items.push(doc.data()));
+                if(items.length > 0) withdrawals = items;
+                saveDataLocalOnly();
+                updateDashboard();
+            }));
+
+            // Finanzas Admin
+            firebaseUnsubs.push(db.collection("admin_config").doc("finance").onSnapshot((doc) => {
+                if(doc.exists) {
+                    const data = doc.data();
+                    bankSavings = data.bankSavings ?? bankSavings;
+                    baseTarget = data.baseTarget ?? baseTarget;
+                    baseCurrent = data.baseCurrent ?? baseCurrent;
+                    
+                    if(document.activeElement !== document.getElementById('admin-bank-savings')) {
+                        const bs = document.getElementById('admin-bank-savings'); if(bs) bs.value = bankSavings;
+                    }
+                    if(document.activeElement !== document.getElementById('base-target-input')) {
+                        const bt = document.getElementById('base-target-input'); if(bt) bt.value = baseTarget;
+                    }
+                    if(document.activeElement !== document.getElementById('base-current-input')) {
+                        const bc = document.getElementById('base-current-input'); if(bc) bc.value = baseCurrent;
+                    }
                     saveDataLocalOnly();
-                    renderTablesViews();
                     updateDashboard();
                 }
-            });
+            }));
         }
 
         function importarDesdeWeb() {
             if (!db) return showToast("Firebase no está conectado", "error");
-            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Esta es una copia independiente y no afectará tu página web al editar o borrar.")) return;
+            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Esta es una copia independiente.")) return;
 
             db.collection("products").get().then((querySnapshot) => {
+                let batch = db.batch();
                 let cont = 0;
+                
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     const prodName = (data.name || data.title || "").trim();
                     if (!prodName) return;
-
-                    const parsedPrice = parseFloat(data.price || 0);
-                    const parsedCost = parseFloat(data.originalPrice || data.costPrice || data.cost || 0);
-                    const parsedStock = data.stock !== undefined ? parseInt(data.stock) : 10;
 
                     const newProd = {
                         id: String(doc.id),
                         sku: (data.sku && data.sku !== "undefined") ? data.sku : generateAutoSKU(),
                         name: prodName.toUpperCase(),
                         category: data.category || "Árabes",
-                        cost: isNaN(parsedCost) ? 0 : parsedCost,
-                        price: isNaN(parsedPrice) ? 0 : parsedPrice,
-                        stock: isNaN(parsedStock) ? 10 : parsedStock
+                        cost: isNaN(parseFloat(data.originalPrice || data.costPrice || data.cost)) ? 0 : parseFloat(data.originalPrice || data.costPrice || data.cost),
+                        price: isNaN(parseFloat(data.price)) ? 0 : parseFloat(data.price),
+                        stock: data.stock !== undefined ? parseInt(data.stock) : 10
                     };
                     
-                    db.collection("pos_products").doc(String(newProd.id)).set(newProd, { merge: true });
+                    batch.set(db.collection("pos_products").doc(String(newProd.id)), newProd, { merge: true });
                     cont++;
+                    
+                    if (cont % 450 === 0) {
+                        batch.commit();
+                        batch = db.batch();
+                    }
                 });
 
+                if (cont % 450 !== 0) batch.commit();
                 showToast(`¡Se importaron ${cont} perfumes de la web al POS!`);
-                setTimeout(() => syncWithFirebase(), 1200);
             }).catch(err => {
                 console.error("Error al importar de la web:", err);
                 showToast("Error al importar productos", "error");
             });
-        }
-
-        function saveDataLocalOnly() {
-            localStorage.setItem('fragatta_products', JSON.stringify(products));
-            localStorage.setItem('fragatta_sales', JSON.stringify(sales));
-            localStorage.setItem('fragatta_expenses', JSON.stringify(expenses));
-            localStorage.setItem('fragatta_debts', JSON.stringify(debts));
-            localStorage.setItem('fragatta_payables', JSON.stringify(payables));
-            localStorage.setItem('fragatta_withdrawals', JSON.stringify(withdrawals));
-            localStorage.setItem('fragatta_bank_savings', bankSavings.toString());
-            localStorage.setItem('fragatta_base_target', baseTarget.toString());
-            localStorage.setItem('fragatta_base_current', baseCurrent.toString());
-        }
-
-        function saveData() {
-            saveDataLocalOnly();
-
-            if (isFirebaseConnected && db) {
-                // Sincronización optimizada no bloqueante
-                setTimeout(() => {
-                    products.forEach(p => {
-                        db.collection("pos_products").doc(String(p.id)).set(p, { merge: true });
-                    });
-
-                    sales.forEach(s => {
-                        db.collection("sales").doc(String(s.id)).set(s, { merge: true });
-                    });
-                }, 0);
-            }
         }
 
         function verifyLogin() {
@@ -1745,11 +1801,11 @@
         function updateBankSavings() {
             if (!isAdmin) return;
             const el = document.getElementById('admin-bank-savings');
-            const val = parseFloat(el ? el.value : 0) || 0;
-            bankSavings = val;
-            saveData();
+            bankSavings = parseFloat(el ? el.value : 0) || 0;
+            saveDataLocalOnly();
+            if(isFirebaseConnected && db) db.collection("admin_config").doc("finance").set({ bankSavings }, {merge: true});
             updateDashboard();
-            showToast('Saldo en cuenta de ahorros actualizado');
+            showToast('Saldo en cuenta actualizado');
         }
 
         function updateBaseControls() {
@@ -1758,7 +1814,8 @@
             const currentEl = document.getElementById('base-current-input');
             baseTarget = parseFloat(targetEl ? targetEl.value : 0) || 0;
             baseCurrent = parseFloat(currentEl ? currentEl.value : 0) || 0;
-            saveData();
+            saveDataLocalOnly();
+            if(isFirebaseConnected && db) db.collection("admin_config").doc("finance").set({ baseTarget, baseCurrent }, {merge: true});
             updateDashboard();
             showToast('Fondo base actualizado');
         }
@@ -1800,6 +1857,47 @@
                     toast.classList.add('translate-y-[-100px]', 'opacity-0', 'pointer-events-none');
                 }, 3000);
             }
+        }
+
+        // DESCARGAR EXCEL DEL MES PASADO
+        function exportLastMonthExcel() {
+            const now = new Date();
+            let year = now.getFullYear();
+            let month = now.getMonth(); // 0-11
+            if (month === 0) {
+                month = 12;
+                year -= 1;
+            }
+            const targetKey = `${year}-${String(month).padStart(2, '0')}`;
+            
+            const lastMonthSales = sales.filter(s => {
+                const d = new Date(s.rawDate || Date.now());
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === targetKey;
+            });
+
+            if (lastMonthSales.length === 0) {
+                return showToast(`No hay ventas registradas en el periodo ${targetKey}`, 'error');
+            }
+
+            const data = lastMonthSales.slice().reverse().map(s => ({
+                'Nº Factura': s.id,
+                'Fecha': s.date,
+                'Cliente': s.clientName,
+                'Teléfono': s.clientPhone,
+                'Dirección': s.clientAddr,
+                'Canal': s.saleType,
+                'Costo Mercancía': s.cost,
+                'Venta Total': s.total,
+                'Ganancia Bruta': Math.max(0, s.total - s.cost),
+                'Monto Cobrado': s.paid,
+                'Estado': s.status
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, `Ventas_${targetKey}`);
+            XLSX.writeFile(wb, `Reporte_Ventas_Fragatta_${targetKey}.xlsx`);
+            showToast('Archivo Excel descargado exitosamente');
         }
 
         function renderPosProducts() {
@@ -1899,7 +1997,6 @@
                 `;
             });
 
-            // Ajustar automáticamente el selector de Tipo de Venta si detecta productos al por mayor
             const saleTypeSelect = document.getElementById('pos-sale-type');
             if (saleTypeSelect && hasWholesaleItem) {
                 saleTypeSelect.value = 'POR_MAYOR';
@@ -1962,7 +2059,7 @@
             const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
             const saleId = `FAC-${1000 + sales.length + 1}`;
 
-            // DESCUENTO DIRECTO E INSTANTÁNEO DE STOCK
+            // DESCUENTO STOCK (Local y Cloud)
             cart.forEach(cItem => {
                 const p = products.find(prod => String(prod.id) === String(cItem.id));
                 if (p) {
@@ -1972,11 +2069,13 @@
                             if (subProd) {
                                 const currentSubStock = isNaN(parseInt(subProd.stock)) ? 0 : parseInt(subProd.stock);
                                 subProd.stock = Math.max(0, currentSubStock - (cSub.qty * cItem.qty));
+                                if(isFirebaseConnected && db) db.collection("pos_products").doc(String(subProd.id)).set({ stock: subProd.stock }, { merge: true });
                             }
                         });
                     } else {
                         const currentStock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
                         p.stock = Math.max(0, currentStock - cItem.qty);
+                        if(isFirebaseConnected && db) db.collection("pos_products").doc(String(p.id)).set({ stock: p.stock }, { merge: true });
                     }
                 }
             });
@@ -1999,19 +2098,22 @@
             };
 
             sales.push(newSale);
+            if(isFirebaseConnected && db) db.collection("sales").doc(String(newSale.id)).set(newSale, { merge: true });
 
             if (status === 'ABONO' && abonoInput > 0) {
-                debts.push({
+                const newDebt = {
                     id: 'ABO-' + Date.now(),
                     date: fullDateTime,
                     saleId: saleId,
                     client: client,
                     concept: `Abono inicial a factura ${saleId}`,
                     amount: abonoInput
-                });
+                };
+                debts.push(newDebt);
+                if(isFirebaseConnected && db) db.collection("debts").doc(String(newDebt.id)).set(newDebt, { merge: true });
             }
 
-            saveData();
+            saveDataLocalOnly();
 
             if (mode === 'invoice') {
                 showPrintPreview('invoice', newSale);
@@ -2151,7 +2253,7 @@
             });
 
             let gHTML = `
-                <table class="w-full text-left text-xs">
+                <table class="w-full text-left text-xs whitespace-nowrap min-w-max">
                     <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                         <tr>
                             <th class="p-4">Año-Mes</th>
@@ -2195,7 +2297,7 @@
                         <td class="p-4 font-bold text-emerald-600">$${paidVal.toLocaleString('es-CO')}</td>
                         <td class="p-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${s.status === 'PAGADO' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${s.status}</span></td>
                         <td class="p-4 text-center space-x-1">
-                            <button onclick='showPrintPreview("invoice", ${JSON.stringify(s)})' class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition" title="Ver / Imprimir Factura"><i class="fa-solid fa-print"></i></button>
+                            <button onclick='showPrintPreview("invoice", ${JSON.stringify(s).replace(/'/g, "'")})' class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition" title="Ver / Imprimir Factura"><i class="fa-solid fa-print"></i></button>
                             ${isAdmin ? `<button onclick="openSaleEditModal('${s.id}')" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar Cliente / Datos Venta (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
                             ${isAdmin ? `<button onclick="deleteSale('${s.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Venta (Admin)"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </td>
@@ -2244,7 +2346,9 @@
                 const totalProds = (s.items || []).reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * item.qty), 0);
                 s.total = Math.max(0, totalProds + s.shipping - s.discount);
 
-                saveData();
+                saveDataLocalOnly();
+                if(isFirebaseConnected && db) db.collection("sales").doc(String(s.id)).set(s, { merge: true });
+
                 closeSaleEditModal();
                 renderTablesViews();
                 updateDashboard();
@@ -2257,11 +2361,11 @@
             if (!confirm(`¿Estás seguro de eliminar la venta ${saleId}?`)) return;
             sales = sales.filter(s => s.id !== saleId);
             
+            saveDataLocalOnly();
             if (isFirebaseConnected && db) {
                 db.collection("sales").doc(String(saleId)).delete();
             }
 
-            saveData();
             renderTablesViews();
             updateDashboard();
             showToast('Venta eliminada por el Administrador');
@@ -2281,7 +2385,7 @@
                 return showToast('Ingresa un número de stock válido (0 o mayor)', 'error');
             }
 
-            if (!confirm(`¿Estás seguro de cambiar el stock a ${newStockVal} unidades para TODOS los productos del catálogo e inventario?`)) {
+            if (!confirm(`¿Estás seguro de cambiar el stock a ${newStockVal} unidades para TODOS los productos?`)) {
                 return;
             }
 
@@ -2293,15 +2397,31 @@
                 }
             });
 
-            saveData();
+            saveDataLocalOnly();
+
+            if (isFirebaseConnected && db) {
+                let batch = db.batch();
+                let count = 0;
+                products.forEach(p => {
+                    if (!['Combos', 'Promociones'].includes(p.category)) {
+                        batch.set(db.collection("pos_products").doc(String(p.id)), { stock: newStockVal }, { merge: true });
+                        count++;
+                        if (count % 450 === 0) {
+                            batch.commit();
+                            batch = db.batch();
+                        }
+                    }
+                });
+                if (count % 450 !== 0) batch.commit();
+            }
+
             renderInventoryTable();
             renderWholesaleTable();
             renderPosProducts();
             updateDashboard();
-            showToast(`¡Se actualizó el stock a ${newStockVal} unidades en ${updatedCount} productos!`);
+            showToast(`¡Se actualizó el stock a ${newStockVal} en ${updatedCount} productos!`);
         }
 
-        // DUPLICACIÓN MASIVA A POR MAYOR
         function duplicateAllToWholesale() {
             if (!isAdmin) return showToast('Desbloquea el Modo Admin', 'error');
 
@@ -2311,15 +2431,16 @@
                 return showToast('No hay productos base para duplicar', 'error');
             }
 
-            if (!confirm(`¿Deseas duplicar todos los (${baseProducts.length}) perfumes al módulo 'Por Mayor'?\n\n*Nota: Tu precio base de costo se conservará intacto y se generará un precio por mayor sugerido.`)) {
+            if (!confirm(`¿Deseas duplicar todos los (${baseProducts.length}) perfumes al módulo 'Por Mayor'?\n\n*Nota: Tu precio base de costo se conservará intacto.`)) {
                 return;
             }
 
             let duplicatedCount = 0;
+            let newWholesales = [];
+
             baseProducts.forEach((p) => {
                 const wholesaleName = `${p.name} - Por Mayor`;
                 const expectedSku = `${p.sku}-PM`;
-                
                 const existing = products.find(existingProd => existingProd.name === wholesaleName || (existingProd.category === 'Por Mayor' && existingProd.sku === expectedSku));
 
                 if (!existing) {
@@ -2333,18 +2454,33 @@
                         stock: isNaN(parseInt(p.stock)) ? 10 : parseInt(p.stock)
                     };
                     products.push(wholesaleProd);
+                    newWholesales.push(wholesaleProd);
                     duplicatedCount++;
                 }
             });
 
-            saveData();
+            saveDataLocalOnly();
+
+            if (isFirebaseConnected && db && newWholesales.length > 0) {
+                let batch = db.batch();
+                let count = 0;
+                newWholesales.forEach(w => {
+                    batch.set(db.collection("pos_products").doc(String(w.id)), w, { merge: true });
+                    count++;
+                    if (count % 450 === 0) {
+                        batch.commit();
+                        batch = db.batch();
+                    }
+                });
+                if (count % 450 !== 0) batch.commit();
+            }
+
             renderInventoryTable();
             renderWholesaleTable();
             renderPosProducts();
-            showToast(`¡Se duplicaron exitosamente los ${duplicatedCount} productos al Módulo Por Mayor!`);
+            showToast(`¡Se duplicaron exitosamente los ${duplicatedCount} productos!`);
         }
 
-        // DUPLICACIÓN MANUAL DE UN SOLO PRODUCTO A POR MAYOR
         function copyToWholesale(id) {
             if (!isAdmin) return showToast('Desbloquea el Modo Admin', 'error');
             const p = products.find(item => String(item.id) === String(id));
@@ -2352,7 +2488,6 @@
                 const wholesaleSku = `${p.sku}-PM`;
                 const wholesaleName = `${p.name} - Por Mayor`;
 
-                // Verificar si ya fue duplicado anteriormente
                 const existing = products.find(existingProd => existingProd.category === 'Por Mayor' && (existingProd.sku === wholesaleSku || existingProd.name === wholesaleName));
                 
                 if (existing) {
@@ -2366,15 +2501,17 @@
                     category: 'Por Mayor',
                     stock: isNaN(parseInt(p.stock)) ? 10 : parseInt(p.stock),
                     cost: parseFloat(p.cost) || 0,
-                    price: Math.round((parseFloat(p.price) || 0) * 0.75) // 25% descuento de sugerencia
+                    price: Math.round((parseFloat(p.price) || 0) * 0.75)
                 };
 
                 products.push(newWholesale);
-                saveData();
+                saveDataLocalOnly();
+                if(isFirebaseConnected && db) db.collection("pos_products").doc(String(newWholesale.id)).set(newWholesale, { merge: true });
+
                 renderInventoryTable();
                 renderWholesaleTable();
                 renderPosProducts();
-                showToast(`¡Producto duplicado exitosamente a Por Mayor! Puedes editar su precio ahora.`);
+                showToast(`¡Producto duplicado exitosamente a Por Mayor!`);
             }
         }
 
@@ -2465,7 +2602,6 @@
             });
         }
 
-        // ACTUALIZACIÓN DE STOCK RÁPIDA E INSTANTÁNEA
         function adjustStock(id, delta) {
             const p = products.find(prod => String(prod.id) === String(id));
             if (p) {
@@ -2476,16 +2612,16 @@
                 
                 p.stock = currentStock + delta;
                 
+                // Actualizar UI inmediatamente por optimismo visual
                 const stockEl = document.getElementById(`stock-val-${id}`);
                 if (stockEl) stockEl.innerText = p.stock;
-
                 const stockWsEl = document.getElementById(`stock-val-ws-${id}`);
                 if (stockWsEl) stockWsEl.innerText = p.stock;
-
                 const posStockEl = document.getElementById(`pos-stock-${id}`);
                 if (posStockEl) posStockEl.innerText = `Stock: ${p.stock}`;
 
-                saveData();
+                saveDataLocalOnly();
+                if(isFirebaseConnected && db) db.collection("pos_products").doc(String(p.id)).set({ stock: p.stock }, { merge: true });
                 updateDashboard();
             }
         }
@@ -2537,21 +2673,25 @@
             const cost = parseFloat(document.getElementById('prod-cost')?.value) || 0;
             const price = parseFloat(document.getElementById('prod-price')?.value) || 0;
 
+            let finalProduct;
+
             if (editId) {
                 const p = products.find(item => String(item.id) === String(editId));
                 if (p) {
-                    p.sku = sku;
-                    p.name = name;
-                    p.category = category;
-                    p.stock = stock;
-                    p.cost = cost;
-                    p.price = price;
+                    p.sku = sku; p.name = name; p.category = category;
+                    p.stock = stock; p.cost = cost; p.price = price;
+                    finalProduct = p;
                 }
             } else {
-                products.push({ id: String(Date.now()), sku, name, category, stock, cost, price });
+                finalProduct = { id: String(Date.now()), sku, name, category, stock, cost, price };
+                products.push(finalProduct);
             }
 
-            saveData();
+            saveDataLocalOnly();
+            if(isFirebaseConnected && db && finalProduct) {
+                db.collection("pos_products").doc(String(finalProduct.id)).set(finalProduct, { merge: true });
+            }
+
             closeProductModal();
             renderInventoryTable();
             renderWholesaleTable();
@@ -2565,11 +2705,11 @@
             if (!confirm("¿Deseas eliminar este producto del inventario del POS?")) return;
             products = products.filter(p => String(p.id) !== String(id));
             
+            saveDataLocalOnly();
             if (isFirebaseConnected && db) {
                 db.collection("pos_products").doc(String(id)).delete();
             }
 
-            saveData();
             renderInventoryTable();
             renderWholesaleTable();
             renderPosProducts();
@@ -2666,7 +2806,9 @@
             };
 
             products.push(newCombo);
-            saveData();
+            saveDataLocalOnly();
+            if(isFirebaseConnected && db) db.collection("pos_products").doc(String(newCombo.id)).set(newCombo, { merge: true });
+
             closeComboModal();
             renderInventoryTable();
             renderPosProducts();
@@ -2691,8 +2833,10 @@
                 const json = XLSX.utils.sheet_to_json(worksheet);
 
                 products = [];
-
                 let importedCount = 0;
+                
+                let batch = db && isFirebaseConnected ? db.batch() : null;
+
                 json.forEach(row => {
                     const name = row.Nombre || row.PERFUME || row.Producto;
                     if (name) {
@@ -2708,12 +2852,23 @@
                         let rawPrice = row.PRECIO !== undefined ? row.PRECIO : (row.Precio !== undefined ? row.Precio : row.PrecioVenta);
                         const price = rawPrice !== undefined && !isNaN(rawPrice) ? parseFloat(rawPrice) : 0;
 
-                        products.push({ id: String(Date.now() + Math.random()), sku, name, category, stock, cost, price });
+                        const newP = { id: String(Date.now() + Math.random()), sku, name, category, stock, cost, price };
+                        products.push(newP);
+                        
+                        if(batch) {
+                            batch.set(db.collection("pos_products").doc(String(newP.id)), newP, { merge: true });
+                            if (importedCount % 450 === 0) {
+                                batch.commit();
+                                batch = db.batch();
+                            }
+                        }
                         importedCount++;
                     }
                 });
 
-                saveData();
+                if(batch && importedCount % 450 !== 0) batch.commit();
+
+                saveDataLocalOnly();
                 renderInventoryTable();
                 renderWholesaleTable();
                 renderPosProducts();
@@ -2790,11 +2945,16 @@
                 if (s) {
                     s.paid = (parseFloat(s.paid) || 0) + amount;
                     if (s.paid >= s.total) s.status = 'PAGADO';
+                    if(isFirebaseConnected && db) db.collection("sales").doc(String(s.id)).set({ paid: s.paid, status: s.status }, { merge: true });
                 }
             }
 
-            debts.push({ id: 'ABO-' + Date.now(), date: fullDateTime, saleId: saleId || 'Gral', client, concept, amount });
-            saveData();
+            const newD = { id: 'ABO-' + Date.now(), date: fullDateTime, saleId: saleId || 'Gral', client, concept, amount };
+            debts.push(newD);
+            
+            saveDataLocalOnly();
+            if(isFirebaseConnected && db) db.collection("debts").doc(String(newD.id)).set(newD, { merge: true });
+
             closeDebtModal();
             renderDebtsTable();
             renderTablesViews();
@@ -2806,7 +2966,9 @@
             if (!isAdmin) return alert("Solo el Administrador puede eliminar abonos.");
             if (!confirm("¿Desea eliminar este abono de cliente?")) return;
             debts = debts.filter(d => d.id !== id);
-            saveData();
+            saveDataLocalOnly();
+            if(isFirebaseConnected && db) db.collection("debts").doc(String(id)).delete();
+            
             renderDebtsTable();
             renderTablesViews();
             updateDashboard();
@@ -2878,26 +3040,22 @@
             const now = new Date();
             const dateStr = now.toLocaleDateString('es-CO');
 
+            let finalP;
+
             if (id) {
                 const p = payables.find(item => item.id === id);
                 if (p) {
-                    p.supplier = supplier;
-                    p.invoiceNum = invoiceNum;
-                    p.total = total;
-                    p.paid = abono;
+                    p.supplier = supplier; p.invoiceNum = invoiceNum; p.total = total; p.paid = abono;
+                    finalP = p;
                 }
             } else {
-                payables.push({
-                    id: 'PAY-' + Date.now(),
-                    date: dateStr,
-                    supplier,
-                    invoiceNum,
-                    total,
-                    paid: abono
-                });
+                finalP = { id: 'PAY-' + Date.now(), date: dateStr, supplier, invoiceNum, total, paid: abono };
+                payables.push(finalP);
             }
 
-            saveData();
+            saveDataLocalOnly();
+            if(isFirebaseConnected && db && finalP) db.collection("payables").doc(String(finalP.id)).set(finalP, { merge: true });
+
             closePayableModal();
             renderPayablesTable();
             updateDashboard();
@@ -2928,7 +3086,9 @@
             const p = payables.find(item => item.id === id);
             if (p && amount > 0) {
                 p.paid = (parseFloat(p.paid) || 0) + amount;
-                saveData();
+                saveDataLocalOnly();
+                if(isFirebaseConnected && db) db.collection("payables").doc(String(p.id)).set({ paid: p.paid }, { merge: true });
+                
                 closePayableAbonoModal();
                 renderPayablesTable();
                 updateDashboard();
@@ -2940,7 +3100,8 @@
             if (!isAdmin) return alert("Solo el Administrador puede eliminar deudas a proveedores.");
             if (!confirm("¿Deseas eliminar esta factura por pagar?")) return;
             payables = payables.filter(p => p.id !== id);
-            saveData();
+            saveDataLocalOnly();
+            if(isFirebaseConnected && db) db.collection("payables").doc(String(id)).delete();
             renderPayablesTable();
             updateDashboard();
             showToast('Deuda a proveedor eliminada');
@@ -2986,14 +3147,12 @@
             const now = new Date();
             const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
 
-            expenses.push({
-                id: 'EXP-' + Date.now(),
-                date: fullDateTime,
-                desc,
-                amount
-            });
+            const newE = { id: 'EXP-' + Date.now(), date: fullDateTime, desc, amount };
+            expenses.push(newE);
 
-            saveData();
+            saveDataLocalOnly();
+            if(isFirebaseConnected && db) db.collection("expenses").doc(String(newE.id)).set(newE, { merge: true });
+
             closeExpenseModal();
             renderExpensesTable();
             updateDashboard();
@@ -3004,7 +3163,9 @@
             if (!isAdmin) return alert("Solo el Administrador puede eliminar gastos.");
             if (!confirm("¿Deseas eliminar este gasto?")) return;
             expenses = expenses.filter(exp => exp.id !== id);
-            saveData();
+            saveDataLocalOnly();
+            if(isFirebaseConnected && db) db.collection("expenses").doc(String(id)).delete();
+            
             renderExpensesTable();
             updateDashboard();
             showToast('Gasto eliminado');
@@ -3037,7 +3198,6 @@
                 return sum + Math.max(0, pend);
             }, 0);
 
-            // CÁLCULO DE INVENTARIO (SIN DUPLICAR COSTO POR MAYOR NI COMBOS)
             const stockCostVal = products.reduce((sum, p) => {
                 if (['Combos', 'Promociones', 'Por Mayor'].includes(p.category)) {
                     return sum;
@@ -3136,7 +3296,6 @@
             });
         }
 
-        // AUTO-INIT AL CARGAR PÁGINA
         window.addEventListener('DOMContentLoaded', () => {
             loadMemory();
         });
