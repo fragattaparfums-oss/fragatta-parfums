@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fragatta Parfums - Sistema POS & Gestión Nube</title>
+    <title>Fragatta Parfums - Sistema POS & Gestión Nube (Ultra Optimizado)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -465,9 +465,10 @@
                                             </div>
                                         </div>
 
+                                        <!-- SELECCIÓN EXPLÍCITA DEL CANAL DE VENTA -->
                                         <div class="flex items-center justify-between pt-1">
-                                            <label class="text-xs text-slate-600 font-bold">Tipo de Venta:</label>
-                                            <select id="pos-sale-type" class="bg-white border border-slate-200 text-slate-800 rounded-xl px-2 py-1 text-xs font-bold focus:outline-none">
+                                            <label class="text-xs text-slate-600 font-bold">Canal / Tipo Venta:</label>
+                                            <select id="pos-sale-type" class="bg-white border border-purple-300 text-purple-900 rounded-xl px-2 py-1 text-xs font-extrabold focus:outline-none">
                                                 <option value="DETAL">Venta al Detal</option>
                                                 <option value="POR_MAYOR">Venta Por Mayor</option>
                                             </select>
@@ -522,7 +523,7 @@
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <h2 class="text-2xl font-black text-slate-900 tracking-tight">Operaciones del Mes Actual</h2>
                         <div class="flex items-center gap-3">
-                            <select id="filter-sales-type-mes" onchange="renderTablesViews()" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:outline-none shadow-sm">
+                            <select id="filter-sales-type-mes" onchange="renderTablesViews()" class="bg-white border border-purple-300 text-purple-900 rounded-xl px-3 py-1.5 text-xs font-extrabold focus:outline-none shadow-sm">
                                 <option value="ALL">Todas las Ventas (Detal + Mayor)</option>
                                 <option value="DETAL">Solo Ventas al Detal</option>
                                 <option value="POR_MAYOR">Solo Ventas Por Mayor</option>
@@ -535,7 +536,7 @@
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
                                     <th class="p-4">N° Factura</th>
-                                    <th class="p-4">Tipo</th>
+                                    <th class="p-4">Canal</th>
                                     <th class="p-4">Fecha</th>
                                     <th class="p-4">Cliente</th>
                                     <th class="p-4">Total</th>
@@ -554,9 +555,9 @@
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Histórico Completo de Ventas</h2>
-                            <p class="text-xs text-slate-500">Modo Admin te permite corregir clientes, fechas, montos y descuentos de ventas pasadas.</p>
+                            <p class="text-xs text-slate-500">Edición de clientes, montos y tipos de venta en Modo Admin.</p>
                         </div>
-                        <select id="filter-sales-type-hist" onchange="renderTablesViews()" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:outline-none shadow-sm">
+                        <select id="filter-sales-type-hist" onchange="renderTablesViews()" class="bg-white border border-purple-300 text-purple-900 rounded-xl px-3 py-1.5 text-xs font-extrabold focus:outline-none shadow-sm">
                             <option value="ALL">Todas las Ventas (Detal + Mayor)</option>
                             <option value="DETAL">Solo Ventas al Detal</option>
                             <option value="POR_MAYOR">Solo Ventas Por Mayor</option>
@@ -567,7 +568,7 @@
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
                                     <th class="p-4">N° Factura</th>
-                                    <th class="p-4">Tipo</th>
+                                    <th class="p-4">Canal</th>
                                     <th class="p-4">Fecha Exacta</th>
                                     <th class="p-4">Cliente / Contacto</th>
                                     <th class="p-4">Total</th>
@@ -585,7 +586,7 @@
                 <section id="tab-ganancias-mes" class="tab-content hidden space-y-6">
                     <div class="flex justify-between items-center">
                         <h2 class="text-2xl font-black text-slate-900 tracking-tight">Análisis de Ganancias Mes a Mes</h2>
-                        <select id="filter-sales-type-gan" onchange="renderTablesViews()" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:outline-none shadow-sm">
+                        <select id="filter-sales-type-gan" onchange="renderTablesViews()" class="bg-white border border-purple-300 text-purple-900 rounded-xl px-3 py-1.5 text-xs font-extrabold focus:outline-none shadow-sm">
                             <option value="ALL">Consolidado (Detal + Por Mayor)</option>
                             <option value="DETAL">Solo Ventas al Detal</option>
                             <option value="POR_MAYOR">Solo Ventas Por Mayor</option>
@@ -601,7 +602,7 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Catálogo de Perfumes & Combos</h2>
-                            <p class="text-xs text-slate-500">Gestión rápida de stock respaldado en la Nube</p>
+                            <p class="text-xs text-slate-500">Gestión de stock ultra rápida y duplicación manual a Por Mayor</p>
                         </div>
                         <div class="flex items-center gap-2 flex-wrap">
                             <button onclick="triggerExcelImport()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-emerald-600/20">
@@ -619,7 +620,7 @@
                         </div>
                     </div>
 
-                    <!-- CASILLA INDEPENDIENTE ADMIN: MODIFICAR STOCK GLOBAL (CATÁLOGO E INVENTARIO) -->
+                    <!-- CASILLA INDEPENDIENTE ADMIN: MODIFICAR STOCK GLOBAL -->
                     <div class="admin-only hidden bg-gradient-to-r from-purple-900 to-indigo-900 text-white p-5 rounded-3xl shadow-lg border border-purple-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div class="flex items-center gap-3">
                             <div class="p-3 bg-purple-600/40 rounded-2xl border border-purple-400/40 text-amber-300">
@@ -671,25 +672,25 @@
                     </div>
                 </section>
 
-                <!-- 6.B MÓDULO SEPARADO POR MAYOR (NUEVO SECTOR INDEPENDIENTE) -->
+                <!-- 6.B MÓDULO SEPARADO POR MAYOR -->
                 <section id="tab-wholesale" class="tab-content hidden space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                                 <i class="fa-solid fa-box-open text-amber-500"></i> Módulo Independiente Por Mayor
                             </h2>
-                            <p class="text-xs text-slate-500 font-medium">Gestión aislada de productos al por mayor para no saturar el catálogo principal</p>
+                            <p class="text-xs text-slate-500 font-medium">Gestión aislada de productos al por mayor con ventas y catálogo propio</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <button onclick="duplicateAllToWholesale()" class="admin-only hidden bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs transition shadow-md flex items-center gap-2">
-                                <i class="fa-solid fa-clone"></i> ✨ Duplicar Todo el Inventario a Por Mayor
+                                <i class="fa-solid fa-clone"></i> ✨ Duplicar Masivo a Por Mayor
                             </button>
                         </div>
                     </div>
 
                     <div class="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 text-xs text-amber-900 space-y-1">
                         <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-amber-600"></i> Protección de Precio Base Costo Fabricante:</p>
-                        <p class="text-[11px] text-amber-800">Al duplicar la mercancía, el sistema mantiene intacto tu **Precio Costo de Fabricante**. Se creará un nuevo registro en la categoría "Por Mayor" con un precio de venta al público ajustado con un 25% de descuento mayorista que puedes modificar individualmente en cualquier momento.</p>
+                        <p class="text-[11px] text-amber-800">Al duplicar un producto (manualmente o masivo), el sistema conserva intacto tu **Precio Costo de Fabricante**. Se crea una variante en el módulo "Por Mayor" editable de forma totalmente independiente.</p>
                     </div>
 
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
@@ -996,7 +997,7 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block font-bold text-slate-600 mb-1">Tipo de Venta:</label>
+                        <label class="block font-bold text-slate-600 mb-1">Canal de Venta:</label>
                         <select id="edit-sale-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none font-bold">
                             <option value="DETAL">Venta al Detal</option>
                             <option value="POR_MAYOR">Venta Por Mayor</option>
@@ -1285,7 +1286,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT CORREGIDO Y COMPLETO CON CONTROL TOTAL DE ERRORES -->
+    <!-- JAVASCRIPT CORREGIDO, ULTRA RÁPIDO Y TOTALMENTE ESTABLE -->
     <script>
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
@@ -1582,13 +1583,16 @@
             saveDataLocalOnly();
 
             if (isFirebaseConnected && db) {
-                products.forEach(p => {
-                    db.collection("pos_products").doc(String(p.id)).set(p, { merge: true });
-                });
+                // Sincronización optimizada no bloqueante
+                setTimeout(() => {
+                    products.forEach(p => {
+                        db.collection("pos_products").doc(String(p.id)).set(p, { merge: true });
+                    });
 
-                sales.forEach(s => {
-                    db.collection("sales").doc(String(s.id)).set(s, { merge: true });
-                });
+                    sales.forEach(s => {
+                        db.collection("sales").doc(String(s.id)).set(s, { merge: true });
+                    });
+                }, 0);
             }
         }
 
@@ -1895,12 +1899,10 @@
                 `;
             });
 
-            // Ajustar automáticamente el selector de Tipo de Venta según el contenido del carrito
+            // Ajustar automáticamente el selector de Tipo de Venta si detecta productos al por mayor
             const saleTypeSelect = document.getElementById('pos-sale-type');
-            if (saleTypeSelect) {
-                if (hasWholesaleItem) {
-                    saleTypeSelect.value = 'POR_MAYOR';
-                }
+            if (saleTypeSelect && hasWholesaleItem) {
+                saleTypeSelect.value = 'POR_MAYOR';
             }
 
             if (shippingCost > 0) {
@@ -2186,7 +2188,7 @@
                 return `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 font-mono font-bold text-purple-600">${s.id}</td>
-                        <td class="p-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-black ${isMayor ? 'bg-amber-100 text-amber-800' : 'bg-purple-100 text-purple-800'}">${isMayor ? 'POR MAYOR' : 'DETAL'}</span></td>
+                        <td class="p-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-black ${isMayor ? 'bg-amber-100 text-amber-800' : 'bg-purple-100 text-purple-800'}">${isMayor ? 'POR MAYOR' : 'DETAL'}</span></td>
                         <td class="p-4 text-slate-500 font-mono">${s.date}</td>
                         <td class="p-4 font-bold text-slate-800">${s.clientName}</td>
                         <td class="p-4 font-bold text-slate-800">$${totalVal.toLocaleString('es-CO')}</td>
@@ -2270,7 +2272,6 @@
             return `FRAG-${nextNum}`;
         }
 
-        // FUNCIONES DE CONTROL GLOBAL Y EDICIÓN MASIVA DE STOCK
         function applyGlobalStock() {
             if (!isAdmin) return showToast('Desbloquea el Modo Admin', 'error');
             const stockInput = document.getElementById('admin-global-stock-input');
@@ -2300,7 +2301,7 @@
             showToast(`¡Se actualizó el stock a ${newStockVal} unidades en ${updatedCount} productos!`);
         }
 
-        // FUNCIÓN CORREGIDA DE DUPLICACIÓN TOTAL AL MÓDULO POR MAYOR (CORRIGE EL ERROR DE DUPLICAR SOLO 1)
+        // DUPLICACIÓN MASIVA A POR MAYOR
         function duplicateAllToWholesale() {
             if (!isAdmin) return showToast('Desbloquea el Modo Admin', 'error');
 
@@ -2315,7 +2316,7 @@
             }
 
             let duplicatedCount = 0;
-            baseProducts.forEach((p, idx) => {
+            baseProducts.forEach((p) => {
                 const wholesaleName = `${p.name} - Por Mayor`;
                 const expectedSku = `${p.sku}-PM`;
                 
@@ -2343,6 +2344,40 @@
             showToast(`¡Se duplicaron exitosamente los ${duplicatedCount} productos al Módulo Por Mayor!`);
         }
 
+        // DUPLICACIÓN MANUAL DE UN SOLO PRODUCTO A POR MAYOR
+        function copyToWholesale(id) {
+            if (!isAdmin) return showToast('Desbloquea el Modo Admin', 'error');
+            const p = products.find(item => String(item.id) === String(id));
+            if (p) {
+                const wholesaleSku = `${p.sku}-PM`;
+                const wholesaleName = `${p.name} - Por Mayor`;
+
+                // Verificar si ya fue duplicado anteriormente
+                const existing = products.find(existingProd => existingProd.category === 'Por Mayor' && (existingProd.sku === wholesaleSku || existingProd.name === wholesaleName));
+                
+                if (existing) {
+                    return showToast('Este producto ya existe en el Módulo Por Mayor', 'error');
+                }
+
+                const newWholesale = {
+                    id: `PM-${p.id}-${Date.now()}`,
+                    sku: wholesaleSku,
+                    name: wholesaleName,
+                    category: 'Por Mayor',
+                    stock: isNaN(parseInt(p.stock)) ? 10 : parseInt(p.stock),
+                    cost: parseFloat(p.cost) || 0,
+                    price: Math.round((parseFloat(p.price) || 0) * 0.75) // 25% descuento de sugerencia
+                };
+
+                products.push(newWholesale);
+                saveData();
+                renderInventoryTable();
+                renderWholesaleTable();
+                renderPosProducts();
+                showToast(`¡Producto duplicado exitosamente a Por Mayor! Puedes editar su precio ahora.`);
+            }
+        }
+
         function renderWholesaleTable() {
             const searchInput = document.getElementById('wholesale-search');
             const tbody = document.getElementById('wholesale-table-body');
@@ -2354,7 +2389,7 @@
             const wholesaleProducts = products.filter(p => p.category === 'Por Mayor' && ((p.name || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search)));
 
             if (wholesaleProducts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">No hay productos al Por Mayor registrados. Presiona "Duplicar Todo el Inventario a Por Mayor".</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">No hay productos al Por Mayor registrados. Duplica uno manualmente desde el Inventario o usa el duplicador masivo.</td></tr>`;
                 return;
             }
 
@@ -2421,7 +2456,7 @@
                             `}
                         </td>
                         <td class="p-4 text-center space-x-1">
-                            ${isAdmin && !isCombo ? `<button onclick="copyToWholesale('${p.id}')" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition" title="Copiar a Por Mayor"><i class="fa-solid fa-copy"></i> Por Mayor</button>` : ''}
+                            ${isAdmin && !isCombo && p.category !== 'Por Mayor' ? `<button onclick="copyToWholesale('${p.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold rounded-xl text-xs transition" title="Copiar a Por Mayor"><i class="fa-solid fa-copy"></i> + Copiar a Por Mayor</button>` : ''}
                             ${isAdmin ? `<button onclick="editProduct('${p.id}')" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
                             ${isAdmin ? `<button onclick="deleteProduct('${p.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar del POS"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </td>
@@ -2452,28 +2487,6 @@
 
                 saveData();
                 updateDashboard();
-            }
-        }
-
-        function copyToWholesale(id) {
-            if (!isAdmin) return;
-            const p = products.find(item => String(item.id) === String(id));
-            if (p) {
-                const newWholesale = {
-                    id: `PM-${p.id}`,
-                    sku: `${p.sku}-PM`,
-                    name: `${p.name} - Por Mayor`,
-                    category: 'Por Mayor',
-                    stock: isNaN(parseInt(p.stock)) ? 10 : parseInt(p.stock),
-                    cost: parseFloat(p.cost) || 0,
-                    price: Math.round((parseFloat(p.price) || 0) * 0.75)
-                };
-                products.push(newWholesale);
-                saveData();
-                renderInventoryTable();
-                renderWholesaleTable();
-                renderPosProducts();
-                showToast(`¡Copiado a Por Mayor! Guardado en POS.`);
             }
         }
 
@@ -2544,8 +2557,589 @@
             renderWholesaleTable();
             renderPosProducts();
             updateDashboard();
-            showToast('Producto guardado exclusivamente en el POS');
+            showToast('Producto guardado correctamente');
         }
 
         function deleteProduct(id) {
-            if (!isAdmin
+            if (!isAdmin) return alert("Solo el Administrador puede eliminar perfumes.");
+            if (!confirm("¿Deseas eliminar este producto del inventario del POS?")) return;
+            products = products.filter(p => String(p.id) !== String(id));
+            
+            if (isFirebaseConnected && db) {
+                db.collection("pos_products").doc(String(id)).delete();
+            }
+
+            saveData();
+            renderInventoryTable();
+            renderWholesaleTable();
+            renderPosProducts();
+            updateDashboard();
+            showToast('Producto eliminado únicamente del POS');
+        }
+
+        function openComboModal() {
+            if (document.getElementById('combo-name')) document.getElementById('combo-name').value = '';
+            if (document.getElementById('combo-price')) document.getElementById('combo-price').value = '';
+            if (document.getElementById('combo-category')) document.getElementById('combo-category').value = 'Promociones';
+            if (document.getElementById('combo-items-container')) document.getElementById('combo-items-container').innerHTML = '';
+            updateComboLimitsInfo();
+            addComboProductRow();
+            const m = document.getElementById('combo-modal');
+            if (m) m.classList.remove('hidden');
+        }
+
+        function closeComboModal() {
+            const m = document.getElementById('combo-modal');
+            if (m) m.classList.add('hidden');
+        }
+
+        function updateComboLimitsInfo() {
+            const cat = document.getElementById('combo-category')?.value;
+            const label = document.getElementById('combo-limit-text');
+            if (label) {
+                if (cat === 'Promociones') label.innerText = 'Límite: Máx 3 productos';
+                else label.innerText = 'Kit sin límite estructurado';
+            }
+        }
+
+        function addComboProductRow() {
+            const container = document.getElementById('combo-items-container');
+            if (!container) return;
+            const cat = document.getElementById('combo-category')?.value;
+            const currentRows = container.children.length;
+
+            if (cat === 'Promociones' && currentRows >= 3) return showToast('Promociones permite máximo 3 productos', 'error');
+
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200";
+
+            let optionsHtml = '';
+            products.filter(p => !['Combos', 'Promociones'].includes(p.category)).forEach(prod => {
+                optionsHtml += `<option value="${prod.id}">${prod.name} (${prod.category})</option>`;
+            });
+
+            div.innerHTML = `
+                <select class="combo-prod-select flex-1 bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-none">
+                    ${optionsHtml}
+                </select>
+                <input type="number" value="1" min="1" class="combo-prod-qty w-16 bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-bold text-center">
+                <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 font-bold px-2 hover:text-rose-700">✕</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function saveCombo(e) {
+            e.preventDefault();
+            const name = document.getElementById('combo-name')?.value.trim() || '';
+            const category = document.getElementById('combo-category')?.value || 'Promociones';
+            const price = parseFloat(document.getElementById('combo-price')?.value) || 0;
+
+            const container = document.getElementById('combo-items-container');
+            if (!container) return;
+            const selects = container.querySelectorAll('.combo-prod-select');
+            const qtys = container.querySelectorAll('.combo-prod-qty');
+
+            if (selects.length === 0) return showToast('Añade al menos un producto al combo', 'error');
+
+            let comboItems = [];
+            let totalCost = 0;
+
+            selects.forEach((sel, idx) => {
+                const prodId = sel.value;
+                const qty = parseInt(qtys[idx].value) || 1;
+                const p = products.find(prod => String(prod.id) === String(prodId));
+                if (p) {
+                    comboItems.push({ prodId, qty, name: p.name });
+                    totalCost += ((parseFloat(p.cost) || 0) * qty);
+                }
+            });
+
+            const newCombo = {
+                id: String(Date.now()),
+                sku: generateAutoSKU(),
+                name,
+                category,
+                price,
+                cost: totalCost,
+                stock: 999,
+                items: comboItems
+            };
+
+            products.push(newCombo);
+            saveData();
+            closeComboModal();
+            renderInventoryTable();
+            renderPosProducts();
+            showToast('¡Combo guardado en el POS!');
+        }
+
+        function triggerExcelImport() {
+            const el = document.getElementById('excel-file-input');
+            if(el) el.click();
+        }
+
+        function importExcelCatalog(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+
+                products = [];
+
+                let importedCount = 0;
+                json.forEach(row => {
+                    const name = row.Nombre || row.PERFUME || row.Producto;
+                    if (name) {
+                        const sku = row.SKU || generateAutoSKU();
+                        const category = row.Categoria || row.CATEGORIA || row.Categoría || 'Árabes';
+                        
+                        let rawStock = row.STOCK !== undefined ? row.STOCK : (row.Stock !== undefined ? row.Stock : row.Cantidad);
+                        const stock = rawStock !== undefined && !isNaN(rawStock) ? parseInt(rawStock) : 10;
+                        
+                        let rawCost = row.COSTO !== undefined ? row.COSTO : (row.Costo !== undefined ? row.Costo : row.PrecioCompra);
+                        const cost = rawCost !== undefined && !isNaN(rawCost) ? parseFloat(rawCost) : 0;
+
+                        let rawPrice = row.PRECIO !== undefined ? row.PRECIO : (row.Precio !== undefined ? row.Precio : row.PrecioVenta);
+                        const price = rawPrice !== undefined && !isNaN(rawPrice) ? parseFloat(rawPrice) : 0;
+
+                        products.push({ id: String(Date.now() + Math.random()), sku, name, category, stock, cost, price });
+                        importedCount++;
+                    }
+                });
+
+                saveData();
+                renderInventoryTable();
+                renderWholesaleTable();
+                renderPosProducts();
+                updateDashboard();
+                showToast(`¡Se importaron ${importedCount} perfumes al POS!`);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderDebtsTable() {
+            const tbody = document.getElementById('debts-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            debts.slice().reverse().forEach(d => {
+                const amountVal = parseFloat(d.amount) || 0;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-4 text-slate-500 font-mono">${d.date}</td>
+                        <td class="p-4 font-bold text-purple-600">${d.saleId || 'Gral'}</td>
+                        <td class="p-4 font-bold text-slate-800">${d.client}</td>
+                        <td class="p-4 text-slate-600">${d.concept}</td>
+                        <td class="p-4 font-black text-emerald-600">$${amountVal.toLocaleString('es-CO')}</td>
+                        <td class="p-4 text-center">
+                            ${isAdmin ? `<button onclick="deleteDebt('${d.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Abono (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openDebtModal() {
+            const select = document.getElementById('debt-sale-select');
+            if (select) {
+                select.innerHTML = '<option value="">Abono General</option>';
+                const pendingSales = sales.filter(s => s.status === 'ABONO' || s.paid < s.total);
+                pendingSales.forEach(s => {
+                    const pend = (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0);
+                    select.innerHTML += `<option value="${s.id}">${s.id} - ${s.clientName} (Pendiente: $${pend.toLocaleString('es-CO')})</option>`;
+                });
+            }
+            const m = document.getElementById('debt-modal');
+            if (m) m.classList.remove('hidden');
+        }
+
+        function autoFillDebtClient() {
+            const saleId = document.getElementById('debt-sale-select')?.value;
+            if (saleId) {
+                const s = sales.find(sale => sale.id === saleId);
+                if (s) {
+                    if (document.getElementById('debt-client')) document.getElementById('debt-client').value = s.clientName;
+                    if (document.getElementById('debt-concept')) document.getElementById('debt-concept').value = `Abono parcial a factura ${s.id}`;
+                }
+            }
+        }
+
+        function closeDebtModal() {
+            const m = document.getElementById('debt-modal');
+            if (m) m.classList.add('hidden');
+        }
+
+        function saveDebtPayment(e) {
+            e.preventDefault();
+            const saleId = document.getElementById('debt-sale-select')?.value;
+            const client = document.getElementById('debt-client')?.value || '';
+            const concept = document.getElementById('debt-concept')?.value || '';
+            const amount = parseFloat(document.getElementById('debt-amount')?.value) || 0;
+
+            const now = new Date();
+            const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
+
+            if (saleId) {
+                const s = sales.find(sale => sale.id === saleId);
+                if (s) {
+                    s.paid = (parseFloat(s.paid) || 0) + amount;
+                    if (s.paid >= s.total) s.status = 'PAGADO';
+                }
+            }
+
+            debts.push({ id: 'ABO-' + Date.now(), date: fullDateTime, saleId: saleId || 'Gral', client, concept, amount });
+            saveData();
+            closeDebtModal();
+            renderDebtsTable();
+            renderTablesViews();
+            updateDashboard();
+            showToast('Abono registrado exitosamente');
+        }
+
+        function deleteDebt(id) {
+            if (!isAdmin) return alert("Solo el Administrador puede eliminar abonos.");
+            if (!confirm("¿Desea eliminar este abono de cliente?")) return;
+            debts = debts.filter(d => d.id !== id);
+            saveData();
+            renderDebtsTable();
+            renderTablesViews();
+            updateDashboard();
+            showToast('Abono eliminado por el Administrador');
+        }
+
+        function renderPayablesTable() {
+            const tbody = document.getElementById('payables-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            payables.forEach(p => {
+                const totalVal = parseFloat(p.total) || 0;
+                const paidVal = parseFloat(p.paid) || 0;
+                const pending = Math.max(0, totalVal - paidVal);
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-4 font-mono font-bold text-rose-600">${p.invoiceNum}</td>
+                        <td class="p-4 font-bold text-slate-800">${p.supplier}</td>
+                        <td class="p-4 text-slate-500 font-mono">${p.date}</td>
+                        <td class="p-4 font-bold text-slate-800">$${totalVal.toLocaleString('es-CO')}</td>
+                        <td class="p-4 font-bold text-emerald-600">$${paidVal.toLocaleString('es-CO')}</td>
+                        <td class="p-4 font-black ${pending > 0 ? 'text-rose-600' : 'text-slate-400'}">$${pending.toLocaleString('es-CO')}</td>
+                        <td class="p-4 text-center space-x-1">
+                            ${pending > 0 ? `<button onclick="openPayableAbonoModal('${p.id}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl text-xs transition">+ Abonar</button>` : '<span class="text-xs font-bold text-emerald-600 px-2">PAGADO</span>'}
+                            ${isAdmin ? `<button onclick="editPayable('${p.id}')" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar Deuda (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
+                            ${isAdmin ? `<button onclick="deletePayable('${p.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Factura (Admin)"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openPayableModal() {
+            if (document.getElementById('pay-id')) document.getElementById('pay-id').value = '';
+            if (document.getElementById('payable-modal-title')) document.getElementById('payable-modal-title').innerText = "Registrar Deuda a Proveedor";
+            const m = document.getElementById('payable-modal');
+            if (m) m.classList.remove('hidden');
+        }
+
+        function closePayableModal() {
+            const m = document.getElementById('payable-modal');
+            if (m) m.classList.add('hidden');
+        }
+
+        function editPayable(id) {
+            if (!isAdmin) return;
+            const p = payables.find(item => item.id === id);
+            if (p) {
+                if (document.getElementById('pay-id')) document.getElementById('pay-id').value = p.id;
+                if (document.getElementById('pay-supplier')) document.getElementById('pay-supplier').value = p.supplier;
+                if (document.getElementById('pay-invoice-num')) document.getElementById('pay-invoice-num').value = p.invoiceNum;
+                if (document.getElementById('pay-total')) document.getElementById('pay-total').value = parseFloat(p.total) || 0;
+                if (document.getElementById('pay-abono')) document.getElementById('pay-abono').value = parseFloat(p.paid) || 0;
+                if (document.getElementById('payable-modal-title')) document.getElementById('payable-modal-title').innerText = "Editar Deuda de Proveedor (Admin)";
+                const m = document.getElementById('payable-modal');
+                if (m) m.classList.remove('hidden');
+            }
+        }
+
+        function savePayable(e) {
+            e.preventDefault();
+            const id = document.getElementById('pay-id')?.value;
+            const supplier = document.getElementById('pay-supplier')?.value.trim() || '';
+            const invoiceNum = document.getElementById('pay-invoice-num')?.value.trim() || '';
+            const total = parseFloat(document.getElementById('pay-total')?.value) || 0;
+            const abono = parseFloat(document.getElementById('pay-abono')?.value) || 0;
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('es-CO');
+
+            if (id) {
+                const p = payables.find(item => item.id === id);
+                if (p) {
+                    p.supplier = supplier;
+                    p.invoiceNum = invoiceNum;
+                    p.total = total;
+                    p.paid = abono;
+                }
+            } else {
+                payables.push({
+                    id: 'PAY-' + Date.now(),
+                    date: dateStr,
+                    supplier,
+                    invoiceNum,
+                    total,
+                    paid: abono
+                });
+            }
+
+            saveData();
+            closePayableModal();
+            renderPayablesTable();
+            updateDashboard();
+            showToast('Factura de proveedor guardada');
+        }
+
+        function openPayableAbonoModal(id) {
+            const p = payables.find(item => item.id === id);
+            if (p) {
+                if (document.getElementById('pay-abono-id')) document.getElementById('pay-abono-id').value = p.id;
+                if (document.getElementById('pay-abono-info')) document.getElementById('pay-abono-info').value = `${p.supplier} (${p.invoiceNum})`;
+                if (document.getElementById('pay-abono-amount')) document.getElementById('pay-abono-amount').value = '';
+                const m = document.getElementById('payable-abono-modal');
+                if (m) m.classList.remove('hidden');
+            }
+        }
+
+        function closePayableAbonoModal() {
+            const m = document.getElementById('payable-abono-modal');
+            if (m) m.classList.add('hidden');
+        }
+
+        function savePayableAbono(e) {
+            e.preventDefault();
+            const id = document.getElementById('pay-abono-id')?.value;
+            const amount = parseFloat(document.getElementById('pay-abono-amount')?.value) || 0;
+
+            const p = payables.find(item => item.id === id);
+            if (p && amount > 0) {
+                p.paid = (parseFloat(p.paid) || 0) + amount;
+                saveData();
+                closePayableAbonoModal();
+                renderPayablesTable();
+                updateDashboard();
+                showToast('Abono a proveedor procesado');
+            }
+        }
+
+        function deletePayable(id) {
+            if (!isAdmin) return alert("Solo el Administrador puede eliminar deudas a proveedores.");
+            if (!confirm("¿Deseas eliminar esta factura por pagar?")) return;
+            payables = payables.filter(p => p.id !== id);
+            saveData();
+            renderPayablesTable();
+            updateDashboard();
+            showToast('Deuda a proveedor eliminada');
+        }
+
+        function renderExpensesTable() {
+            const tbody = document.getElementById('expenses-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            expenses.slice().reverse().forEach(exp => {
+                const amountVal = parseFloat(exp.amount) || 0;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-4 text-slate-500 font-mono">${exp.date}</td>
+                        <td class="p-4 font-bold text-slate-800">${exp.desc}</td>
+                        <td class="p-4 font-black text-rose-600">$${amountVal.toLocaleString('es-CO')}</td>
+                        <td class="p-4 text-center">
+                            ${isAdmin ? `<button onclick="deleteExpense('${exp.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Gasto (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openExpenseModal() {
+            if (document.getElementById('exp-desc')) document.getElementById('exp-desc').value = '';
+            if (document.getElementById('exp-amount')) document.getElementById('exp-amount').value = '';
+            const m = document.getElementById('expense-modal');
+            if (m) m.classList.remove('hidden');
+        }
+
+        function closeExpenseModal() {
+            const m = document.getElementById('expense-modal');
+            if (m) m.classList.add('hidden');
+        }
+
+        function saveExpense(e) {
+            e.preventDefault();
+            const desc = document.getElementById('exp-desc')?.value.trim() || '';
+            const amount = parseFloat(document.getElementById('exp-amount')?.value) || 0;
+
+            const now = new Date();
+            const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
+
+            expenses.push({
+                id: 'EXP-' + Date.now(),
+                date: fullDateTime,
+                desc,
+                amount
+            });
+
+            saveData();
+            closeExpenseModal();
+            renderExpensesTable();
+            updateDashboard();
+            showToast('Gasto operativo registrado');
+        }
+
+        function deleteExpense(id) {
+            if (!isAdmin) return alert("Solo el Administrador puede eliminar gastos.");
+            if (!confirm("¿Deseas eliminar este gasto?")) return;
+            expenses = expenses.filter(exp => exp.id !== id);
+            saveData();
+            renderExpensesTable();
+            updateDashboard();
+            showToast('Gasto eliminado');
+        }
+
+        function updateDashboard() {
+            const filter = document.getElementById('dash-month-filter')?.value || 'CURRENT';
+            const now = new Date();
+            const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+            let filteredSales = sales;
+            if (filter === 'CURRENT') {
+                filteredSales = sales.filter(s => {
+                    const d = new Date(s.rawDate || Date.now());
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === currentMonthKey;
+                });
+            } else if (filter !== 'ALL') {
+                filteredSales = sales.filter(s => {
+                    const d = new Date(s.rawDate || Date.now());
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === filter;
+                });
+            }
+
+            const totalSalesVal = filteredSales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
+            const totalCostVal = filteredSales.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
+            const netProfitVal = totalSalesVal - totalCostVal;
+
+            const customerDebtsVal = sales.reduce((sum, s) => {
+                const pend = (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0);
+                return sum + Math.max(0, pend);
+            }, 0);
+
+            // CÁLCULO DE INVENTARIO (SIN DUPLICAR COSTO POR MAYOR NI COMBOS)
+            const stockCostVal = products.reduce((sum, p) => {
+                if (['Combos', 'Promociones', 'Por Mayor'].includes(p.category)) {
+                    return sum;
+                }
+                const stock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
+                const cost = parseFloat(p.cost) || 0;
+                return sum + (stock * cost);
+            }, 0);
+
+            const payablesVal = payables.reduce((sum, p) => {
+                const pend = (parseFloat(p.total) || 0) - (parseFloat(p.paid) || 0);
+                return sum + Math.max(0, pend);
+            }, 0);
+
+            if (document.getElementById('dash-total-sales')) document.getElementById('dash-total-sales').innerText = `$${totalSalesVal.toLocaleString('es-CO')}`;
+            if (document.getElementById('dash-net-profit')) document.getElementById('dash-net-profit').innerText = `$${netProfitVal.toLocaleString('es-CO')}`;
+            if (document.getElementById('dash-total-customer-debts')) document.getElementById('dash-total-customer-debts').innerText = `$${customerDebtsVal.toLocaleString('es-CO')}`;
+            if (document.getElementById('dash-stock-cost')) document.getElementById('dash-stock-cost').innerText = `$${stockCostVal.toLocaleString('es-CO')}`;
+            if (document.getElementById('dash-total-payables')) document.getElementById('dash-total-payables').innerText = `$${payablesVal.toLocaleString('es-CO')}`;
+
+            // CONTROL FINANCIERO ADMIN
+            const historicalPaidSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
+            const totalWithdrawals = withdrawals.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+            const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+            const totalPayablesPaid = payables.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
+
+            const totalExpected = bankSavings + historicalPaidSales - totalExpenses - totalPayablesPaid - totalWithdrawals;
+
+            if (document.getElementById('admin-total-historical-sales')) document.getElementById('admin-total-historical-sales').innerText = `$${historicalPaidSales.toLocaleString('es-CO')}`;
+            if (document.getElementById('admin-total-withdrawals')) document.getElementById('admin-total-withdrawals').innerText = `$${totalWithdrawals.toLocaleString('es-CO')}`;
+            if (document.getElementById('admin-total-expected-money')) document.getElementById('admin-total-expected-money').innerText = `$${totalExpected.toLocaleString('es-CO')}`;
+
+            const baseMissing = Math.max(0, baseTarget - baseCurrent);
+            if (document.getElementById('base-missing-val')) document.getElementById('base-missing-val').innerText = `$${baseMissing.toLocaleString('es-CO')}`;
+
+            // REPARTO DE SOCIOS
+            const historicalProfit = sales.reduce((sum, s) => sum + ((parseFloat(s.total) || 0) - (parseFloat(s.cost) || 0)), 0) - totalExpenses;
+            const socioHalfProfit = Math.max(0, historicalProfit / 2);
+
+            const wSocio1 = withdrawals.filter(w => w.partner === 'socio1').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+            const wSocio2 = withdrawals.filter(w => w.partner === 'socio2').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+
+            if (document.getElementById('socio1-earned')) document.getElementById('socio1-earned').innerText = `$${socioHalfProfit.toLocaleString('es-CO')}`;
+            if (document.getElementById('socio1-withdrawn')) document.getElementById('socio1-withdrawn').innerText = `$${wSocio1.toLocaleString('es-CO')}`;
+            if (document.getElementById('socio1-available')) document.getElementById('socio1-available').innerText = `$${(socioHalfProfit - wSocio1).toLocaleString('es-CO')}`;
+
+            if (document.getElementById('socio2-earned')) document.getElementById('socio2-earned').innerText = `$${socioHalfProfit.toLocaleString('es-CO')}`;
+            if (document.getElementById('socio2-withdrawn')) document.getElementById('socio2-withdrawn').innerText = `$${wSocio2.toLocaleString('es-CO')}`;
+            if (document.getElementById('socio2-available')) document.getElementById('socio2-available').innerText = `$${(socioHalfProfit - wSocio2).toLocaleString('es-CO')}`;
+
+            // ALERTA STOCK BAJO
+            const lowStockList = document.getElementById('dash-low-stock-list');
+            if (lowStockList) {
+                lowStockList.innerHTML = '';
+                const lowItems = products.filter(p => !['Combos', 'Promociones'].includes(p.category) && (isNaN(parseInt(p.stock)) || parseInt(p.stock) <= 3));
+                
+                if (lowItems.length === 0) {
+                    lowStockList.innerHTML = `<p class="text-xs text-slate-400 italic">Todo el stock en niveles óptimos</p>`;
+                } else {
+                    lowItems.forEach(p => {
+                        lowStockList.innerHTML += `
+                            <div class="flex items-center justify-between p-2 bg-amber-50 rounded-xl border border-amber-200/60 text-xs">
+                                <span class="font-bold text-amber-900 truncate max-w-[150px]">${p.name}</span>
+                                <span class="font-extrabold text-rose-600 bg-rose-100 px-2.5 py-0.5 rounded-full">${p.stock} unid.</span>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            renderChart(totalSalesVal, totalCostVal, netProfitVal);
+        }
+
+        function renderChart(salesVal, costVal, profitVal) {
+            const ctx = document.getElementById('financeChart');
+            if (!ctx) return;
+
+            if (financeChart) financeChart.destroy();
+
+            financeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Ventas Brutas', 'Costo Mercancía', 'Ganancia Neta'],
+                    datasets: [{
+                        data: [salesVal, costVal, profitVal],
+                        backgroundColor: ['#10b981', '#f59e0b', '#a855f7'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // AUTO-INIT AL CARGAR PÁGINA
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMemory();
+        });
+    </script>
+</body>
+</html>
