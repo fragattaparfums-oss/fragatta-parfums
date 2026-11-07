@@ -185,6 +185,10 @@
                             <i class="fa-solid fa-fire text-amber-500"></i> Conexión a Nube Firebase (Tiempo Real)
                         </h3>
                         <div class="flex gap-2">
+                                <button onclick="openArqueoModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
+                                    <i class="fa-solid fa-scale-balanced"></i> Cuadrar Caja
+                                </button>
+                                
                             <button onclick="importarDesdeWeb()" class="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-xs rounded-xl shadow-md flex items-center gap-1">
                                 <i class="fa-solid fa-cloud-arrow-down"></i> Importar desde Web
                             </button>
@@ -305,9 +309,10 @@
 
                         <!-- FILA 1 -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
+                            <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80 relative">
                                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Ventas Cobradas</p>
                                 <h4 id="admin-total-historical-sales" class="text-2xl font-black text-emerald-400 mt-1">$0</h4>
+                                <button onclick="adjustSalesTotal()" class="absolute top-3 right-3 text-slate-500 hover:text-emerald-400 transition" title="Ajuste Manual de Ventas"><i class="fa-solid fa-pen"></i></button>
                             </div>
 
                             <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80">
@@ -901,6 +906,35 @@
         </div>
     </div>
 
+    
+    <!-- MODAL ARQUEO DE CAJA -->
+    <div id="arqueo-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border border-slate-200 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-scale-balanced text-emerald-600"></i> Cierre y Cuadre de Caja
+            </h3>
+            <div class="space-y-3 text-xs">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Total Esperado en Sistema</p>
+                    <h4 id="arqueo-expected" class="text-2xl font-black text-slate-800 mt-1">$0</h4>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Efectivo / Dinero Real Contado ($):</label>
+                    <input type="number" id="arqueo-real-amount" oninput="calculateArqueoDiff()" min="0" placeholder="Ej: 150000" class="w-full bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-3 text-slate-800 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center">
+                </div>
+                <div id="arqueo-diff-container" class="hidden p-3 rounded-xl text-center border">
+                    <p id="arqueo-diff-label" class="text-[10px] font-bold uppercase"></p>
+                    <h4 id="arqueo-diff-val" class="text-xl font-black mt-1"></h4>
+                    <p id="arqueo-diff-desc" class="text-[9px] mt-1 font-medium"></p>
+                </div>
+                <div class="pt-2 flex justify-end gap-2 border-t border-slate-100 mt-2">
+                    <button type="button" onclick="closeArqueoModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
+                    <button type="button" id="btn-save-arqueo" onclick="saveArqueo()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold">Confirmar Cuadre</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL CONFIGURACIÓN FIREBASE -->
     <div id="firebase-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
@@ -1318,6 +1352,7 @@
         let payables = [];
         let withdrawals = [];
         let bankSavings = 0;
+        let salesAdjustment = 0;
         let baseTarget = 0;
         let baseCurrent = 0;
 
@@ -1333,6 +1368,7 @@
                 payables = JSON.parse(localStorage.getItem('fragatta_payables')) || [];
                 withdrawals = JSON.parse(localStorage.getItem('fragatta_withdrawals')) || [];
                 bankSavings = parseFloat(localStorage.getItem('fragatta_bank_savings')) || 0;
+                salesAdjustment = parseFloat(localStorage.getItem('fragatta_sales_adjustment')) || 0;
                 baseTarget = parseFloat(localStorage.getItem('fragatta_base_target')) || 0;
                 baseCurrent = parseFloat(localStorage.getItem('fragatta_base_current')) || 0;
             } catch (e) {
@@ -1349,6 +1385,7 @@
             localStorage.setItem('fragatta_payables', JSON.stringify(payables));
             localStorage.setItem('fragatta_withdrawals', JSON.stringify(withdrawals));
             localStorage.setItem('fragatta_bank_savings', bankSavings.toString());
+            localStorage.setItem('fragatta_sales_adjustment', salesAdjustment.toString());
             localStorage.setItem('fragatta_base_target', baseTarget.toString());
             localStorage.setItem('fragatta_base_current', baseCurrent.toString());
         }
@@ -1371,6 +1408,115 @@
             if(el) el.value = '';
             const m = document.getElementById('reset-modal');
             if(m) m.classList.remove('hidden');
+        }
+
+        
+        function openArqueoModal() {
+            const historicalPaidSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0) + salesAdjustment;
+            const totalWithdrawals = withdrawals.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+            const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+            const totalPayablesPaid = payables.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
+            const totalExpected = bankSavings + historicalPaidSales - totalExpenses - totalPayablesPaid - totalWithdrawals;
+
+            document.getElementById('arqueo-expected').innerText = `$${totalExpected.toLocaleString('es-CO')}`;
+            document.getElementById('arqueo-expected').dataset.val = totalExpected;
+            
+            document.getElementById('arqueo-real-amount').value = '';
+            document.getElementById('arqueo-diff-container').classList.add('hidden');
+            
+            const m = document.getElementById('arqueo-modal');
+            if (m) m.classList.remove('hidden');
+        }
+
+        function closeArqueoModal() {
+            const m = document.getElementById('arqueo-modal');
+            if (m) m.classList.add('hidden');
+        }
+
+        function calculateArqueoDiff() {
+            const expected = parseFloat(document.getElementById('arqueo-expected').dataset.val) || 0;
+            const real = parseFloat(document.getElementById('arqueo-real-amount').value);
+            const container = document.getElementById('arqueo-diff-container');
+            const label = document.getElementById('arqueo-diff-label');
+            const val = document.getElementById('arqueo-diff-val');
+            const desc = document.getElementById('arqueo-diff-desc');
+
+            if (isNaN(real)) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            const diff = real - expected;
+
+            if (diff < 0) {
+                container.className = "p-3 rounded-xl text-center border border-rose-200 bg-rose-50 text-rose-700 mt-3";
+                label.innerText = "FALTANTE DE CAJA";
+                val.innerText = `-$${Math.abs(diff).toLocaleString('es-CO')}`;
+                desc.innerText = "Se registrará automáticamente como un 'Gasto Operativo' para cuadrar.";
+            } else if (diff > 0) {
+                container.className = "p-3 rounded-xl text-center border border-emerald-200 bg-emerald-50 text-emerald-700 mt-3";
+                label.innerText = "SOBRANTE DE CAJA";
+                val.innerText = `+$${Math.abs(diff).toLocaleString('es-CO')}`;
+                desc.innerText = "Se sumará a tu Saldo Base para cuadrar sin inflar las ventas.";
+            } else {
+                container.className = "p-3 rounded-xl text-center border border-blue-200 bg-blue-50 text-blue-700 mt-3";
+                label.innerText = "CAJA CUADRADA PERFECTAMENTE";
+                val.innerText = `$0`;
+                desc.innerText = "El dinero físico coincide con el sistema.";
+            }
+        }
+
+        function saveArqueo() {
+            const expected = parseFloat(document.getElementById('arqueo-expected').dataset.val) || 0;
+            const real = parseFloat(document.getElementById('arqueo-real-amount').value);
+            if (isNaN(real)) return showToast('Ingresa el monto real contado', 'error');
+
+            const diff = real - expected;
+            const now = new Date();
+            const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
+
+            if (diff < 0) {
+                const newE = { id: 'EXP-' + Date.now(), date: fullDateTime, desc: 'Faltante en Cierre de Caja', amount: Math.abs(diff) };
+                expenses.push(newE);
+                if(isFirebaseConnected && db) db.collection("expenses").doc(String(newE.id)).set(newE, { merge: true });
+            } else if (diff > 0) {
+                bankSavings += diff;
+                if(isFirebaseConnected && db) db.collection("admin_config").doc("finance").set({ bankSavings }, {merge: true});
+            }
+
+            saveDataLocalOnly();
+            closeArqueoModal();
+            renderExpensesTable();
+            updateDashboard();
+            
+            const bankSavingsInput = document.getElementById('admin-bank-savings');
+            if (bankSavingsInput) bankSavingsInput.value = bankSavings;
+
+            showToast('Arqueo de caja realizado exitosamente');
+        }
+
+        
+        function adjustSalesTotal() {
+            if(!isAdmin) return;
+            const currentSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
+            const currentTotal = currentSales + salesAdjustment;
+            const adjust = prompt(`Ventas reales registradas: $${currentSales.toLocaleString('es-CO')}\nAjuste actual aplicado: $${salesAdjustment.toLocaleString('es-CO')}\nTOTAL MOSTRADO: $${currentTotal.toLocaleString('es-CO')}\n\nPara DESCONTAR dinero por el error pasado, ingresa un número negativo (ej: -50000).\nPara sumar, ingresa un número positivo (ej: 50000).\nPara limpiar el ajuste, escribe 0.\n\n¿Cuánto dinero deseas sumar o restar para corregir el Total de Ventas?`, "0");
+            
+            if (adjust !== null && adjust !== "") {
+                const val = parseFloat(adjust);
+                if (!isNaN(val)) {
+                    if (val === 0) {
+                        salesAdjustment = 0;
+                    } else {
+                        salesAdjustment += val;
+                    }
+                    saveDataLocalOnly();
+                    if(isFirebaseConnected && db) db.collection("admin_config").doc("finance").set({ salesAdjustment }, {merge: true});
+                    updateDashboard();
+                    showToast('Ajuste de ventas aplicado correctamente');
+                }
+            }
         }
 
         function closeResetModal() {
@@ -1593,6 +1739,7 @@
                 if(doc.exists) {
                     const data = doc.data();
                     bankSavings = data.bankSavings ?? bankSavings;
+                    salesAdjustment = data.salesAdjustment ?? salesAdjustment;
                     baseTarget = data.baseTarget ?? baseTarget;
                     baseCurrent = data.baseCurrent ?? baseCurrent;
                     
@@ -3277,7 +3424,7 @@
             if (document.getElementById('dash-total-payables')) document.getElementById('dash-total-payables').innerText = `$${payablesVal.toLocaleString('es-CO')}`;
 
             // CONTROL FINANCIERO ADMIN
-            const historicalPaidSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
+            const historicalPaidSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0) + salesAdjustment;
             const totalWithdrawals = withdrawals.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
             const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
             const totalPayablesPaid = payables.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
