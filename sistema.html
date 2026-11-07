@@ -63,21 +63,21 @@
                 <p class="text-xs font-semibold text-purple-600 uppercase tracking-widest mt-1">Perfumería Exclusiva • Nube Firebase POS</p>
             </div>
 
-            <div class="space-y-4 text-left">
+            <form onsubmit="event.preventDefault(); verifyLogin();" class="space-y-4 text-left">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Clave de Ingreso al Sistema</label>
                     <div class="relative">
-                        <input type="password" id="login-pass-input" placeholder="••••••••••••" onkeydown="if(event.key==='Enter') verifyLogin()" class="w-full bg-slate-100 border border-slate-200 rounded-xl pl-4 pr-10 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition">
+                        <input type="password" id="login-pass-input" placeholder="••••••••••••" required class="w-full bg-slate-100 border border-slate-200 rounded-xl pl-4 pr-10 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition">
                         <button type="button" onclick="togglePasswordVisibility('login-pass-input', 'toggle-pass-icon-login')" class="absolute right-3 top-3.5 text-slate-400 hover:text-purple-600">
                             <i id="toggle-pass-icon-login" class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
-                <button type="button" onclick="verifyLogin()" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-purple-600/30">
+                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-purple-600/30">
                     Ingresar al Sistema
                 </button>
                 <p id="login-error" class="text-xs text-rose-500 font-semibold hidden text-center pt-1"><i class="fa-solid fa-circle-exclamation"></i> Contraseña incorrecta.</p>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -1718,9 +1718,7 @@ Para limpiar el ajuste, escribe 0.
 
         function importarDesdeWeb() {
             if (!db) return showToast("Firebase no está conectado", "error");
-            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?
-
-*Nota: Esta es una copia independiente.")) return;
+            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Esta es una copia independiente.")) return;
 
             db.collection("products").get().then((querySnapshot) => {
                 let batch = db.batch();
@@ -2577,9 +2575,7 @@ Para limpiar el ajuste, escribe 0.
                 return showToast('No hay productos base para duplicar', 'error');
             }
 
-            if (!confirm(`¿Deseas duplicar todos los (${baseProducts.length}) perfumes al módulo 'Por Mayor'?
-
-*Nota: Tu precio base de costo se conservará intacto.`)) {
+            if (!confirm(`¿Deseas duplicar todos los (${baseProducts.length}) perfumes al módulo 'Por Mayor'?\n\n*Nota: Tu precio base de costo se conservará intacto.`)) {
                 return;
             }
 
