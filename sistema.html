@@ -918,9 +918,15 @@
                     <p class="text-[10px] font-bold text-slate-400 uppercase">Total Esperado en Sistema</p>
                     <h4 id="arqueo-expected" class="text-2xl font-black text-slate-800 mt-1">$0</h4>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-600 mb-1">Efectivo / Dinero Real Contado ($):</label>
-                    <input type="number" id="arqueo-real-amount" oninput="calculateArqueoDiff()" min="0" placeholder="Ej: 150000" class="w-full bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-3 text-slate-800 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1 text-[10px]">Dinero en Cuenta ($):</label>
+                        <input type="number" id="arqueo-bank-amount" oninput="calculateArqueoDiff()" min="0" placeholder="0" class="w-full bg-purple-50 border border-purple-200 rounded-xl px-2 py-3 text-slate-800 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-center">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1 text-[10px]">Dinero en Efectivo ($):</label>
+                        <input type="number" id="arqueo-cash-amount" oninput="calculateArqueoDiff()" min="0" placeholder="0" class="w-full bg-emerald-50 border border-emerald-200 rounded-xl px-2 py-3 text-slate-800 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center">
+                    </div>
                 </div>
                 <div id="arqueo-diff-container" class="hidden p-3 rounded-xl text-center border">
                     <p id="arqueo-diff-label" class="text-[10px] font-bold uppercase"></p>
@@ -929,7 +935,7 @@
                 </div>
                 <div class="pt-2 flex justify-end gap-2 border-t border-slate-100 mt-2">
                     <button type="button" onclick="closeArqueoModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
-                    <button type="button" id="btn-save-arqueo" onclick="saveArqueo()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold">Confirmar Cuadre</button>
+                    <button type="button" id="btn-save-arqueo" onclick="closeArqueoModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold">Entendido / Cerrar</button>
                 </div>
             </div>
         </div>
@@ -1328,6 +1334,16 @@
     </div>
 
     <script>
+        // 🟢 PEGA AQUÍ TUS LLAVES DE FIREBASE UNA SOLA VEZ 🟢
+        // Esto hará que cualquier dispositivo que abra la página se conecte automáticamente.
+        const FIREBASE_CONFIG = {
+            apiKey: "",        // Ej: "AIzaSyB-..."
+            authDomain: "",    // Ej: "fragatta-pos.firebaseapp.com"
+            projectId: "",     // Ej: "fragatta-pos"
+            storageBucket: "", // Ej: "fragatta-pos.appspot.com"
+            appId: ""          // Ej: "1:123456789:web:abcdef"
+        };
+
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
         const RESET_PASS = "123456";
@@ -1421,7 +1437,8 @@
             document.getElementById('arqueo-expected').innerText = `$${totalExpected.toLocaleString('es-CO')}`;
             document.getElementById('arqueo-expected').dataset.val = totalExpected;
             
-            document.getElementById('arqueo-real-amount').value = '';
+            document.getElementById('arqueo-bank-amount').value = '';
+            document.getElementById('arqueo-cash-amount').value = '';
             document.getElementById('arqueo-diff-container').classList.add('hidden');
             
             const m = document.getElementById('arqueo-modal');
@@ -1435,13 +1452,15 @@
 
         function calculateArqueoDiff() {
             const expected = parseFloat(document.getElementById('arqueo-expected').dataset.val) || 0;
-            const real = parseFloat(document.getElementById('arqueo-real-amount').value);
+            const bankVal = parseFloat(document.getElementById('arqueo-bank-amount').value) || 0;
+            const cashVal = parseFloat(document.getElementById('arqueo-cash-amount').value) || 0;
+            const real = bankVal + cashVal;
             const container = document.getElementById('arqueo-diff-container');
             const label = document.getElementById('arqueo-diff-label');
             const val = document.getElementById('arqueo-diff-val');
             const desc = document.getElementById('arqueo-diff-desc');
 
-            if (isNaN(real)) {
+            if (document.getElementById('arqueo-bank-amount').value === '' && document.getElementById('arqueo-cash-amount').value === '') {
                 container.classList.add('hidden');
                 return;
             }
@@ -1453,23 +1472,25 @@
                 container.className = "p-3 rounded-xl text-center border border-rose-200 bg-rose-50 text-rose-700 mt-3";
                 label.innerText = "FALTANTE DE CAJA";
                 val.innerText = `-$${Math.abs(diff).toLocaleString('es-CO')}`;
-                desc.innerText = "Se registrará automáticamente como un 'Gasto Operativo' para cuadrar.";
+                desc.innerText = "Calculadora informativa. No se registrará ningún gasto ni ajuste automático.";
             } else if (diff > 0) {
                 container.className = "p-3 rounded-xl text-center border border-emerald-200 bg-emerald-50 text-emerald-700 mt-3";
                 label.innerText = "SOBRANTE DE CAJA";
                 val.innerText = `+$${Math.abs(diff).toLocaleString('es-CO')}`;
-                desc.innerText = "Se sumará a tu Saldo Base para cuadrar sin inflar las ventas.";
+                desc.innerText = "Calculadora informativa. No se sumará ningún saldo automáticamente.";
             } else {
                 container.className = "p-3 rounded-xl text-center border border-blue-200 bg-blue-50 text-blue-700 mt-3";
                 label.innerText = "CAJA CUADRADA PERFECTAMENTE";
                 val.innerText = `$0`;
-                desc.innerText = "El dinero físico coincide con el sistema.";
+                desc.innerText = "Todo está perfecto. Las cuentas coinciden exactas.";
             }
         }
 
         function saveArqueo() {
             const expected = parseFloat(document.getElementById('arqueo-expected').dataset.val) || 0;
-            const real = parseFloat(document.getElementById('arqueo-real-amount').value);
+            const bankVal = parseFloat(document.getElementById('arqueo-bank-amount').value) || 0;
+            const cashVal = parseFloat(document.getElementById('arqueo-cash-amount').value) || 0;
+            const real = bankVal + cashVal;
             if (isNaN(real)) return showToast('Ingresa el monto real contado', 'error');
 
             const diff = real - expected;
@@ -1580,10 +1601,12 @@
         }
 
         function initFirebase() {
+            // Usa las llaves quemadas en el código, o busca en el navegador si aún no las has puesto.
             const savedConfig = localStorage.getItem('fragatta_firebase_config');
-            if (savedConfig) {
+            const cfg = (FIREBASE_CONFIG.apiKey !== "") ? FIREBASE_CONFIG : (savedConfig ? JSON.parse(savedConfig) : null);
+            
+            if (cfg) {
                 try {
-                    const cfg = JSON.parse(savedConfig);
                     if (typeof firebase !== 'undefined' && !firebase.apps.length) {
                         firebase.initializeApp(cfg);
                     }
