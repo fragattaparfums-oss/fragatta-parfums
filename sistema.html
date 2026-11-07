@@ -166,7 +166,7 @@
             </div>
         </aside>
 
-        <!-- ÁREA PRINCIPAL CON SCROLL INDEPENDIENTE (Y PADDING BOTTOM EXTRA PARA MOVILES) -->
+        <!-- ÁREA PRINCIPAL CON SCROLL INDEPENDIENTE -->
         <main class="flex-1 flex flex-col h-screen overflow-y-auto bg-slate-50 pb-32">
             
             <div id="toast" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-100px] opacity-0 pointer-events-none">
@@ -185,14 +185,12 @@
                             <i class="fa-solid fa-fire text-amber-500"></i> Conexión a Nube Firebase (Tiempo Real)
                         </h3>
                         <div class="flex gap-2">
-                                <button onclick="openArqueoModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
-                                    <i class="fa-solid fa-scale-balanced"></i> Cuadrar Caja
-                                </button>
-                                
+                            <button onclick="openArqueoModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
+                                <i class="fa-solid fa-scale-balanced"></i> Cuadrar Caja
+                            </button>
                             <button onclick="importarDesdeWeb()" class="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-xs rounded-xl shadow-md flex items-center gap-1">
                                 <i class="fa-solid fa-cloud-arrow-down"></i> Importar desde Web
                             </button>
-                            <!-- Boton de configurar llaves removido intencionalmente -->
                         </div>
                     </div>
                     <p class="text-xs text-slate-500">El sistema está configurado de manera interna en el código. Al estar conectado, todos los movimientos se sincronizan en vivo en todos tus dispositivos.</p>
@@ -206,7 +204,6 @@
                             <p class="text-xs text-slate-500 font-medium">Control financiero, cortes mensuales y proyección de cuenta bancaria</p>
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
-                            <!-- NUEVO BOTÓN: EXCEL MES SELECCIONADO -->
                             <button onclick="exportExcelByMonth()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition shadow-md flex items-center gap-1.5 mr-2">
                                 <i class="fa-solid fa-file-excel"></i> Exportar Mes Seleccionado
                             </button>
@@ -904,7 +901,6 @@
         </div>
     </div>
 
-    
     <!-- MODAL ARQUEO DE CAJA -->
     <div id="arqueo-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
@@ -1390,7 +1386,6 @@
             if(m) m.classList.remove('hidden');
         }
 
-        
         function openArqueoModal() {
             const historicalPaidSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0) + salesAdjustment;
             const totalWithdrawals = withdrawals.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
@@ -1481,7 +1476,6 @@
             showToast('Arqueo de caja realizado exitosamente');
         }
 
-        
         function adjustSalesTotal() {
             if(!isAdmin) return;
             const currentSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0);
@@ -1611,7 +1605,6 @@ Para limpiar el ajuste, escribe 0.
         function syncWithFirebase() {
             if (!db) return;
             
-            // Limpiar listeners antiguos
             firebaseUnsubs.forEach(unsub => unsub());
             firebaseUnsubs = [];
 
@@ -1969,7 +1962,6 @@ Para limpiar el ajuste, escribe 0.
             }
         }
 
-        // DESCARGAR EXCEL DEL MES SELECCIONADO
         function exportExcelByMonth() {
             const filter = document.getElementById('dash-month-filter')?.value || 'CURRENT';
             let targetKey = filter;
@@ -2191,7 +2183,6 @@ Para limpiar el ajuste, escribe 0.
             });
             const saleId = `FAC-${maxFac + 1}`;
 
-            // DESCUENTO STOCK (Local y Cloud)
             cart.forEach(cItem => {
                 const p = products.find(prod => String(prod.id) === String(cItem.id));
                 if (p) {
@@ -2756,7 +2747,6 @@ Para limpiar el ajuste, escribe 0.
                 
                 p.stock = currentStock + delta;
                 
-                // Actualizar UI inmediatamente por optimismo visual
                 const stockEl = document.getElementById(`stock-val-${id}`);
                 if (stockEl) stockEl.innerText = p.stock;
                 const stockWsEl = document.getElementById(`stock-val-ws-${id}`);
@@ -3248,13 +3238,29 @@ Para limpiar el ajuste, escribe 0.
             const p = payables.find(item => item.id === id);
             if (p && amount > 0) {
                 p.paid = (parseFloat(p.paid) || 0) + amount;
+                
+                // Registrar automáticamente el abono como gasto operativo para descontarlo del flujo real de caja
+                const now = new Date();
+                const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
+                const newExpense = {
+                    id: 'EXP-PROV-' + Date.now(),
+                    date: fullDateTime,
+                    desc: `Abono a Proveedor: ${p.supplier} (${p.invoiceNum})`,
+                    amount: amount
+                };
+                expenses.push(newExpense);
+
                 saveDataLocalOnly();
-                if(isFirebaseConnected && db) db.collection("payables").doc(String(p.id)).set({ paid: p.paid }, { merge: true });
+                if(isFirebaseConnected && db) {
+                    db.collection("payables").doc(String(p.id)).set({ paid: p.paid }, { merge: true });
+                    db.collection("expenses").doc(String(newExpense.id)).set(newExpense, { merge: true });
+                }
                 
                 closePayableAbonoModal();
                 renderPayablesTable();
+                renderExpensesTable();
                 updateDashboard();
-                showToast('Abono a proveedor procesado');
+                showToast('Abono a proveedor procesado y descontado de caja');
             }
         }
 
@@ -3385,9 +3391,8 @@ Para limpiar el ajuste, escribe 0.
             const historicalPaidSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0) + salesAdjustment;
             const totalWithdrawals = withdrawals.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
             const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-            const totalPayablesPaid = payables.reduce((sum, p) => sum + (parseFloat(p.paid) || 0), 0);
 
-            const totalExpected = bankSavings + historicalPaidSales - totalExpenses - totalPayablesPaid - totalWithdrawals;
+            const totalExpected = bankSavings + historicalPaidSales - totalExpenses - totalWithdrawals;
 
             if (document.getElementById('admin-total-historical-sales')) document.getElementById('admin-total-historical-sales').innerText = `$${historicalPaidSales.toLocaleString('es-CO')}`;
             if (document.getElementById('admin-total-withdrawals')) document.getElementById('admin-total-withdrawals').innerText = `$${totalWithdrawals.toLocaleString('es-CO')}`;
