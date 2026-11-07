@@ -1745,19 +1745,25 @@
                 <option value="ALL">Histórico Completo (A la fecha)</option>
             `;
 
-            const monthsSet = new Set();
+            let minYear = new Date().getFullYear();
+            let maxYear = minYear;
+            
             sales.forEach(s => {
                 const d = new Date(s.rawDate || Date.now());
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                monthsSet.add(key);
+                const y = d.getFullYear();
+                if (y < minYear) minYear = y;
+                if (y > maxYear) maxYear = y;
             });
 
-            Array.from(monthsSet).sort().reverse().forEach(mKey => {
-                const [year, month] = mKey.split('-');
-                const dateObj = new Date(year, month - 1, 1);
-                const monthName = dateObj.toLocaleString('es-CO', { month: 'long', year: 'numeric' });
-                select.innerHTML += `<option value="${mKey}">Corte ${monthName}</option>`;
-            });
+            for (let year = maxYear; year >= minYear; year--) {
+                for (let month = 12; month >= 1; month--) {
+                    const mKey = `${year}-${String(month).padStart(2, '0')}`;
+                    const dateObj = new Date(year, month - 1, 1);
+                    const monthName = dateObj.toLocaleString('es-CO', { month: 'long', year: 'numeric' });
+                    const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+                    select.innerHTML += `<option value="${mKey}">Corte ${capitalizedMonth}</option>`;
+                }
+            }
         }
 
         function initApp() {
@@ -3001,6 +3007,21 @@
         function deleteDebt(id) {
             if (!isAdmin) return alert("Solo el Administrador puede eliminar abonos.");
             if (!confirm("¿Desea eliminar este abono de cliente?")) return;
+            
+            const debtToDelete = debts.find(d => d.id === id);
+            if (debtToDelete && debtToDelete.saleId && debtToDelete.saleId !== 'Gral') {
+                const s = sales.find(sale => sale.id === debtToDelete.saleId);
+                if (s) {
+                    s.paid = Math.max(0, (parseFloat(s.paid) || 0) - parseFloat(debtToDelete.amount));
+                    if (s.paid < (s.total - 0.01)) {
+                        s.status = 'ABONO';
+                    }
+                    if(isFirebaseConnected && db) {
+                        db.collection("sales").doc(String(s.id)).set({ paid: s.paid, status: s.status }, { merge: true });
+                    }
+                }
+            }
+
             debts = debts.filter(d => d.id !== id);
             saveDataLocalOnly();
             if(isFirebaseConnected && db) db.collection("debts").doc(String(id)).delete();
@@ -3008,7 +3029,7 @@
             renderDebtsTable();
             renderTablesViews();
             updateDashboard();
-            showToast('Abono eliminado por el Administrador');
+            showToast('Abono eliminado y factura actualizada');
         }
 
         function renderPayablesTable() {
