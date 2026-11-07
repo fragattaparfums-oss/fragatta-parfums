@@ -1614,7 +1614,9 @@
 
         function importarDesdeWeb() {
             if (!db) return showToast("Firebase no está conectado", "error");
-            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Esta es una copia independiente.")) return;
+            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?
+
+*Nota: Esta es una copia independiente.")) return;
 
             db.collection("products").get().then((querySnapshot) => {
                 let batch = db.batch();
@@ -2057,7 +2059,18 @@
 
             const now = customDate ? new Date(customDate + "T12:00:00") : new Date();
             const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
-            const saleId = `FAC-${1000 + sales.length + 1}`;
+            
+            // FIX DEL BUG: Se genera el ID de la factura basándose en el mayor número actual, no en el largo del array.
+            let maxFac = 1000;
+            sales.forEach(s => {
+                if (s.id && s.id.startsWith('FAC-')) {
+                    const num = parseInt(s.id.split('-')[1]);
+                    if (!isNaN(num) && num > maxFac) {
+                        maxFac = num;
+                    }
+                }
+            });
+            const saleId = `FAC-${maxFac + 1}`;
 
             // DESCUENTO STOCK (Local y Cloud)
             cart.forEach(cItem => {
@@ -2431,7 +2444,9 @@
                 return showToast('No hay productos base para duplicar', 'error');
             }
 
-            if (!confirm(`¿Deseas duplicar todos los (${baseProducts.length}) perfumes al módulo 'Por Mayor'?\n\n*Nota: Tu precio base de costo se conservará intacto.`)) {
+            if (!confirm(`¿Deseas duplicar todos los (${baseProducts.length}) perfumes al módulo 'Por Mayor'?
+
+*Nota: Tu precio base de costo se conservará intacto.`)) {
                 return;
             }
 
