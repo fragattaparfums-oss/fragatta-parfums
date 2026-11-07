@@ -1297,14 +1297,15 @@
     </div>
 
     <script>
-        // 🟢 PEGA AQUÍ TUS LLAVES DE FIREBASE UNA SOLA VEZ 🟢
-        // Esto hará que cualquier dispositivo que abra la página se conecte automáticamente.
+        // 🟢 LLAVES DE FIREBASE DEFINITIVAS 🟢
         const FIREBASE_CONFIG = {
-            apiKey: "TU_API_KEY_AQUI",        
-            authDomain: "TU_AUTH_DOMAIN_AQUI",    
-            projectId: "TU_PROJECT_ID_AQUI",     
-            storageBucket: "TU_STORAGE_BUCKET_AQUI", 
-            appId: "TU_APP_ID_AQUI"          
+            apiKey: "AIzaSyC4q7ZZB5WKJKMZJG87ox7UUAcQ9gezfyc",        
+            authDomain: "fragattaweb.firebaseapp.com",    
+            projectId: "fragattaweb",     
+            storageBucket: "fragattaweb.firebasestorage.app", 
+            messagingSenderId: "460028259081",
+            appId: "1:460028259081:web:25c9c8fa848c27af9cc1d8",
+            measurementId: "G-2NLV3R6NHP"
         };
 
         const SYSTEM_PASS = "J.p12022013";
@@ -1572,7 +1573,6 @@ Para limpiar el ajuste, escribe 0.
         }
 
         function initFirebase() {
-            // Usa directamente las llaves configuradas en el código superior.
             const cfg = FIREBASE_CONFIG;
             
             if (cfg && cfg.apiKey !== "TU_API_KEY_AQUI" && cfg.apiKey !== "") {
