@@ -640,7 +640,7 @@
                         </div>
                         <div class="flex items-center gap-2 w-full sm:w-auto">
                             <input type="number" id="admin-global-stock-input" min="0" value="10" placeholder="Cant. Stock" class="w-28 bg-slate-900 border border-purple-400/60 rounded-xl px-3 py-2 text-sm font-black text-amber-400 text-center focus:outline-none">
-                            <button onclick="applyGlobalStock()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl transition shadow-md whitespace-nowrap flex items-center gap-1.5">
+                            <button onclick="applyGlobalStock()" class="bg-amber-50 hover:bg-amber-600 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl transition shadow-md whitespace-nowrap flex items-center gap-1.5">
                                 <i class="fa-solid fa-bolt"></i> Aplicar a Todo
                             </button>
                         </div>
@@ -1614,9 +1614,7 @@
 
         function importarDesdeWeb() {
             if (!db) return showToast("Firebase no está conectado", "error");
-            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?
-
-*Nota: Esta es una copia independiente.")) return;
+            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Esta es una copia independiente.")) return;
 
             db.collection("products").get().then((querySnapshot) => {
                 let batch = db.batch();
@@ -2444,9 +2442,7 @@
                 return showToast('No hay productos base para duplicar', 'error');
             }
 
-            if (!confirm(`¿Deseas duplicar todos los (${baseProducts.length}) perfumes al módulo 'Por Mayor'?
-
-*Nota: Tu precio base de costo se conservará intacto.`)) {
+            if (!confirm(`¿Deseas duplicar todos los (${baseProducts.length}) perfumes al módulo 'Por Mayor'?\n\n*Nota: Tu precio base de costo se conservará intacto.`)) {
                 return;
             }
 
