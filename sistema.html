@@ -570,6 +570,13 @@
                             <option value="POR_MAYOR">Solo Ventas Por Mayor</option>
                         </select>
                     </div>
+                    <!-- NUEVO BUSCADOR EN HISTÓRICO -->
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm w-full">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+                            <input type="text" id="hist-search" oninput="renderTablesViews()" placeholder="Buscar por N° Factura o Cliente..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                    </div>
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-x-auto">
                         <table class="w-full text-left text-xs whitespace-nowrap min-w-max">
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
@@ -983,12 +990,16 @@
 
     <!-- MODAL EDITAR VENTA -->
     <div id="sale-edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+        <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3 flex items-center gap-2">
                 <i class="fa-solid fa-pen-to-square text-purple-600"></i> Corregir Venta / Cliente
             </h3>
             <form onsubmit="saveEditedSale(event)" class="space-y-3 text-xs">
                 <input type="hidden" id="edit-sale-id">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Fecha Exacta:</label>
+                    <input type="date" id="edit-sale-date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                </div>
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">Nombre del Cliente:</label>
                     <input type="text" id="edit-sale-client" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
@@ -1026,6 +1037,10 @@
                         <label class="block font-bold text-slate-600 mb-1">Descuento ($):</label>
                         <input type="number" id="edit-sale-discount" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                     </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Total Final de la Venta ($):</label>
+                    <input type="number" id="edit-sale-total" min="0" required class="w-full bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 text-emerald-800 font-black focus:outline-none">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">Monto Cobrado ($):</label>
@@ -1711,7 +1726,9 @@ Para limpiar el ajuste, escribe 0.
 
         function importarDesdeWeb() {
             if (!db) return showToast("Firebase no está conectado", "error");
-            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?\n\n*Nota: Esta es una copia independiente.")) return;
+            if (!confirm("¿Deseas copiar los perfumes de la web al inventario del POS?
+
+*Nota: Esta es una copia independiente.")) return;
 
             db.collection("products").get().then((querySnapshot) => {
                 let batch = db.batch();
@@ -2342,6 +2359,7 @@ Para limpiar el ajuste, escribe 0.
             const filterMes = document.getElementById('filter-sales-type-mes')?.value || 'ALL';
             const filterHist = document.getElementById('filter-sales-type-hist')?.value || 'ALL';
             const filterGan = document.getElementById('filter-sales-type-gan')?.value || 'ALL';
+            const searchHist = document.getElementById('hist-search')?.value.toLowerCase() || '';
 
             const mesSales = sales.filter(s => {
                 const d = new Date(s.rawDate || Date.now());
@@ -2351,7 +2369,9 @@ Para limpiar el ajuste, escribe 0.
             });
 
             const histSales = sales.filter(s => {
-                return (filterHist === 'ALL') || (s.saleType || 'DETAL') === filterHist;
+                const matchesType = (filterHist === 'ALL') || (s.saleType || 'DETAL') === filterHist;
+                const matchesSearch = s.id.toLowerCase().includes(searchHist) || (s.clientName || '').toLowerCase().includes(searchHist);
+                return matchesType && matchesSearch;
             });
 
             const mesBody = document.getElementById('mes-actual-body');
@@ -2404,7 +2424,11 @@ Para limpiar el ajuste, escribe 0.
 
         function generateSalesTableRows(salesArr) {
             if (salesArr.length === 0) return `<tr><td colspan="8" class="p-4 text-center text-slate-400">Sin registros para mostrar</td></tr>`;
-            return salesArr.slice().reverse().map(s => {
+            
+            // Protección OOM (Out Of Memory) para evitar que celulares se cierren al cargar demasiados datos visuales
+            const safeSales = salesArr.slice(-300);
+
+            return safeSales.reverse().map(s => {
                 const totalVal = parseFloat(s.total) || 0;
                 const paidVal = parseFloat(s.paid) || 0;
                 const sType = s.saleType || 'DETAL';
@@ -2420,7 +2444,7 @@ Para limpiar el ajuste, escribe 0.
                         <td class="p-4 font-bold text-emerald-600">$${paidVal.toLocaleString('es-CO')}</td>
                         <td class="p-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${s.status === 'PAGADO' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${s.status}</span></td>
                         <td class="p-4 text-center space-x-1">
-                            <button onclick='showPrintPreview("invoice", ${JSON.stringify(s).replace(/'/g, "'")})' class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition" title="Ver / Imprimir Factura"><i class="fa-solid fa-print"></i></button>
+                            <button onclick='showPrintPreview("invoice", ${JSON.stringify(s).replace(/'/g, "&#39;")})' class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition" title="Ver / Imprimir Factura"><i class="fa-solid fa-print"></i></button>
                             ${isAdmin ? `<button onclick="openSaleEditModal('${s.id}')" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition" title="Editar Cliente / Datos Venta (Admin)"><i class="fa-solid fa-pen"></i></button>` : ''}
                             ${isAdmin ? `<button onclick="deleteSale('${s.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Venta (Admin)"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </td>
@@ -2434,6 +2458,12 @@ Para limpiar el ajuste, escribe 0.
             const s = sales.find(item => item.id === saleId);
             if (s) {
                 if (document.getElementById('edit-sale-id')) document.getElementById('edit-sale-id').value = s.id;
+                
+                if (document.getElementById('edit-sale-date')) {
+                    const d = new Date(s.rawDate || Date.now());
+                    document.getElementById('edit-sale-date').value = d.toISOString().split('T')[0];
+                }
+
                 if (document.getElementById('edit-sale-client')) document.getElementById('edit-sale-client').value = s.clientName || '';
                 if (document.getElementById('edit-sale-phone')) document.getElementById('edit-sale-phone').value = s.clientPhone || '';
                 if (document.getElementById('edit-sale-addr')) document.getElementById('edit-sale-addr').value = s.clientAddr || '';
@@ -2442,6 +2472,9 @@ Para limpiar el ajuste, escribe 0.
                 if (document.getElementById('edit-sale-discount')) document.getElementById('edit-sale-discount').value = s.discount || 0;
                 if (document.getElementById('edit-sale-status')) document.getElementById('edit-sale-status').value = s.status || 'PAGADO';
                 if (document.getElementById('edit-sale-paid')) document.getElementById('edit-sale-paid').value = s.paid || s.total;
+                
+                if (document.getElementById('edit-sale-total')) document.getElementById('edit-sale-total').value = s.total || 0;
+
                 const m = document.getElementById('sale-edit-modal');
                 if (m) m.classList.remove('hidden');
             }
@@ -2464,11 +2497,17 @@ Para limpiar el ajuste, escribe 0.
                 s.shipping = parseFloat(document.getElementById('edit-sale-shipping')?.value) || 0;
                 s.discount = parseFloat(document.getElementById('edit-sale-discount')?.value) || 0;
                 
+                const newDateVal = document.getElementById('edit-sale-date')?.value;
+                if (newDateVal) {
+                    const nd = new Date(newDateVal + "T12:00:00");
+                    s.rawDate = nd.toISOString();
+                    s.date = nd.toLocaleDateString('es-CO') + " " + nd.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
+                }
+
                 s.status = document.getElementById('edit-sale-status')?.value || 'PAGADO';
                 let newPaid = parseFloat(document.getElementById('edit-sale-paid')?.value) || 0;
 
-                const totalProds = (s.items || []).reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * item.qty), 0);
-                s.total = Math.max(0, totalProds + s.shipping - s.discount);
+                s.total = parseFloat(document.getElementById('edit-sale-total')?.value) || 0;
 
                 if (s.status === 'PAGADO') {
                     s.paid = s.total;
@@ -2487,7 +2526,7 @@ Para limpiar el ajuste, escribe 0.
                 closeSaleEditModal();
                 renderTablesViews();
                 updateDashboard();
-                showToast('Factura y cliente corregidos correctamente');
+                showToast('Factura corregida correctamente');
             }
         }
 
@@ -2566,7 +2605,9 @@ Para limpiar el ajuste, escribe 0.
                 return showToast('No hay productos base para duplicar', 'error');
             }
 
-            if (!confirm(`¿Deseas duplicar todos los (${baseProducts.length}) perfumes al módulo 'Por Mayor'?\n\n*Nota: Tu precio base de costo se conservará intacto.`)) {
+            if (!confirm(`¿Deseas duplicar todos los (${baseProducts.length}) perfumes al módulo 'Por Mayor'?
+
+*Nota: Tu precio base de costo se conservará intacto.`)) {
                 return;
             }
 
@@ -2576,7 +2617,9 @@ Para limpiar el ajuste, escribe 0.
             baseProducts.forEach((p) => {
                 const wholesaleName = `${p.name} - Por Mayor`;
                 const expectedSku = `${p.sku}-PM`;
-                const existing = products.find(existingProd => existingProd.name === wholesaleName || (existingProd.category === 'Por Mayor' && existingProd.sku === expectedSku));
+                
+                // Fix: Compara estrictamente por SKU para evitar errores de falso duplicado
+                const existing = products.find(ep => ep.sku === expectedSku);
 
                 if (!existing) {
                     const wholesaleProd = {
@@ -2593,6 +2636,10 @@ Para limpiar el ajuste, escribe 0.
                     duplicatedCount++;
                 }
             });
+            
+            if (duplicatedCount === 0) {
+                return showToast('Todos los productos ya estaban duplicados', 'error');
+            }
 
             saveDataLocalOnly();
 
@@ -2623,7 +2670,7 @@ Para limpiar el ajuste, escribe 0.
                 const wholesaleSku = `${p.sku}-PM`;
                 const wholesaleName = `${p.name} - Por Mayor`;
 
-                const existing = products.find(existingProd => existingProd.category === 'Por Mayor' && (existingProd.sku === wholesaleSku || existingProd.name === wholesaleName));
+                const existing = products.find(ep => ep.sku === wholesaleSku);
                 
                 if (existing) {
                     return showToast('Este producto ya existe en el Módulo Por Mayor', 'error');
