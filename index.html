@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Fragancias</title>
+    <title>FRAGATTAPARFUMS | Perfumería Exclusiva</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
@@ -12,17 +12,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS (XLSX) para lectura de Excel y CSV -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    <!-- Firebase SDK -->
+    <!-- SCRIPT OFICIAL DEL CHECKOUT DE WOMPI -->
+    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
+
+    <!-- Firebase SDK (Solo Base Nueva FRAGATTAWEB) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, getDocs, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // CONEXIÓN ÚNICA A LA NUEVA BASE DE DATOS (FRAGATTAWEB)
         const firebaseConfig = {
             apiKey: "AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0",
-            authDomain: "fragattaparfums-29064.firebaseapp.com",
-            projectId: "fragattaparfums-29064",
-            storageBucket: "fragattaparfums-29064.firebasestorage.app",
+            authDomain: "fragattaweb.firebaseapp.com",
+            projectId: "fragattaweb",
+            storageBucket: "fragattaweb.firebasestorage.app",
             messagingSenderId: "664676301597",
             appId: "1:664676301597:web:3c704ebc6c21fd50553ff4",
             measurementId: "G-973P7Z8SN3"
@@ -34,8 +40,49 @@
         window.db = db;
         window.collection = collection;
         window.onSnapshot = onSnapshot;
+        window.getDocs = getDocs;
+        window.addDoc = addDoc;
         window.doc = doc;
         window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
+        window.setDoc = setDoc;
+
+        // FUNCIÓN PARA ELIMINAR REGISTROS DUPLICADOS AUTOMÁTICAMENTE
+        window.limpiarProductosDuplicados = async function() {
+            if (!confirm("¿Deseas buscar y eliminar todos los productos duplicados automáticamente?")) return;
+            
+            try {
+                showToast("Analizando productos en Firebase...");
+                const snapshot = await window.getDocs(window.collection(window.db, "products"));
+                
+                if (snapshot.empty) {
+                    alert("No hay productos registrados.");
+                    return;
+                }
+
+                const vistos = new Set();
+                let eliminados = 0;
+
+                for (const docItem of snapshot.docs) {
+                    const data = docItem.data();
+                    const nombreNormalizado = (data.name || data.title || "").trim().toUpperCase();
+
+                    if (!nombreNormalizado) continue;
+
+                    if (vistos.has(nombreNormalizado)) {
+                        await window.deleteDoc(window.doc(window.db, "products", docItem.id));
+                        eliminados++;
+                    } else {
+                        vistos.add(nombreNormalizado);
+                    }
+                }
+
+                alert(`¡Limpieza completada! Se eliminaron ${eliminados} registros duplicados.`);
+            } catch (error) {
+                console.error("Error al eliminar duplicados:", error);
+                alert("Ocurrió un error al limpiar: " + error.message);
+            }
+        };
     </script>
 
     <script>
@@ -45,9 +92,12 @@
                     colors: {
                         'luxury-dark': '#111315',
                         'luxury-gold': '#d4af37',
+                        'luxury-gold-light': '#fef9e7',
+                        'luxury-gold-dark': '#b89228',
+                        'luxury-bg': '#f6f7f9',
                     },
                     fontFamily: {
-                        serif: ['Cinzel', 'serif'],
+                        serif: ['Cinzel', 'Georgia', 'serif'],
                         sans: ['Montserrat', 'sans-serif'],
                     }
                 }
@@ -60,8 +110,21 @@
         ::-webkit-scrollbar { height: 4px; width: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .hero-banner { background-color: #faf8f5; position: relative; overflow: hidden; }
+        .banner-bg-blur {
+            position: absolute; inset: -20px; background-size: cover; background-position: center;
+            filter: blur(35px); opacity: 0.25; z-index: 0; pointer-events: none; transition: all 0.5s ease;
+        }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .detail-accordion summary { list-style: none; cursor: pointer; }
+        .detail-accordion summary::-webkit-details-marker { display: none; }
+        .detail-accordion[open] .acc-icon { transform: rotate(45deg); }
+        .acc-icon { transition: transform .2s ease; }
+        .accord-bar { transition: width .6s ease; }
+        .gallery-img { transition: opacity .25s ease; }
+        .snap-row { scroll-snap-type: x mandatory; }
+        .snap-row > * { scroll-snap-align: start; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased bg-[#f6f7f9]">
@@ -69,15 +132,49 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- Header Minimalista: Solo Título y Carrito -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-            <h1 class="font-cinzel text-base sm:text-xl font-bold text-gray-900 tracking-wider uppercase">Catálogo de Perfumes</h1>
-
+    <!-- Top Social & Contact Bar -->
+    <div class="bg-luxury-dark border-b border-gray-800 text-gray-400 py-1.5 px-4 text-xs">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a id="link-instagram" href="https://instagram.com" target="_blank" class="hover:text-luxury-gold transition flex items-center gap-1.5"><i class="fab fa-instagram"></i> <span class="hidden sm:inline">Instagram</span></a>
+                <a id="link-whatsapp" href="https://wa.me/573105390115" target="_blank" class="hover:text-emerald-400 transition flex items-center gap-1.5"><i class="fab fa-whatsapp"></i> <span class="hidden sm:inline">WhatsApp</span></a>
+                <a id="link-tiktok" href="https://tiktok.com" target="_blank" class="hover:text-luxury-gold transition flex items-center gap-1.5"><i class="fab fa-tiktok"></i> <span class="hidden sm:inline">TikTok</span></a>
+            </div>
             <div class="flex items-center gap-3">
-                <button id="admin-lock-btn" onclick="handleAdminToggle()" title="Acceso Admin" class="text-gray-400 hover:text-amber-500 transition p-1 text-sm">
-                    <i id="admin-lock-icon" class="fas fa-lock"></i>
-                </button>
+                <div id="admin-social-btn" class="hidden">
+                    <button onclick="promptSocialLinks()" class="text-[10px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded transition flex items-center gap-1 font-bold">
+                        <i class="fas fa-link"></i> Editar Redes
+                    </button>
+                </div>
+                <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider hidden md:block">
+                    Perfumería Fina & Body Spray
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Principal -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <div class="w-8"></div>
+
+            <div class="flex flex-col items-center">
+                <div id="logo-container" class="mb-1">
+                    <div id="buyer-logo-box" class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border border-amber-200 shadow-sm bg-amber-50">
+                        <img id="buyer-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Fragatta Parfums Logo" class="w-full h-full object-contain">
+                    </div>
+
+                    <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para cambiar el logo">
+                        <img id="admin-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Logo Admin" class="w-full h-full object-contain">
+                        <div class="absolute inset-0 bg-black/60 text-luxury-gold text-[8px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition">Cambiar</div>
+                    </div>
+                </div>
+                <input type="file" id="logo-file-input" accept="image/*" onchange="handleLogoUpload(event)" class="hidden">
+                <h1 class="font-cinzel text-lg sm:text-2xl font-bold text-gray-900 tracking-widest uppercase leading-tight">FRAGATTAPARFUMS</h1>
+            </div>
+
+            <!-- CONTENEDOR SUPERIOR DERECHA: CARRITO -->
+            <div class="flex flex-col items-end gap-1.5">
                 <button onclick="toggleCartModal()" class="bg-luxury-dark hover:bg-black text-white px-3.5 py-1.5 rounded-full font-semibold text-xs flex items-center gap-2 border border-luxury-gold transition shadow">
                     <i class="fas fa-shopping-cart text-amber-400 text-xs"></i>
                     <span id="cart-badge" class="bg-amber-500 text-black text-[10px] w-5 h-5 rounded-full font-bold flex items-center justify-center">0</span>
@@ -86,18 +183,74 @@
         </div>
     </header>
 
-    <!-- Barra de Estado Admin (Solo visible en Modo Admin) -->
-    <div id="admin-banner" class="hidden bg-luxury-dark text-amber-400 text-xs py-2 px-4 border-b border-amber-500/30">
-        <div class="max-w-7xl mx-auto flex items-center justify-between font-bold">
-            <span><i class="fas fa-user-shield mr-1.5"></i> MODO ADMIN ACTIVO: Haz clic en "Ocultar" o "Activar" en cada producto para controlar su visibilidad global.</span>
-            <button onclick="toggleInactiveView(this)" id="btn-view-inactive" class="bg-amber-500 text-black px-2.5 py-0.5 rounded text-[11px] font-extrabold hover:bg-amber-400">
-                Ver Inactivos
+    <!-- Contenido Principal -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-5">
+
+        <!-- Banner Principal Elegante -->
+        <section id="banner-section" class="hero-banner rounded-2xl px-4 py-4 sm:px-8 sm:py-6 mb-4 sm:mb-5 border border-amber-100 shadow-sm text-center relative">
+            <div id="banner-bg-blur" class="banner-bg-blur"></div>
+            <div class="relative z-10">
+                <div class="inline-block bg-amber-100/80 border border-amber-300 text-amber-900 font-bold text-[10px] sm:text-[11px] tracking-wider px-3.5 py-0.5 rounded-full uppercase mb-2 shadow-sm">
+                    ¡SOMOS MAYORISTAS!
+                </div>
+                <h2 class="font-cinzel text-lg sm:text-3xl font-bold text-gray-900 tracking-wide uppercase mb-1.5 sm:mb-2">
+                    EXCELENCIA Y CALIDAD GARANTIZADA
+                </h2>
+                <p class="max-w-xl mx-auto text-gray-600 text-[11px] sm:text-xs leading-relaxed font-normal">
+                    Distribución exclusiva de perfumería fina y body spray. Explora nuestras ofertas, precios competitivos y realiza tus compras seguras en línea o por WhatsApp.
+                </p>
+
+                <div id="admin-banner-controls" class="hidden mt-4 pt-3 border-t border-amber-200/50 flex flex-wrap justify-center gap-2">
+                    <label class="cursor-pointer bg-white border border-gray-300 hover:border-luxury-gold text-gray-700 text-xs font-semibold px-3 py-1 rounded-lg transition shadow-sm flex items-center gap-1.5">
+                        <i class="fas fa-upload text-amber-600"></i> Subir Banner desde Galería
+                        <input type="file" id="banner-file-input" accept="image/*" onchange="handleBannerUpload(event)" class="hidden">
+                    </label>
+                    <button onclick="promptBannerUrl()" class="bg-white border border-gray-300 hover:border-luxury-gold text-gray-700 text-xs font-semibold px-3 py-1 rounded-lg transition shadow-sm flex items-center gap-1.5">
+                        <i class="fas fa-link text-amber-600"></i> Pegar URL de Banner
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CARRUSEL DE PROMOCIONES -->
+        <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-4 bg-slate-900">
+            <div id="promo-track" class="w-full aspect-square sm:aspect-auto sm:h-64 md:h-72 relative group">
+                <!-- Promociones -->
+            </div>
+        </section>
+
+        <!-- BOTÓN DE ENVÍOS & GARANTÍAS -->
+        <div class="flex justify-center mb-6">
+            <button onclick="openPoliciesModal()" class="w-full sm:w-auto bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs sm:text-sm font-bold px-6 py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                <i class="fas fa-shield-alt text-amber-600 text-lg"></i> Políticas de Envíos & Garantías
             </button>
         </div>
-    </div>
 
-    <!-- Contenido Principal -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <!-- Barra Admin -->
+        <section id="admin-toolbar" class="hidden bg-luxury-dark text-white p-4 rounded-xl mb-6 shadow-xl border border-luxury-gold/30">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="bg-luxury-gold text-black text-xs font-extrabold px-2.5 py-1 rounded">MODO ADMIN</span>
+                    <span class="text-xs text-emerald-400 font-bold"><i class="fas fa-database"></i> Firebase Conectado</span>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <!-- BOTÓN PARA ELIMINAR REGISTROS DUPLICADOS -->
+                    <button onclick="limpiarProductosDuplicados()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow border border-rose-400">
+                        <i class="fas fa-broom"></i> 🧹 Borrar Duplicados
+                    </button>
+                    <button onclick="openStoreSettings()" class="bg-amber-500 hover:bg-amber-600 text-black text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
+                        <i class="fas fa-sliders-h"></i> Ajustes Página Producto
+                    </button>
+                    <button onclick="openAdminModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
+                        <i class="fas fa-plus-circle"></i> + Agregar Producto
+                    </button>
+                    <label class="cursor-pointer bg-amber-50 hover:bg-amber-600 text-black text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
+                        <i class="fas fa-file-excel"></i> 📄 Cargar desde Excel
+                        <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" onchange="handleExcelImport(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+        </section>
 
         <!-- Filtros -->
         <section class="bg-white p-3.5 sm:p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 space-y-3.5">
@@ -113,6 +266,9 @@
                     </button>
                     <button onclick="setPriorityFilter('TOP VIRAL', this)" id="prio-btn-viral" class="prio-btn bg-yellow-50 text-yellow-900 border border-yellow-300 hover:bg-yellow-400 px-3 py-1.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap shadow-sm">
                         <i class="fas fa-bolt text-yellow-600"></i> ⚡ TOP VIRAL
+                    </button>
+                    <button onclick="toggleInactiveView(this)" id="btn-view-inactive" class="hidden prio-btn bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-800 hover:text-white px-3 py-1.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap shadow-sm">
+                        <i class="fas fa-eye-slash text-gray-500"></i> INACTIVOS
                     </button>
                 </div>
             </div>
@@ -145,6 +301,8 @@
                     <label for="sort-select" class="text-xs text-gray-500 font-medium">Ordenar por:</label>
                     <select id="sort-select" onchange="applyFilters()" class="bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-amber-400">
                         <option value="featured">🔥 Prioridad</option>
+                        <option value="price-asc">Precio: Menor a Mayor</option>
+                        <option value="price-desc">Precio: Mayor a Menor</option>
                         <option value="name">Nombre (A-Z)</option>
                     </select>
                 </div>
@@ -155,7 +313,7 @@
         <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             <div class="col-span-full text-center py-12 text-gray-500 text-sm">
                 <i class="fas fa-spinner fa-spin text-amber-500 text-2xl mb-2"></i>
-                <p>Cargando productos...</p>
+                <p>Cargando productos desde Firebase...</p>
             </div>
         </div>
 
@@ -167,22 +325,525 @@
 
     </main>
 
-    <!-- Footer Simple -->
-    <footer class="bg-luxury-dark text-gray-400 text-xs py-6 border-t border-gray-800 mt-12 text-center">
-        <p class="text-[11px]">© 2026 Catálogo de Perfumería Fina. Todos los derechos reservados.</p>
+    <!-- Footer con Términos de Garantía -->
+    <footer class="bg-luxury-dark text-gray-400 text-xs py-8 border-t border-gray-800 mt-12 relative">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-4">
+            <div class="font-cinzel text-xl text-white font-bold tracking-widest">FRAGATTAPARFUMS</div>
+            <p class="text-gray-400 max-w-md mx-auto text-[11px]">Catálogo exclusivo de perfumería fina, nicho y cosmética de alta fijación.</p>
+            
+            <div class="bg-slate-900/90 border border-amber-500/30 rounded-xl p-3 max-w-2xl mx-auto text-amber-200/90 text-[11px] font-medium leading-relaxed shadow-inner">
+                <p><i class="fas fa-shield-alt text-amber-400 mr-1.5"></i> <strong>Política de Garantías y Reclamos:</strong> Los cambios, devoluciones y reclamos por daños o averías se efectuarán únicamente dentro de <strong>1 día hábil (24 horas)</strong> posterior a la recepción del paquete según la guía de la transportadora. <button onclick="openPoliciesModal()" class="text-amber-400 underline font-bold ml-1 hover:text-white">Ver políticas completas</button></p>
+            </div>
+
+            <div class="pt-4 border-t border-gray-800 text-[11px] text-gray-500 flex items-center justify-between">
+                <span>© 2026 FRAGATTAPARFUMS (fragattaparfums@gmail.com). Todos los derechos reservados.</span>
+                <button id="admin-lock-btn" type="button" onclick="handleAdminToggle()" title="Acceso Administrador" class="text-gray-700 hover:text-amber-500 transition p-1 text-xs">
+                    <i id="admin-lock-icon" class="fas fa-lock"></i>
+                </button>
+            </div>
+        </div>
     </footer>
 
-    <!-- MODAL DETALLE PRODUCTO -->
-    <div id="detail-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-gray-100 relative text-gray-800">
-            <button onclick="closeDetailModal()" class="absolute top-3 right-3 bg-white/80 hover:bg-white text-gray-700 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition z-20 border border-gray-200">
-                <i class="fas fa-times text-base"></i>
+    <!-- MODAL POLÍTICAS Y GARANTÍAS DE FRAGATTAPARFUMS DESLIZABLE COMPLETO -->
+    <div id="policies-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto shadow-2xl border border-amber-100 relative text-gray-800 p-5 sm:p-7">
+            
+            <button onclick="closePoliciesModal()" class="absolute top-4 right-4 bg-amber-50 hover:bg-amber-100 text-amber-900 w-8 h-8 rounded-full flex items-center justify-center transition z-20 border border-amber-200 shadow-sm">
+                <i class="fas fa-times text-sm"></i>
             </button>
+            
+            <div class="border-b border-gray-100 pb-3 mb-4">
+                <div class="inline-block bg-amber-100 border border-amber-300 text-amber-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase mb-1">
+                    ✨ Experiencia Segura & Transparente
+                </div>
+                <h2 class="font-cinzel text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-shield-alt text-amber-600"></i> Políticas de Envíos, Garantías y Devoluciones
+                </h2>
+            </div>
+
+            <div class="space-y-4 text-xs leading-relaxed text-gray-600 pr-1">
+                <p class="text-gray-700">
+                    En <strong>FRAGATTAPARFUMS</strong> trabajamos para ofrecerte la máxima excelencia en perfumería fina y cosmética de alta fijación. Todas nuestras transacciones y procesos de atención se rigen bajo los parámetros del Estatuto del Consumidor en Colombia (Ley 1480 de 2011, Decreto 735 de 2013 y Ley 2439 de 2024). Ninguna disposición limita los derechos irrenunciables de nuestros clientes.
+                </p>
+
+                <div class="bg-amber-50/80 border-l-4 border-amber-500 p-3 rounded-r-xl space-y-1">
+                    <h3 class="font-bold text-amber-900 text-xs flex items-center gap-1.5">
+                        <span>🌟</span> 1. Garantía Legal de Fragancias
+                    </h3>
+                    <p>Todos nuestros perfumes nuevos disponen de una cobertura legal de <strong>30 días calendario</strong> contados a partir de la entrega efectiva del paquete.</p>
+                    <ul class="list-disc pl-4 space-y-0.5 text-[11px] text-amber-950">
+                        <li>El término empieza a contar desde el momento en que recibes el pedido, no desde el pago.</li>
+                        <li>El plazo se suspende durante los días que el producto esté en revisión técnica por trámite de garantía.</li>
+                        <li>En caso de cambio por un producto totalmente nuevo, la garantía de 30 días vuelve a iniciar desde cero.</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-1">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>🛡️</span> 2. ¿Qué cubre exactamente la garantía?
+                    </h3>
+                    <p>Cubre anomalías de fabricación, seguridad e idoneidad como:</p>
+                    <ul class="list-disc pl-4 space-y-0.5 text-[11px]">
+                        <li>Filtraciones o derrames ocasionados por defectos de sellado en el envase de cristal.</li>
+                        <li>Fallas mecánicas en el sistema del atomizador (que no rocíe o se atasque).</li>
+                        <li>Contenido alterado, contaminado o en condiciones irregulares de forma anormal.</li>
+                        <li>Despacho erróneo de la referencia o características distintas a las ofrecidas.</li>
+                    </ul>
+                    <p class="text-[11px] text-gray-500 italic mt-1">
+                        *Nota importante: La percepción individual sobre el aroma, la intensidad olfativa o la fijación química en tu piel dependen de factores de pH personales y preferencias; esto no constituye una falla de calidad cubierta.
+                    </p>
+                </div>
+
+                <div class="space-y-1">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>🤝</span> 3. Alternativas de Solución de Garantía
+                    </h3>
+                    <p>Al confirmarse un defecto legalmente cubierto, <strong>FRAGATTAPARFUMS</strong> asumirá los fletes necesarios para brindarte una de las siguientes soluciones, ya que los perfumes por naturaleza no admiten reparación:</p>
+                    <ul class="list-disc pl-4 space-y-0.5 text-[11px]">
+                        <li>Cambio total por un artículo nuevo de la misma referencia.</li>
+                        <li>Sustitución por una alternativa equivalente, siempre con la aprobación previa tuya.</li>
+                        <li>Devolución íntegra del dinero pagado cuando no sea posible efectuar el cambio.</li>
+                    </ul>
+                </div>
+
+                <div class="bg-rose-50/60 border border-rose-200 p-3 rounded-xl space-y-1">
+                    <h3 class="font-bold text-rose-900 text-xs flex items-center gap-1.5">
+                        <span>🚫</span> 4. Casos Excluidos de Cobertura
+                    </h3>
+                    <p class="text-[11px] text-rose-950">
+                        La garantía será negada únicamente si el daño se deriva de: 
+                        1. Situaciones de fuerza mayor. 
+                        2. Alteraciones provocadas por un tercero. 
+                        3. Uso indebido por parte del cliente. 
+                        4. Golpes, rupturas de frasco o caídas posteriores al momento de la entrega. 
+                        5. Almacenamiento perjudicial (exposición al sol directo o calor extremo).
+                    </p>
+                </div>
+
+                <div class="space-y-1">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>📱</span> 5. Solicitud de Reclamación
+                    </h3>
+                    <p>Para gestionar tu caso rápidamente, escríbenos a nuestro WhatsApp oficial: <strong class="text-emerald-600 font-bold">+57 310 539 0115</strong> indicando:</p>
+                    <ul class="list-disc pl-4 space-y-0.5 text-[11px]">
+                        <li>Nombre completo y número de cédula/pedido.</li>
+                        <li>Descripción clara de la falla que observaste.</li>
+                        <li>Evidencias fotográficas o en video del producto defectuoso.</li>
+                    </ul>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-200">
+                        <h4 class="font-bold text-gray-800 mb-0.5 flex items-center gap-1">
+                            <span>🔄</span> 6. Cambios por Gusto
+                        </h4>
+                        <p class="text-[11px]">Puedes solicitar un cambio por otra fragancia dentro de los <strong>4 días calendario</strong> tras la entrega. Requisito: producto 100% sellado, sin uso, caja y empaque de celofán intactos. Los fletes de transporte son asumidos por el cliente en este escenario.</p>
+                    </div>
+
+                    <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-200">
+                        <h4 class="font-bold text-gray-800 mb-0.5 flex items-center gap-1">
+                            <span>🔙</span> 7. Derecho de Retracto
+                        </h4>
+                        <p class="text-[11px]">Aplica en compras a distancia. Tienes <strong>5 días hábiles</strong> desde la entrega para devolverlo intacto, sellado y sin absolutamente ninguna señal de uso. El dinero será devuelto sin retenciones en un plazo máximo de 15 días calendario tras su comprobación.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>📦</span> 8 y 9. Averías, Novedades y Productos Faltantes
+                    </h3>
+                    <p class="text-[11px]">Nosotros contamos con sistemas de cámaras y escaneo láser en preparación. Sin embargo, si recibes un paquete con cintas rotas, reencintado o golpes visibles, repórtalo en la guía del transportador antes de firmar.</p>
+                    <p class="text-[11px] font-bold text-amber-600">Recomendamos encarecidamente grabar un video continuo mostrando la guía y cómo abres el paquete por primera vez.</p>
+                </div>
+
+                <div class="space-y-1">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>💳</span> 12. Reversión de Pagos en Línea (Wompi)
+                    </h3>
+                    <p class="text-[11px]">Si pagaste de forma electrónica (Tarjetas/PSE), puedes exigir reversión si fuiste víctima de fraude, o si no recibiste el pedido, según estipula el artículo 51 de la Ley 1480.</p>
+                </div>
+
+                <!-- SECCIÓN DE ENVÍOS -->
+                <div class="bg-slate-900 text-white p-4 rounded-2xl space-y-3 border border-amber-500/30 mt-4">
+                    <h3 class="font-bold text-amber-400 text-sm flex items-center gap-1.5 uppercase tracking-wider">
+                        <span>🚚</span> Políticas de Envío y Entregas
+                    </h3>
+                    
+                    <p class="text-[11px] text-slate-300 leading-tight">
+                        En FRAGATTAPARFUMS nos encargamos de que la magia llegue a tu puerta rápido y seguro. Trabajamos de la mano con las mejores transportadoras (Envía, Coordinadora, Inter Rapidísimo).
+                    </p>
+                    
+                    <div>
+                        <p class="text-[12px] font-bold text-white mb-1">⏱️ Tiempos de Tránsito Estimados:</p>
+                        <ul class="list-disc pl-4 space-y-1 text-[11px] text-slate-300">
+                            <li><span class="text-amber-300 font-bold">Envíos Locales (Medellín y A.M.):</span> Entregas ultra rápidas en 1 a 2 días hábiles (Tarifa fija de $12.000 COP, con opción de Pago Contra Entrega). 💨</li>
+                            <li><span class="text-amber-300 font-bold">Envíos Nacionales:</span> Entre 3 y 5 días hábiles calculados en tiempo real según destino. 🌍</li>
+                            <li><span class="text-amber-300 font-bold">Zonas Especiales / Reexpedición:</span> Hasta 15 días hábiles.</li>
+                        </ul>
+                    </div>
+
+                    <div class="p-2.5 bg-black/40 border border-slate-700 rounded-lg text-[11px] text-amber-200 font-medium">
+                        <span>📹</span> <strong>¡Ojo al Dato! - Garantiza tu envío:</strong> Una vez despachado, la transportadora asume la custodia del producto. Para poder escalar rápidamente cualquier eventualidad por robo, daño visible o manipulación indebida, debes notificarnos a nuestro WhatsApp oficial <strong>+57 310 539 0115</strong> con fotos/videos dentro de las <strong>24 horas siguientes</strong> a la recepción para hacer efectivo el seguro.
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 pt-3 border-t border-gray-100 flex justify-center">
+                <button onclick="closePoliciesModal()" class="bg-luxury-dark hover:bg-black text-white font-bold text-xs px-8 py-2.5 rounded-xl transition shadow-md">
+                    Entendido y Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PÁGINA DE PRODUCTO (DETALLE COMPLETO) -->
+    <div id="detail-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-end sm:items-center justify-center sm:p-4 hidden">
+        <div id="detail-scroll" class="bg-white w-full sm:max-w-5xl h-[100dvh] sm:h-auto sm:max-h-[94vh] overflow-y-auto sm:rounded-3xl shadow-2xl relative text-gray-800">
+            <div class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-gray-100 px-3 sm:px-5 py-2.5 flex items-center justify-between">
+                <button onclick="closeDetailModal()" class="inline-flex items-center gap-2 text-xs font-bold text-gray-700 hover:text-black">
+                    <i class="fas fa-arrow-left"></i> Volver a la tienda
+                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="shareCurrentProduct()" class="w-9 h-9 rounded-full border border-gray-200 hover:border-luxury-gold text-gray-600 hover:text-luxury-gold-dark flex items-center justify-center transition" title="Compartir"><i class="fas fa-share-alt"></i></button>
+                    <button onclick="closeDetailModal()" class="w-9 h-9 rounded-full bg-luxury-dark text-white flex items-center justify-center hover:bg-black transition" title="Cerrar"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
             <div id="detail-content"></div>
         </div>
     </div>
 
-    <!-- MODAL CARRITO & CHECKOUT (WhatsApp) -->
+    <!-- VISOR DE FOTOS A PANTALLA COMPLETA -->
+    <div id="lightbox" class="fixed inset-0 bg-black/95 z-[70] hidden flex items-center justify-center">
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white/80 hover:text-white text-2xl w-10 h-10"><i class="fas fa-times"></i></button>
+        <button onclick="lightboxStep(-1)" id="lightbox-prev" class="absolute left-2 sm:left-6 text-white/80 hover:text-white text-2xl w-12 h-12 rounded-full bg-white/10"><i class="fas fa-chevron-left"></i></button>
+        <img id="lightbox-img" src="" alt="" class="max-w-[94vw] max-h-[86vh] object-contain">
+        <button onclick="lightboxStep(1)" id="lightbox-next" class="absolute right-2 sm:right-6 text-white/80 hover:text-white text-2xl w-12 h-12 rounded-full bg-white/10"><i class="fas fa-chevron-right"></i></button>
+        <span id="lightbox-counter" class="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/70 text-xs font-bold"></span>
+    </div>
+
+    <!-- CHECKOUT RÁPIDO: PAGO CONTRAENTREGA -->
+    <div id="cod-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center sm:p-4 hidden">
+        <div class="bg-white w-full sm:max-w-lg h-[100dvh] sm:h-auto sm:max-h-[94vh] overflow-y-auto sm:rounded-3xl shadow-2xl text-gray-800">
+            <div class="sticky top-0 z-10 bg-luxury-dark text-white px-5 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="font-cinzel font-bold text-base tracking-wide">Pago Contraentrega</h3>
+                    <p class="text-[10px] text-luxury-gold">Pagas cuando recibes tu pedido</p>
+                </div>
+                <button onclick="closeCodCheckout()" class="text-gray-300 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-5 space-y-5">
+                <div id="cod-items" class="space-y-3"></div>
+                <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-2 text-sm">
+                    <div class="flex justify-between"><span class="text-gray-500">Subtotal</span><span id="cod-subtotal" class="font-bold">$0</span></div>
+                    <div class="flex justify-between"><span class="text-gray-500">Envío</span><span id="cod-shipping" class="font-bold">Selecciona tu ciudad</span></div>
+                    <div id="cod-fee-line" class="flex justify-between hidden"><span class="text-gray-500">Recargo contraentrega</span><span id="cod-fee" class="font-bold">$0</span></div>
+                    <div id="cod-savings-line" class="flex justify-between text-emerald-700 hidden"><span>Ahorras</span><span id="cod-savings" class="font-bold">$0</span></div>
+                    <div class="flex justify-between pt-2 border-t border-gray-200 text-base"><span class="font-bold">Total</span><span id="cod-total" class="font-black text-luxury-dark">$0</span></div>
+                </div>
+
+                <form id="cod-form" onsubmit="submitCodOrder(event)" class="space-y-3 text-sm">
+                    <h4 class="font-bold text-gray-900 text-base text-center">Ingresa los datos para el envío</h4>
+                    <div>
+                        <label class="block font-semibold mb-1">Departamento <span class="text-rose-600">*</span></label>
+                        <select id="cod-dept" required onchange="onCodLocationChange()" class="w-full p-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-luxury-gold outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Ciudad / Municipio <span class="text-rose-600">*</span></label>
+                        <input id="cod-city" list="cod-city-list" required oninput="onCodLocationChange()" placeholder="Escribe tu ciudad" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-luxury-gold outline-none">
+                        <datalist id="cod-city-list"></datalist>
+                    </div>
+                    <div id="cod-ship-method" class="hidden p-3 rounded-xl border-2 border-luxury-gold bg-luxury-gold-light flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2"><i class="fas fa-truck text-luxury-gold-dark"></i><span id="cod-ship-label" class="font-semibold text-gray-800"></span></div>
+                        <span id="cod-ship-price" class="font-black"></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1">Nombre <span class="text-rose-600">*</span></label>
+                            <input id="cod-name" required autocomplete="given-name" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-luxury-gold outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Apellido <span class="text-rose-600">*</span></label>
+                            <input id="cod-lastname" required autocomplete="family-name" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-luxury-gold outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">WhatsApp (aquí te contactamos) <span class="text-rose-600">*</span></label>
+                        <div class="flex">
+                            <span class="px-3 flex items-center bg-gray-100 border border-r-0 border-gray-300 rounded-l-xl text-gray-500"><i class="fab fa-whatsapp mr-1 text-emerald-600"></i>+57</span>
+                            <input id="cod-phone" type="tel" inputmode="numeric" required pattern="[0-9 ]{10,13}" placeholder="300 123 4567" class="w-full p-3 border border-gray-300 rounded-r-xl focus:ring-2 focus:ring-luxury-gold outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-5 gap-3">
+                        <div class="col-span-2">
+                            <label class="block font-semibold mb-1">Tipo doc. <span class="text-rose-600">*</span></label>
+                            <select id="cod-doc-type" required class="w-full p-3 border border-gray-300 rounded-xl bg-white">
+                                <option value="CC">C.C.</option>
+                                <option value="CE">C.E.</option>
+                                <option value="NIT">NIT</option>
+                                <option value="PP">Pasaporte</option>
+                                <option value="TI">T.I.</option>
+                            </select>
+                        </div>
+                        <div class="col-span-3">
+                            <label class="block font-semibold mb-1">Número <span class="text-rose-600">*</span></label>
+                            <input id="cod-doc" required inputmode="numeric" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-luxury-gold outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Correo electrónico <span class="text-gray-400 font-normal">(opcional)</span></label>
+                        <input id="cod-email" type="email" autocomplete="email" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-luxury-gold outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Dirección <span class="text-rose-600">*</span></label>
+                        <input id="cod-address" required autocomplete="street-address" placeholder="Calle 10 # 43A - 15" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-luxury-gold outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Casa, apto, unidad, barrio <span class="text-rose-600">*</span></label>
+                        <input id="cod-address2" required placeholder="Apto 201, Unidad Los Pinos, barrio Laureles" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-luxury-gold outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Punto de referencia <span class="text-rose-600">*</span></label>
+                        <input id="cod-reference" required placeholder="Ej: frente a la iglesia, al lado de la panadería" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-luxury-gold outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Notas del pedido <span class="text-gray-400 font-normal">(opcional)</span></label>
+                        <textarea id="cod-notes" rows="2" placeholder="Horario para recibir, es para regalo, etc." class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-luxury-gold outline-none"></textarea>
+                    </div>
+                    <button type="submit" id="cod-submit-btn" class="w-full bg-luxury-dark hover:bg-black text-white font-bold py-4 rounded-2xl transition shadow-lg text-sm tracking-wide">
+                        COMPLETAR COMPRA
+                    </button>
+                    <button type="button" onclick="closeCodCheckout(); toggleCartModal(); goToStep2();" class="w-full border-2 border-luxury-gold text-luxury-gold-dark hover:bg-luxury-gold-light font-bold py-3 rounded-2xl transition text-xs">
+                        <i class="fas fa-credit-card mr-1"></i> Prefiero pagar en línea (tarjeta, PSE, Nequi)
+                    </button>
+                    <p class="text-[11px] text-gray-500 text-center"><i class="fas fa-lock mr-1"></i> Te escribiremos por WhatsApp para confirmar tu pedido antes de enviarlo.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- AJUSTES DE LA PÁGINA DE PRODUCTO (ADMIN) -->
+    <div id="store-settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative text-gray-800">
+            <button onclick="closeStoreSettings()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="font-cinzel text-lg font-bold text-gray-900 mb-4 border-b pb-2 flex items-center gap-2"><i class="fas fa-sliders-h text-amber-600"></i> Ajustes de la Página de Producto</h3>
+            <form onsubmit="saveStoreSettings(event)" class="space-y-3 text-xs">
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Envío Medellín y Área Metro. ($)</label>
+                        <input type="number" id="set-ship-med" min="0" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Envío Nacional ($)</label>
+                        <input type="number" id="set-ship-nat" min="0" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Recargo Contraentrega Nacional (%)</label>
+                        <input type="number" id="set-cod-fee" min="0" max="30" step="0.5" class="w-full p-2 border rounded-lg">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Texto de "Envíos"</label>
+                    <textarea id="set-shipping-info" rows="4" class="w-full p-2 border rounded-lg"></textarea>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Texto de "Cambios y Devoluciones"</label>
+                    <textarea id="set-returns-info" rows="4" class="w-full p-2 border rounded-lg"></textarea>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Frase de confianza (debajo de los botones)</label>
+                    <input type="text" id="set-trust-text" class="w-full p-2 border rounded-lg" placeholder="100% originales · Envíos a toda Colombia">
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeStoreSettings()" class="px-4 py-2 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR IMAGEN PROMOCIONAL (ADMIN CARRUSEL) -->
+    <div id="promo-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 relative text-gray-800 shadow-2xl">
+            <button onclick="closePromoModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+            <h3 id="promo-modal-title" class="font-cinzel text-base font-bold text-gray-900 mb-3 border-b pb-2 flex items-center gap-2">
+                <i class="fas fa-images text-amber-600"></i> Editar Promo
+            </h3>
+            <form id="promo-form" onsubmit="handlePromoSubmit(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="promo-id">
+                <div>
+                    <label class="block font-semibold mb-1">Título / Frase Corta</label>
+                    <input type="text" id="promo-title" required placeholder="Ej: Descuentos Embrujados 15% OFF" class="w-full p-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Imagen Promocional (Subir o Pegar URL)</label>
+                    <div class="space-y-1">
+                        <label class="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-1.5 rounded-lg text-center block transition">
+                            <i class="fas fa-upload mr-1"></i> Subir de Galería
+                            <input type="file" accept="image/*" onchange="uploadPromoImageBase64(event)" class="hidden">
+                        </label>
+                        <input type="text" id="promo-image" required placeholder="O pega la URL de la imagen promocional" class="w-full p-2 border rounded-lg text-[11px]">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Vincular a Categoría (Al hacer clic)</label>
+                    <select id="promo-category" class="w-full p-2 border rounded-lg bg-white">
+                        <option value="Promociones">Promociones 🏷️</option>
+                        <option value="Árabe">Árabe</option>
+                        <option value="Diseñador">Diseñador</option>
+                        <option value="Nicho">Nicho</option>
+                        <option value="Body Spray">Body Spray</option>
+                        <option value="Kids">Kids</option>
+                        <option value="Emprendedores">Emprendedores 🚀</option>
+                    </select>
+                </div>
+
+                <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200/80 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="font-bold text-amber-900 text-xs flex items-center gap-1.5">
+                            <i class="fas fa-clock text-amber-600"></i> ¿Activar Cronómetro Límite?
+                        </label>
+                        <input type="checkbox" id="promo-timer-enable" class="w-4 h-4 text-amber-600 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-0.5">Fecha y Hora Límite:</label>
+                        <input type="datetime-local" id="promo-timer-date" class="w-full p-2 border rounded-lg bg-white font-mono text-xs">
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closePromoModal()" class="px-3 py-1.5 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-1.5 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ADMIN PRODUCTO -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative text-gray-800">
+            <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="font-cinzel text-lg font-bold text-gray-900 mb-4 border-b pb-2 flex items-center gap-2">
+                <i class="fas fa-tasks text-amber-600"></i> Administrar Producto en Firebase
+            </h3>
+
+            <form id="product-form" onsubmit="handleProductSubmit(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="prod-id">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Marca</label>
+                        <input type="text" id="prod-brand" required placeholder="LATTAFA" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Nombre Fragancia</label>
+                        <input type="text" id="prod-title" required placeholder="YARA 100ML" class="w-full p-2 border rounded-lg">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Género</label>
+                        <select id="prod-gender" class="w-full p-2 border rounded-lg bg-white">
+                            <option value="Hombre">Hombre</option>
+                            <option value="Mujer">Mujer</option>
+                            <option value="Unisex">Unisex</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Categoría</label>
+                        <select id="prod-category" class="w-full p-2 border rounded-lg bg-white">
+                            <option value="Árabe">Árabe</option>
+                            <option value="Diseñador">Diseñador</option>
+                            <option value="Nicho">Nicho</option>
+                            <option value="Body Spray">Body Spray</option>
+                            <option value="Kids">Kids</option>
+                            <option value="Emprendedores">Emprendedores</option>
+                            <option value="Promociones">Promociones</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Precio Normal ($)</label>
+                        <input type="number" id="prod-old-price" placeholder="210000" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Precio Oferta Venta ($)</label>
+                        <input type="number" id="prod-price" required placeholder="175000" class="w-full p-2 border rounded-lg">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Etiqueta Prioridad</label>
+                        <select id="prod-priority" class="w-full p-2 border rounded-lg bg-white">
+                            <option value="LO NUEVO">🔥 LO NUEVO</option>
+                            <option value="TOP VIRAL">⚡ TOP VIRAL</option>
+                            <option value="NINGUNA">Sin Etiqueta</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Concentración</label>
+                        <select id="prod-concentration" class="w-full p-2 border rounded-lg bg-white">
+                            <option value="">Sin especificar</option>
+                            <option value="Eau de Parfum">Eau de Parfum (EDP)</option>
+                            <option value="Eau de Toilette">Eau de Toilette (EDT)</option>
+                            <option value="Parfum">Parfum</option>
+                            <option value="Extrait de Parfum">Extrait de Parfum</option>
+                            <option value="Eau de Cologne">Eau de Cologne</option>
+                            <option value="Body Spray">Body Spray / Mist</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Tamaño</label>
+                        <input type="text" id="prod-size" placeholder="100 ML" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Duración / Proyección</label>
+                        <input type="text" id="prod-longevity" placeholder="8 a 10 horas · Proyección alta" class="w-full p-2 border rounded-lg">
+                    </div>
+                </div>
+
+                <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="font-bold text-amber-900">Fotos del producto <span class="font-normal text-amber-800">(la primera es la principal)</span></label>
+                        <span id="prod-images-count" class="text-[10px] font-bold text-amber-800">0 fotos</span>
+                    </div>
+                    <div id="prod-images-list" class="grid grid-cols-4 gap-2"></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="cursor-pointer bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-2 rounded-lg text-center block transition">
+                            <i class="fas fa-images mr-1"></i> Subir fotos de la galería
+                            <input type="file" id="prod-image-file" accept="image/*" multiple onchange="uploadProductImages(event)" class="hidden">
+                        </label>
+                        <div class="flex gap-1">
+                            <input type="text" id="prod-image-url" placeholder="O pega la URL de una foto" class="w-full p-2 border rounded-lg text-[11px]">
+                            <button type="button" onclick="addProductImageUrl()" class="px-3 bg-luxury-dark text-white rounded-lg font-bold">+</button>
+                        </div>
+                    </div>
+                    <span id="upload-status" class="text-[10px] text-gray-600 block"></span>
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-1">Notas / Acordes Olfativos <span class="font-normal text-gray-500">(separados por coma, del más fuerte al más suave)</span></label>
+                    <input type="text" id="prod-notes" placeholder="Vainilla, Caramelo, Fresa, Almizcle" class="w-full p-2 border rounded-lg">
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-1">Descripción (se muestra completa en la página del producto)</label>
+                    <textarea id="prod-desc" rows="4" placeholder="Set gourmand dulce y cremoso." class="w-full p-2 border rounded-lg"></textarea>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeAdminModal()" class="px-4 py-2 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
+                    <button type="submit" id="btn-save-prod" class="px-5 py-2 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Guardar en Firebase</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CARRITO & CHECKOUT EN 2 PASOS -->
     <div id="cart-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-end hidden">
         <div class="bg-white w-full max-w-lg h-full flex flex-col shadow-2xl relative">
             
@@ -193,13 +854,13 @@
                     </div>
                     <i class="fas fa-chevron-right text-[10px] text-gray-600"></i>
                     <div id="step-indicator-2" class="flex items-center gap-1.5 text-xs font-medium text-gray-400">
-                        <span class="w-5 h-5 rounded-full bg-gray-800 text-gray-400 flex items-center justify-center text-[10px]">2</span> Datos y Pedido
+                        <span class="w-5 h-5 rounded-full bg-gray-800 text-gray-400 flex items-center justify-center text-[10px]">2</span> Envío & Pago
                     </div>
                 </div>
                 <button onclick="toggleCartModal()" class="text-gray-400 hover:text-white text-lg"><i class="fas fa-times"></i></button>
             </div>
 
-            <!-- PASO 1: SELECCIÓN -->
+            <!-- PASO 1: SELECCIÓN DE PRODUCTOS -->
             <div id="checkout-step-1" class="flex-grow overflow-y-auto p-4 flex flex-col justify-between">
                 <div>
                     <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Productos Seleccionados</h4>
@@ -207,55 +868,146 @@
                 </div>
 
                 <div class="pt-4 border-t border-gray-200 bg-gray-50 p-4 rounded-xl space-y-2 mt-4">
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Total sin descuento:</span>
+                        <span id="step1-original-total" class="line-through font-medium text-gray-400">$0</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-amber-600 font-semibold">
+                        <span>Descuentos aplicados:</span>
+                        <span id="step1-discount-total">-$0</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-bold text-gray-900 pt-2 border-t border-gray-200">
+                        <span>Subtotal con descuento:</span>
+                        <span id="step1-final-subtotal" class="text-amber-600 text-base">$0</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 text-right">*El costo del envío se calculará en el siguiente paso</p>
+
                     <button onclick="goToStep2()" id="btn-to-step2" class="w-full mt-3 bg-luxury-dark hover:bg-black text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-md">
-                        <span>Continuar a Finalizar</span> <i class="fas fa-arrow-right"></i>
+                        <span>Continuar a Envío y Pago</span> <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button onclick="if (cart.length === 0) return alert('Tu carrito está vacío'); toggleCartModal(); openCodCheckout('cart');" class="w-full bg-amber-50 hover:bg-amber-100 border border-luxury-gold text-luxury-dark font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-xs">
+                        <i class="fas fa-hand-holding-usd text-luxury-gold-dark"></i> Pago Contraentrega rápido
                     </button>
                 </div>
             </div>
 
-            <!-- PASO 2: FORMULARIO Y ENVÍO A WHATSAPP -->
+            <!-- PASO 2: DATOS DEL COMPRADOR Y PAGO -->
             <div id="checkout-step-2" class="flex-grow overflow-y-auto p-4 hidden flex-col justify-between space-y-4">
                 <div>
                     <button onclick="goToStep1()" class="inline-flex items-center text-xs font-bold text-amber-700 hover:underline mb-3">
-                        <i class="fas fa-arrow-left mr-1"></i> Volver a la lista
+                        <i class="fas fa-arrow-left mr-1"></i> Volver a la lista de productos
                     </button>
 
                     <form id="shipping-form" onsubmit="event.preventDefault();" class="space-y-3 text-xs">
-                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider border-b pb-1">
-                            Información del Cliente
+                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5 border-b pb-1">
+                            <i class="fas fa-map-marker-alt text-rose-600"></i> 1. Información del Cliente
                         </h4>
                         <div>
                             <label class="block font-semibold text-gray-700 mb-0.5">Nombre Completo *</label>
-                            <input type="text" id="ship-name" required placeholder="Ej: Juan Pérez" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <input type="text" id="ship-name" required placeholder="Ej: Juan Pérez" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block font-semibold text-gray-700 mb-0.5">Teléfono *</label>
-                                <input type="tel" id="ship-phone" required placeholder="3105390115" class="w-full p-2 border border-gray-300 rounded-lg">
+                                <label class="block font-semibold text-gray-700 mb-0.5">Teléfono / WhatsApp *</label>
+                                <input type="tel" id="ship-phone" required placeholder="3105390115" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400">
                             </div>
                             <div>
-                                <label class="block font-semibold text-gray-700 mb-0.5">Ciudad *</label>
-                                <input type="text" id="ship-city" required placeholder="Ej: Medellín" class="w-full p-2 border border-gray-300 rounded-lg">
+                                <label class="block font-semibold text-gray-700 mb-0.5">Cédula / NIT *</label>
+                                <input type="text" id="ship-doc" required placeholder="10203040" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400">
                             </div>
                         </div>
+
+                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5 border-b pb-1 pt-2">
+                            <i class="fas fa-truck text-amber-600"></i> 2. Ciudad y Dirección de Entrega
+                        </h4>
+                        
+                        <div class="flex items-center gap-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
+                            <input type="checkbox" id="chk-medellin" onchange="toggleMedellinCheckbox()" class="w-4 h-4 text-amber-600 rounded">
+                            <label for="chk-medellin" class="font-bold text-amber-900 text-xs cursor-pointer">
+                                Vivo en Medellín / Área Metropolitana (Tarifa Fija $12.000 COP)
+                            </label>
+                        </div>
+
                         <div>
-                            <label class="block font-semibold text-gray-700 mb-0.5">Dirección *</label>
-                            <input type="text" id="ship-address" required placeholder="Calle 10 # 43A - 15" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <label class="block font-semibold text-gray-700 mb-0.5">Ciudad de Destino *</label>
+                            <input type="text" id="ship-city" required onblur="calculateShipping()" placeholder="Ej: Bogotá, Cali, Bucaramanga..." class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-700 mb-0.5">Dirección de Entrega *</label>
+                            <input type="text" id="ship-address" required placeholder="Calle 10 # 43A - 15, Apto 201" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400">
+                        </div>
+
+                        <div id="shipping-status-box" class="p-2.5 bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-between text-xs text-slate-700">
+                            <span id="shipping-carrier-text"><i class="fas fa-box text-amber-600 mr-1"></i> Escribe tu ciudad para cotizar envío.</span>
+                            <span id="shipping-cost-text" class="font-bold text-slate-900">$0</span>
+                        </div>
+
+                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5 border-b pb-1 pt-2">
+                            <i class="fas fa-credit-card text-emerald-600"></i> 3. Método de Pago
+                        </h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer hover:bg-slate-50 transition border-amber-500 bg-amber-50/30">
+                                <input type="radio" name="payment_method" value="wompi" checked onchange="updatePaymentCalculations()" class="text-amber-600">
+                                <div class="ml-2.5">
+                                    <span class="font-bold text-gray-900 block">Wompi Pasarela Segura (Tarjetas, PSE, Nequi)</span>
+                                    <span class="text-[10px] text-gray-500">Pago en línea directo y seguro con confirmación inmediata.</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer hover:bg-slate-50 transition">
+                                <input type="radio" name="payment_method" value="cod" onchange="updatePaymentCalculations()" class="text-amber-600">
+                                <div class="ml-2.5">
+                                    <span class="font-bold text-gray-900 block">Pago Contra Entrega</span>
+                                    <span id="cod-note" class="text-[10px] text-gray-500">Pagas al recibir. Disponible para Medellín y envíos nacionales.</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer hover:bg-slate-50 transition">
+                                <input type="radio" name="payment_method" value="whatsapp" onchange="updatePaymentCalculations()" class="text-amber-600">
+                                <div class="ml-2.5">
+                                    <span class="font-bold text-gray-900 block">Transferencia / Finalizar por WhatsApp</span>
+                                    <span class="text-[10px] text-gray-500">Envía la orden directa a nuestro asesor comercial vía WhatsApp.</span>
+                                </div>
+                            </label>
                         </div>
                     </form>
                 </div>
 
                 <div class="bg-slate-900 text-white p-4 rounded-xl space-y-2 text-xs mt-4">
+                    <div class="flex justify-between text-slate-300">
+                        <span>Subtotal productos:</span>
+                        <span id="final-subtotal" class="font-medium">$0</span>
+                    </div>
+                    <div class="flex justify-between text-slate-300">
+                        <span>Costo de Envío:</span>
+                        <span id="final-shipping" class="font-medium">$0</span>
+                    </div>
+                    <div id="cod-fee-row" class="flex justify-between text-amber-400 hidden">
+                        <span>Recargo Contra Entrega (5%):</span>
+                        <span id="final-cod-fee" class="font-bold">$0</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-bold text-white pt-2 border-t border-slate-700">
+                        <span>TOTAL A PAGAR:</span>
+                        <span id="final-grand-total" class="text-amber-400 text-base">$0</span>
+                    </div>
+
                     <button onclick="processFinalOrder()" class="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-lg">
-                        <i class="fab fa-whatsapp text-sm"></i> <span>Enviar Pedido por WhatsApp</span>
+                        <i class="fab fa-whatsapp text-sm"></i> <span id="btn-submit-text">Enviar Pedido por WhatsApp</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- JAVASCRIPT Y LÓGICA INTEGRADA COMPLETA -->
     <script>
         let products = [];
+        let promoSlides = [];
+        let timerInterval;
+        
+        let currentPromoIndex = 0;
+        let carouselInterval = null;
+
         let cart = JSON.parse(localStorage.getItem('parfums_luxury_cart')) || [];
         let isAdmin = false;
         let currentCategory = 'Todas';
@@ -263,19 +1015,36 @@
         let currentGender = 'Todos';
         let showInactive = false;
 
+        let calculatedShippingCost = 0;
+
         const ADMIN_PASSWORD = "J.p12022013";
-        const WHATSAPP_NUMBER = "573105390115";
+        let WHATSAPP_NUMBER = "573105390115";
+        
+        const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYwPw5VP27yidk0s1ULSHh6";
+        const WOMPI_INTEGRITY_SECRET = "prod_integrity_9QPykHUQT2g8dTwNJzrKraJAABsNGReM"; 
 
         window.addEventListener('DOMContentLoaded', () => {
             const checkFirebase = setInterval(() => {
                 if (window.db) {
                     clearInterval(checkFirebase);
                     initFirebaseListener();
+                    initAppConfigListener();
+                    initPromoSlidesListener();
                 }
             }, 200);
 
             updateCartUI();
         });
+
+        async function generateWompiSignature(reference, amountInCents, currency) {
+            const chain = `${reference}${amountInCents}${currency}${WOMPI_INTEGRITY_SECRET}`;
+            const encoder = new TextEncoder();
+            const data = encoder.encode(chain);
+            
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
         function initFirebaseListener() {
             const productsRef = window.collection(window.db, "products");
@@ -288,28 +1057,210 @@
                         title: data.name || data.title || 'FRAGANCIA',
                         gender: data.gender || 'Unisex',
                         category: data.category || 'Árabe',
+                        price: Number(data.price) || 0,
+                        oldPrice: data.originalPrice ? Number(data.originalPrice) : (data.oldPrice ? Number(data.oldPrice) : null),
                         priority: data.featured ? 'TOP VIRAL' : (data.priority || 'NINGUNA'),
-                        image: data.image || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
+                        image: data.image || (Array.isArray(data.images) && data.images[0]) || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
+                        images: Array.isArray(data.images) && data.images.length ? data.images.filter(Boolean) : (data.image ? [data.image] : []),
                         notes: data.notes || '',
                         description: data.description || '',
+                        size: data.size || '',
+                        concentration: data.concentration || '',
+                        longevity: data.longevity || '',
                         isActive: data.isActive !== false
                     };
                 });
                 renderProducts();
+                openProductFromHash();
+                if (currentDetailId && !document.getElementById('detail-modal').classList.contains('hidden')) {
+                    renderDetail(currentDetailId, true);
+                }
             });
+        }
+
+        function initAppConfigListener() {
+            const configRef = window.doc(window.db, "settings", "app_config");
+            window.onSnapshot(configRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.logoUrl) applyCustomLogo(data.logoUrl);
+                    if (data.bannerUrl) applyCustomBannerBlur(data.bannerUrl);
+                    if (data.whatsappNumber) {
+                        WHATSAPP_NUMBER = data.whatsappNumber;
+                        document.getElementById('link-whatsapp').href = `https://wa.me/${data.whatsappNumber}`;
+                    }
+                    if (data.instagramUrl) document.getElementById('link-instagram').href = data.instagramUrl;
+                    if (data.tiktokUrl) document.getElementById('link-tiktok').href = data.tiktokUrl;
+                    storeSettings = { ...storeSettings, ...pickStoreSettings(data) };
+                }
+            });
+        }
+
+        function initPromoSlidesListener() {
+            const promoRef = window.collection(window.db, "promo_slides");
+            window.onSnapshot(promoRef, (snapshot) => {
+                promoSlides = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+                
+                if (promoSlides.length === 0) {
+                    promoSlides = [{
+                        id: 'default',
+                        title: 'OFERTAS EXCLUSIVAS FRAGATTAPARFUMS',
+                        image: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=80',
+                        category: 'Promociones',
+                        hasTimer: true,
+                        endTime: Date.now() + (3 * 86400000)
+                    }];
+                }
+                
+                if (currentPromoIndex >= promoSlides.length) currentPromoIndex = 0;
+                renderPromos();
+            });
+        }
+
+        function navigateFromPromo(category) {
+            let targetBtn = null;
+            const buttons = document.querySelectorAll('.cat-btn');
+            buttons.forEach(b => {
+                if (b.innerText.toLowerCase().includes(category.toLowerCase())) {
+                    targetBtn = b;
+                }
+            });
+            
+            setCategoryFilter(category, targetBtn);
+            
+            const grid = document.getElementById('product-grid');
+            if (grid) {
+                const y = grid.getBoundingClientRect().top + window.scrollY - 120;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        }
+
+        function renderPromos() {
+            const track = document.getElementById('promo-track');
+            if (promoSlides.length === 0) {
+                track.innerHTML = '';
+                return;
+            }
+            
+            const slidesHTML = promoSlides.map((slide, index) => {
+                const isActive = index === currentPromoIndex;
+                return `
+                <div class="absolute inset-0 w-full h-full transition-opacity duration-700 ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'} cursor-pointer" onclick="navigateFromPromo('${slide.category}')">
+                    <img src="${slide.image}" alt="${slide.title}" class="w-full h-full object-cover object-center transition duration-700 scale-100 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-4 sm:p-6 pointer-events-none">
+                        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pointer-events-auto">
+                            <div>
+                                <span class="text-amber-400 text-[10px] sm:text-xs font-extrabold uppercase tracking-widest block mb-1 drop-shadow-md"><i class="fas fa-tag mr-1"></i> Categoría: ${slide.category}</span>
+                                <h3 class="text-white font-cinzel text-base sm:text-2xl font-bold uppercase leading-tight drop-shadow-lg">${slide.title}</h3>
+                            </div>
+
+                            ${slide.hasTimer ? `
+                                <div class="bg-slate-900/95 border border-amber-500/50 backdrop-blur-md rounded-xl p-2 sm:px-4 sm:py-2.5 text-white shadow-xl inline-flex items-center gap-2 self-start sm:self-auto">
+                                    <span class="text-[9px] sm:text-[10px] text-amber-400 font-extrabold uppercase leading-none hidden sm:block">OFERTA<br>TERMINA:</span>
+                                    <div class="flex items-center gap-1.5 font-mono text-xs sm:text-sm font-bold text-amber-300">
+                                        <div class="bg-black/90 px-1.5 py-1 rounded text-center shadow-inner min-w-[28px]"><span id="td-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">d</span></div>
+                                        <span class="text-gray-500 pb-0.5">:</span>
+                                        <div class="bg-black/90 px-1.5 py-1 rounded text-center shadow-inner min-w-[28px]"><span id="th-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">h</span></div>
+                                        <span class="text-gray-500 pb-0.5">:</span>
+                                        <div class="bg-black/90 px-1.5 py-1 rounded text-center shadow-inner min-w-[28px]"><span id="tm-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">m</span></div>
+                                        <span class="text-gray-500 pb-0.5">:</span>
+                                        <div class="bg-black/90 px-1.5 py-1 rounded text-center shadow-inner min-w-[28px]"><span id="ts-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">s</span></div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            const adminControls = isAdmin ? `
+                <div class="absolute top-3 right-3 z-30 flex gap-2">
+                    <button onclick="event.stopPropagation(); editPromo('${promoSlides[currentPromoIndex].id}')" class="bg-amber-500 hover:bg-amber-600 text-black px-3 py-1.5 rounded-lg shadow-lg flex items-center justify-center transition text-[10px] font-bold border border-amber-400">
+                        <i class="fas fa-edit mr-1"></i> Editar
+                    </button>
+                    <button onclick="event.stopPropagation(); addNewPromo()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center justify-center transition text-[10px] font-bold border border-emerald-400">
+                        <i class="fas fa-plus mr-1"></i> Nueva
+                    </button>
+                    ${promoSlides.length > 1 ? `
+                    <button onclick="event.stopPropagation(); deletePromo('${promoSlides[currentPromoIndex].id}')" class="bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center justify-center transition text-[10px] font-bold border border-rose-400">
+                        <i class="fas fa-trash mr-1"></i> Eliminar
+                    </button>
+                    ` : ''}
+                </div>
+            ` : '';
+
+            const navControls = promoSlides.length > 1 ? `
+                <button onclick="event.stopPropagation(); prevPromo()" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/80 text-white w-8 h-8 rounded-full flex items-center justify-center backdrop-blur transition"><i class="fas fa-chevron-left"></i></button>
+                <button onclick="event.stopPropagation(); nextPromo()" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/80 text-white w-8 h-8 rounded-full flex items-center justify-center backdrop-blur transition"><i class="fas fa-chevron-right"></i></button>
+                <div class="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 pointer-events-none">
+                    ${promoSlides.map((_, i) => `<div class="w-2 h-2 rounded-full transition-all shadow ${i === currentPromoIndex ? 'bg-amber-500 w-4' : 'bg-white/50'}"></div>`).join('')}
+                </div>
+            ` : '';
+
+            track.innerHTML = slidesHTML + adminControls + navControls;
+            startLiveTimers();
+            resetCarouselInterval();
+        }
+
+        function nextPromo() {
+            currentPromoIndex = (currentPromoIndex + 1) % promoSlides.length;
+            renderPromos();
+        }
+
+        function prevPromo() {
+            currentPromoIndex = (currentPromoIndex - 1 + promoSlides.length) % promoSlides.length;
+            renderPromos();
+        }
+
+        function resetCarouselInterval() {
+            clearInterval(carouselInterval);
+            if (promoSlides.length > 1) {
+                carouselInterval = setInterval(nextPromo, 5000);
+            }
+        }
+
+        function startLiveTimers() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                promoSlides.forEach(slide => {
+                    if (slide.hasTimer && slide.endTime) {
+                        const diff = Math.max(0, slide.endTime - now);
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                        const dEl = document.getElementById(`td-${slide.id}`);
+                        const hEl = document.getElementById(`th-${slide.id}`);
+                        const mEl = document.getElementById(`tm-${slide.id}`);
+                        const sEl = document.getElementById(`ts-${slide.id}`);
+
+                        if (dEl && hEl && mEl && sEl) {
+                            dEl.innerText = String(days).padStart(2, '0');
+                            hEl.innerText = String(hours).padStart(2, '0');
+                            mEl.innerText = String(minutes).padStart(2, '0');
+                            sEl.innerText = String(seconds).padStart(2, '0');
+                        }
+                    }
+                });
+            }, 1000);
         }
 
         function interleaveProducts(items) {
             const nuevos = items.filter(p => p.priority === 'LO NUEVO');
             const virales = items.filter(p => p.priority === 'TOP VIRAL');
-            const otros = items.filter(p => p.priority !== 'LO NUEVO' && p.priority !== 'TOP VIRAL');
+            const ofertas = items.filter(p => p.oldPrice && p.priority !== 'LO NUEVO' && p.priority !== 'TOP VIRAL');
+            const otros = items.filter(p => p.priority !== 'LO NUEVO' && p.priority !== 'TOP VIRAL' && !p.oldPrice);
 
             const result = [];
-            const maxLength = Math.max(nuevos.length, virales.length);
+            const maxLength = Math.max(nuevos.length, virales.length, ofertas.length);
 
             for (let i = 0; i < maxLength; i++) {
                 if (i < nuevos.length) result.push(nuevos[i]);
                 if (i < virales.length) result.push(virales[i]);
+                if (i < ofertas.length) result.push(ofertas[i]);
             }
 
             return [...result, ...otros];
@@ -345,7 +1296,11 @@
                 return matchesCat && matchesPrio && matchesGender && matchesSearch;
             });
 
-            if (sortVal === 'name') {
+            if (sortVal === 'price-asc') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sortVal === 'price-desc') {
+                filtered.sort((a, b) => b.price - a.price);
+            } else if (sortVal === 'name') {
                 filtered.sort((a, b) => a.title.localeCompare(b.title));
             } else if (currentPriority === 'Todas') {
                 filtered = interleaveProducts(filtered);
@@ -367,6 +1322,8 @@
                     badgeHTML = `<span class="bg-amber-500 text-slate-900 font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">🔥 LO NUEVO</span>`;
                 } else if (p.priority === 'TOP VIRAL') {
                     badgeHTML = `<span class="bg-yellow-400 text-slate-900 font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">⚡ TOP VIRAL</span>`;
+                } else if (p.oldPrice) {
+                    badgeHTML = `<span class="bg-rose-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow">OFERTA</span>`;
                 }
 
                 return `
@@ -374,6 +1331,8 @@
                     <div class="cursor-pointer" onclick="openDetailModal('${p.id}')">
                         <div class="relative w-full h-36 sm:h-48 overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center mb-2">
                             ${badgeHTML ? `<div class="absolute top-2 left-2 z-10">${badgeHTML}</div>` : ''}
+                            ${discountPct(p) > 0 ? `<div class="absolute top-2 right-2 z-10 bg-luxury-dark text-luxury-gold font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow">-${discountPct(p)}%</div>` : ''}
+                            ${getImages(p).length > 1 ? `<div class="absolute bottom-2 right-2 z-10 bg-white/90 text-gray-700 font-bold text-[9px] px-1.5 py-0.5 rounded-full shadow"><i class="fas fa-images mr-0.5"></i>${getImages(p).length}</div>` : ''}
                             <img src="${p.image}" alt="${p.title}" class="object-cover h-full w-full group-hover:scale-105 transition duration-500">
                         </div>
 
@@ -382,16 +1341,21 @@
 
                         <div class="flex flex-wrap items-center mb-1.5 min-h-[20px]">${notesList}</div>
                         <p class="text-[10px] sm:text-[11px] text-gray-400 line-clamp-1 mb-2 font-normal">${p.description || 'Fragancia exclusiva.'}</p>
+
+                        <div class="flex items-baseline gap-1.5 mb-2">
+                            ${p.oldPrice ? `<span class="text-[10px] sm:text-xs text-gray-400 line-through font-normal">${formatPrice(p.oldPrice)}</span>` : ''}
+                            <span class="text-sm sm:text-base font-extrabold text-rose-600">${formatPrice(p.price)}</span>
+                        </div>
                     </div>
 
                     <div class="space-y-1.5 pt-2 border-t border-gray-100">
                         <button onclick="addToCart('${p.id}')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-semibold py-2 rounded-xl transition">+ Carrito</button>
 
                         ${isAdmin ? `
-                        <div class="pt-1.5 border-t border-gray-100">
-                            <button onclick="toggleProductActive('${p.id}', ${p.isActive})" class="w-full text-[10px] ${p.isActive ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'} font-bold py-1.5 rounded transition">
-                                ${p.isActive ? '👁️ Ocultar Producto' : '✅ Activar Producto'}
-                            </button>
+                        <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-gray-100">
+                            <button onclick="openEditModal('${p.id}')" class="text-[10px] bg-blue-50 text-blue-600 font-semibold py-1 rounded">Editar</button>
+                            <button onclick="toggleProductActive('${p.id}', ${p.isActive})" class="text-[10px] ${p.isActive ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'} font-semibold py-1 rounded">${p.isActive ? 'Ocultar' : 'Activar'}</button>
+                            <button onclick="deleteProductFromFirebase('${p.id}')" class="text-[10px] bg-rose-50 text-rose-600 font-semibold py-1 rounded">Eliminar</button>
                         </div>
                         ` : ''}
                     </div>
@@ -405,34 +1369,21 @@
                 await window.updateDoc(window.doc(window.db, "products", id), {
                     isActive: !currentState
                 });
-                showToast(currentState ? "Producto ocultado en ambas páginas" : "Producto activado en ambas páginas");
+                showToast(currentState ? "Producto ocultado" : "Producto activado");
             } catch(err) {
                 alert("Error al cambiar estado: " + err.message);
             }
         }
 
-        function handleAdminToggle() {
-            if (isAdmin) {
-                isAdmin = false;
-                document.getElementById('admin-banner').classList.add('hidden');
-                document.getElementById('admin-lock-icon').className = 'fas fa-lock';
-                showInactive = false;
-                showToast("Sesión Admin cerrada");
-            } else {
-                const pass = prompt("Ingrese contraseña de Administrador:");
-                if (pass === ADMIN_PASSWORD) {
-                    isAdmin = true;
-                    document.getElementById('admin-banner').classList.remove('hidden');
-                    document.getElementById('admin-lock-icon').className = 'fas fa-unlock text-amber-500';
-                    showToast("Modo Admin Activado (Solo Activar/Ocultar)");
-                }
-            }
-            renderProducts();
-        }
-
         function toggleInactiveView(btn) {
             showInactive = !showInactive;
-            btn.innerText = showInactive ? "Ver Activos" : "Ver Inactivos";
+            if (showInactive) {
+                btn.classList.add('ring-2', 'ring-offset-2', 'ring-gray-800', 'bg-gray-800', 'text-white');
+                btn.classList.remove('bg-gray-100', 'text-gray-700');
+            } else {
+                btn.classList.remove('ring-2', 'ring-offset-2', 'ring-gray-800', 'bg-gray-800', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            }
             renderProducts();
         }
 
@@ -441,7 +1392,7 @@
             if (!prod) return;
             const existing = cart.find(i => i.id === id);
             if (existing) existing.quantity += 1;
-            else cart.push({ ...prod, quantity: 1 });
+            else cart.push({ ...prod, images: undefined, quantity: 1 });
             saveCart();
             updateCartUI();
             showToast(`Añadido al carrito`);
@@ -455,15 +1406,28 @@
 
             if (cart.length === 0) {
                 container.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">Tu carrito está vacío.</p>`;
+                document.getElementById('step1-original-total').innerText = '$0';
+                document.getElementById('step1-discount-total').innerText = '-$0';
+                document.getElementById('step1-final-subtotal').innerText = '$0';
                 return;
             }
 
+            let originalTotal = 0;
+            let finalSubtotal = 0;
+
             container.innerHTML = cart.map(item => {
+                const itemOriginal = (item.oldPrice || item.price) * item.quantity;
+                const itemFinal = item.price * item.quantity;
+
+                originalTotal += itemOriginal;
+                finalSubtotal += itemFinal;
+
                 return `
                     <div class="flex items-center gap-3 text-xs py-2 border-b">
                         <img src="${item.image}" class="w-10 h-10 object-cover rounded-lg">
                         <div class="flex-grow">
                             <div class="font-bold text-gray-800">${item.title}</div>
+                            <div class="text-rose-600 font-bold">${formatPrice(item.price)}</div>
                         </div>
                         <div class="flex items-center gap-1">
                             <button onclick="updateCartQuantity('${item.id}', -1)" class="w-5 h-5 bg-gray-200 rounded font-bold">-</button>
@@ -473,6 +1437,11 @@
                     </div>
                 `;
             }).join('');
+
+            const discount = originalTotal - finalSubtotal;
+            document.getElementById('step1-original-total').innerText = formatPrice(originalTotal);
+            document.getElementById('step1-discount-total').innerText = `-${formatPrice(discount)}`;
+            document.getElementById('step1-final-subtotal').innerText = formatPrice(finalSubtotal);
         }
 
         function updateCartQuantity(id, change) {
@@ -494,27 +1463,198 @@
             if (cart.length === 0) return alert("Tu carrito está vacío");
             document.getElementById('checkout-step-1').classList.add('hidden');
             document.getElementById('checkout-step-2').classList.remove('hidden');
+            updatePaymentCalculations();
         }
 
-        function processFinalOrder() {
-            const name = document.getElementById('ship-name').value.trim();
-            const phone = document.getElementById('ship-phone').value.trim();
-            const city = document.getElementById('ship-city').value.trim();
-            const address = document.getElementById('ship-address').value.trim();
+        function toggleMedellinCheckbox() {
+            const chk = document.getElementById('chk-medellin');
+            const cityInput = document.getElementById('ship-city');
 
-            if (!name || !phone || !city || !address) {
-                return alert("Por favor completa todos los datos.");
+            if (chk.checked) {
+                cityInput.value = "Medellín";
+                cityInput.disabled = true;
+                calculatedShippingCost = 12000;
+                document.getElementById('shipping-carrier-text').innerText = "Envío Fijo Medellín ($12.000)";
+                document.getElementById('shipping-cost-text').innerText = formatPrice(12000);
+            } else {
+                cityInput.disabled = false;
+                cityInput.value = "";
+                calculatedShippingCost = 0;
+                document.getElementById('shipping-carrier-text').innerText = "Escribe tu ciudad para cotizer envío.";
+                document.getElementById('shipping-cost-text').innerText = "$0";
+            }
+            updatePaymentCalculations();
+        }
+
+        function calculateShipping() {
+            const chk = document.getElementById('chk-medellin');
+            if (chk.checked) return;
+
+            const city = document.getElementById('ship-city').value.trim();
+            if (!city) return;
+
+            if (city.toLowerCase().includes('medellin') || city.toLowerCase().includes('medellín')) {
+                chk.checked = true;
+                toggleMedellinCheckbox();
+                return;
             }
 
-            let msg = `*NUEVO PEDIDO DE CATÁLOGO*\n\n`;
+            calculatedShippingCost = 14500;
+            document.getElementById('shipping-carrier-text').innerText = `Envía.com Express a ${city}`;
+            document.getElementById('shipping-cost-text').innerText = formatPrice(14500);
+            updatePaymentCalculations();
+        }
+
+        function updatePaymentCalculations() {
+            const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+            const method = document.querySelector('input[name="payment_method"]:checked')?.value || 'wompi';
+            const isMedellin = document.getElementById('chk-medellin')?.checked;
+
+            let codFee = 0;
+            const codRow = document.getElementById('cod-fee-row');
+
+            if (method === 'cod' && !isMedellin) {
+                codFee = Math.round((subtotal + calculatedShippingCost) * 0.05);
+                codRow.classList.remove('hidden');
+                document.getElementById('final-cod-fee').innerText = formatPrice(codFee);
+            } else {
+                codRow.classList.add('hidden');
+            }
+
+            const grandTotal = subtotal + calculatedShippingCost + codFee;
+
+            document.getElementById('final-subtotal').innerText = formatPrice(subtotal);
+            document.getElementById('final-shipping').innerText = formatPrice(calculatedShippingCost);
+            document.getElementById('final-grand-total').innerText = formatPrice(grandTotal);
+
+            const btnText = document.getElementById('btn-submit-text');
+            if (method === 'wompi') btnText.innerText = `Pagar con Wompi (${formatPrice(grandTotal)})`;
+            else if (method === 'cod') btnText.innerText = `Confirmar Orden Contra Entrega (${formatPrice(grandTotal)})`;
+            else btnText.innerText = `Enviar Pedido por WhatsApp (${formatPrice(grandTotal)})`;
+        }
+
+        async function processFinalOrder() {
+            const name = document.getElementById('ship-name').value.trim();
+            const phone = document.getElementById('ship-phone').value.trim();
+            const doc = document.getElementById('ship-doc').value.trim();
+            const city = document.getElementById('ship-city').value.trim();
+            const address = document.getElementById('ship-address').value.trim();
+            const method = document.querySelector('input[name="payment_method"]:checked').value;
+            const isMedellin = document.getElementById('chk-medellin')?.checked;
+
+            if (!name || !phone || !doc || !city || !address) {
+                return alert("Por favor completa todos los datos del formulario.");
+            }
+
+            const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+            const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + calculatedShippingCost) * 0.05) : 0;
+            const grandTotal = subtotal + calculatedShippingCost + codFee;
+
+            let msg = `*NUEVO PEDIDO - FRAGATTAPARFUMS*\n\n`;
             msg += `*DATOS DE ENVÍO:*\n`;
-            msg += `• Nombre: ${name}\n• Teléfono: ${phone}\n• Ciudad: ${city}\n• Dirección: ${address}\n\n`;
+            msg += `• Nombre: ${name}\n• Cédula: ${doc}\n• Teléfono: ${phone}\n• Ciudad: ${city}\n• Dirección: ${address}\n\n`;
             msg += `*PRODUCTOS SOLICITADOS:*\n`;
-            cart.forEach(i => { msg += `• ${i.title} x${i.quantity}\n`; });
+            cart.forEach(i => { msg += `• ${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
+            msg += `\n*RESUMEN DE PAGO:*\n`;
+            msg += `• Subtotal: ${formatPrice(subtotal)}\n`;
+            msg += `• Envío: ${formatPrice(calculatedShippingCost)}\n`;
+            if (codFee > 0) msg += `• Recargo Contra Entrega: ${formatPrice(codFee)}\n`;
+            msg += `*TOTAL:* ${formatPrice(grandTotal)}\n\n`;
+            msg += `*MÉTODO DE PAGO:* ${method === 'wompi' ? 'Wompi En Línea' : (method === 'cod' ? 'Pago Contra Entrega' : 'Transferencia Bancaria')}`;
 
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
             toggleCartModal();
             cart = []; saveCart(); updateCartUI();
+        }
+
+        function openPoliciesModal() { document.getElementById('policies-modal').classList.remove('hidden'); }
+        function closePoliciesModal() { document.getElementById('policies-modal').classList.add('hidden'); }
+
+        function handleAdminToggle() {
+            if (isAdmin) {
+                isAdmin = false;
+                document.getElementById('admin-toolbar').classList.add('hidden');
+                document.getElementById('btn-view-inactive').classList.add('hidden');
+                document.getElementById('admin-social-btn').classList.add('hidden');
+                
+                document.getElementById('admin-logo-box').classList.add('hidden');
+                document.getElementById('buyer-logo-box').classList.remove('hidden');
+                
+                document.getElementById('admin-banner-controls').classList.add('hidden');
+                showInactive = false;
+                showToast("Sesión cerrada");
+            } else {
+                const pass = prompt("Ingrese contraseña de Administrador:");
+                if (pass === ADMIN_PASSWORD) {
+                    isAdmin = true;
+                    document.getElementById('admin-toolbar').classList.remove('hidden');
+                    document.getElementById('btn-view-inactive').classList.remove('hidden');
+                    document.getElementById('admin-social-btn').classList.remove('hidden');
+                    
+                    document.getElementById('admin-logo-box').classList.remove('hidden');
+                    document.getElementById('buyer-logo-box').classList.add('hidden');
+                    
+                    document.getElementById('admin-banner-controls').classList.remove('hidden');
+                    showToast("¡Modo Administrador Activo!");
+                }
+            }
+            renderProducts();
+            renderPromos();
+            if (currentDetailId) renderDetail(currentDetailId, true);
+        }
+
+        function handleExcelImport(event) {
+            if (!isAdmin) return;
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showToast("Leyendo archivo Excel...");
+
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                    if (!rows || rows.length === 0) return alert("El archivo está vacío.");
+
+                    let addedCount = 0;
+                    for (const row of rows) {
+                        const brand = row.MARCA || row.marca || 'LUXURY';
+                        const name = row.NOMBRE || row.nombre || row.TITLE;
+                        const price = Number(row.PRECIO || row.precio || 0);
+
+                        if (!name || price <= 0) continue;
+
+                        const payload = {
+                            brand: String(brand).toUpperCase(),
+                            name: String(name).toUpperCase(),
+                            price: price,
+                            originalPrice: Number(row.PRECIO_ANTERIOR || row.oldPrice) || null,
+                            category: row.CATEGORIA || 'Árabe',
+                            gender: row.GENERO || 'Unisex',
+                            priority: row.PRIORIDAD || 'NINGUNA',
+                            featured: (row.PRIORIDAD === 'TOP VIRAL'),
+                            image: row.IMAGEN || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
+                            notes: row.NOTAS || '',
+                            description: row.DESCRIPCION || '',
+                            isActive: true
+                        };
+
+                        await window.addDoc(window.collection(window.db, "products"), payload);
+                        addedCount++;
+                    }
+
+                    showToast(`Cargados ${addedCount} productos`);
+                    event.target.value = '';
+                } catch (err) {
+                    alert("Error al procesar el Excel.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         function setCategoryFilter(cat, btn = null) { 
@@ -548,11 +1688,18 @@
             currentGender = 'Todos'; 
             showInactive = false;
             document.getElementById('search-input').value = ''; 
-            document.querySelectorAll('.cat-btn, .prio-btn, .gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark', 'ring-amber-500'));
+            
+            document.querySelectorAll('.cat-btn, .prio-btn, .gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark', 'ring-amber-500', 'ring-gray-800', 'bg-gray-800', 'text-white'));
+            
+            document.querySelector('.cat-btn').classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
+            document.querySelector('.gender-btn').classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
+            document.getElementById('btn-view-inactive').classList.add('bg-gray-100', 'text-gray-700');
+            
             renderProducts(); 
         }
 
         function applyFilters() { renderProducts(); }
+        function formatPrice(amt) { return '$' + Number(amt).toLocaleString('es-CO'); }
 
         function showToast(msg) {
             const container = document.getElementById('toast-container');
@@ -563,42 +1710,859 @@
             setTimeout(() => toast.remove(), 2500);
         }
 
-        function openDetailModal(id) {
-            const p = products.find(prod => prod.id === id);
-            if (!p) return;
-            
-            const detailContent = document.getElementById('detail-content');
-            const notesList = p.notes ? p.notes.split(',').map(n => `<span class="inline-flex items-center gap-1 text-[11px] text-gray-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-100"><i class="fas fa-leaf text-amber-500"></i>${n.trim()}</span>`).join('') : '';
-
-            detailContent.innerHTML = `
-                <div class="relative w-full h-64 sm:h-80 bg-gray-50 rounded-t-3xl overflow-hidden flex justify-center items-center">
-                    <img src="${p.image}" alt="${p.title}" class="object-cover h-full w-full">
-                </div>
-                <div class="p-5 sm:p-7 space-y-4">
-                    <div>
-                        <span class="text-xs font-bold text-amber-600 block uppercase tracking-wider mb-1">${p.brand}</span>
-                        <h2 class="font-cinzel font-bold text-xl sm:text-2xl text-gray-900 tracking-tight uppercase leading-tight">${p.title}</h2>
-                    </div>
-
-                    ${notesList ? `<div class="flex flex-wrap gap-1.5 pt-2">${notesList}</div>` : ''}
-                    
-                    <div class="pt-2">
-                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-1.5">Descripción</h4>
-                        <p class="text-sm text-gray-600 leading-relaxed">${p.description || 'Fragancia exclusiva de alta calidad.'}</p>
-                    </div>
-
-                    <div class="pt-4 border-t border-gray-100 mt-4">
-                        <button onclick="addToCart('${p.id}'); closeDetailModal();" class="w-full bg-luxury-dark hover:bg-black text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg">
-                            <i class="fas fa-shopping-cart text-amber-400"></i> Añadir al Carrito
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('detail-modal').classList.remove('hidden');
+        function openAdminModal() {
+            document.getElementById('product-form').reset();
+            document.getElementById('prod-id').value = '';
+            document.getElementById('upload-status').innerText = '';
+            editingImages = [];
+            renderImagesEditor();
+            document.getElementById('admin-modal').classList.remove('hidden');
         }
 
-        function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function openEditModal(id) {
+            const p = products.find(prod => prod.id === id);
+            if(!p) return;
+            document.getElementById('prod-id').value = p.id;
+            document.getElementById('prod-brand').value = p.brand;
+            document.getElementById('prod-title').value = p.title;
+            document.getElementById('prod-gender').value = p.gender || 'Unisex';
+            document.getElementById('prod-category').value = p.category;
+            document.getElementById('prod-old-price').value = p.oldPrice || '';
+            document.getElementById('prod-price').value = p.price;
+            document.getElementById('prod-priority').value = p.priority === 'TOP VIRAL' ? 'TOP VIRAL' : (p.priority || 'NINGUNA');
+            document.getElementById('prod-notes').value = p.notes || '';
+            document.getElementById('prod-desc').value = p.description || '';
+            document.getElementById('prod-size').value = p.size || '';
+            document.getElementById('prod-concentration').value = p.concentration || '';
+            document.getElementById('prod-longevity').value = p.longevity || '';
+            editingImages = getImages(p).slice();
+            renderImagesEditor();
+            document.getElementById('upload-status').innerText = '';
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        // ===== FOTOS MÚLTIPLES DEL PRODUCTO =====
+        let editingImages = [];
+        const MAX_DOC_IMAGES_BYTES = 850000; // Firebase permite ~1 MB por producto
+
+        function imagesBytes(list) {
+            return list.reduce((a, src) => a + (String(src).startsWith('data:') ? String(src).length : 0), 0);
+        }
+
+        function renderImagesEditor() {
+            const box = document.getElementById('prod-images-list');
+            if (!box) return;
+            document.getElementById('prod-images-count').innerText = `${editingImages.length} foto(s)`;
+            if (editingImages.length === 0) {
+                box.innerHTML = '<p class="col-span-4 text-[11px] text-gray-500 italic">Aún no hay fotos. Sube varias para mostrar el frasco, la caja y los detalles.</p>';
+                return;
+            }
+            box.innerHTML = editingImages.map((src, i) => `
+                <div class="relative group rounded-lg overflow-hidden border ${i === 0 ? 'border-2 border-luxury-gold' : 'border-gray-200'} bg-white aspect-square">
+                    <img src="${src}" class="w-full h-full object-cover">
+                    ${i === 0 ? '<span class="absolute top-0 left-0 bg-luxury-gold text-black text-[8px] font-black px-1 rounded-br">PRINCIPAL</span>' : ''}
+                    <div class="absolute inset-x-0 bottom-0 bg-black/70 flex justify-between px-1 py-0.5">
+                        <button type="button" onclick="moveProductImage(${i}, -1)" class="text-white text-[10px] px-1" title="Mover a la izquierda" ${i === 0 ? 'disabled style="opacity:.3"' : ''}><i class="fas fa-chevron-left"></i></button>
+                        ${i !== 0 ? `<button type="button" onclick="makeMainImage(${i})" class="text-amber-300 text-[10px] px-1" title="Usar como principal"><i class="fas fa-star"></i></button>` : ''}
+                        <button type="button" onclick="removeProductImage(${i})" class="text-rose-300 text-[10px] px-1" title="Quitar"><i class="fas fa-trash"></i></button>
+                        <button type="button" onclick="moveProductImage(${i}, 1)" class="text-white text-[10px] px-1" title="Mover a la derecha" ${i === editingImages.length - 1 ? 'disabled style="opacity:.3"' : ''}><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>`).join('');
+            const kb = Math.round(imagesBytes(editingImages) / 1024);
+            const status = document.getElementById('upload-status');
+            if (status && kb > 0) status.innerText = `Peso de las fotos subidas: ${kb} KB de ${Math.round(MAX_DOC_IMAGES_BYTES / 1024)} KB permitidos.`;
+        }
+
+        function moveProductImage(i, dir) {
+            const j = i + dir;
+            if (j < 0 || j >= editingImages.length) return;
+            [editingImages[i], editingImages[j]] = [editingImages[j], editingImages[i]];
+            renderImagesEditor();
+        }
+        function makeMainImage(i) {
+            const [img] = editingImages.splice(i, 1);
+            editingImages.unshift(img);
+            renderImagesEditor();
+        }
+        function removeProductImage(i) {
+            editingImages.splice(i, 1);
+            renderImagesEditor();
+        }
+        function addProductImageUrl() {
+            const input = document.getElementById('prod-image-url');
+            const url = (input.value || '').trim();
+            if (!/^https?:\/\//i.test(url)) return alert('Pega una URL que empiece por http:// o https://');
+            editingImages.push(url);
+            input.value = '';
+            renderImagesEditor();
+        }
+
+        function compressImage(file, maxSide = 1100, quality = 0.8) {
+            // Reduce la foto para que quepa en Firebase sin perder calidad visible
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = reject;
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onerror = reject;
+                    img.onload = () => {
+                        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.round(img.width * scale);
+                        canvas.height = Math.round(img.height * scale);
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function uploadProductImages(event) {
+            const files = Array.from(event.target.files || []);
+            if (files.length === 0) return;
+            const status = document.getElementById('upload-status');
+            status.innerText = `Procesando ${files.length} foto(s)...`;
+            let added = 0, skipped = 0;
+            for (const file of files) {
+                try {
+                    let data = await compressImage(file);
+                    if (imagesBytes([...editingImages, data]) > MAX_DOC_IMAGES_BYTES) data = await compressImage(file, 800, 0.7);
+                    if (imagesBytes([...editingImages, data]) > MAX_DOC_IMAGES_BYTES) { skipped++; continue; }
+                    editingImages.push(data);
+                    added++;
+                } catch (err) { skipped++; }
+            }
+            event.target.value = '';
+            renderImagesEditor();
+            if (skipped > 0) alert(`Se agregaron ${added} foto(s). ${skipped} no cupieron: Firebase guarda máximo ~1 MB por producto. Para más fotos, usa enlaces (URL) de imágenes.`);
+            else showToast(`${added} foto(s) agregadas`);
+        }
+
+        async function handleProductSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('prod-id').value;
+            const btnSave = document.getElementById('btn-save-prod');
+            btnSave.innerText = "Guardando...";
+            btnSave.disabled = true;
+
+            const payload = {
+                brand: document.getElementById('prod-brand').value.toUpperCase(),
+                name: document.getElementById('prod-title').value.toUpperCase(),
+                gender: document.getElementById('prod-gender').value,
+                category: document.getElementById('prod-category').value,
+                price: Number(document.getElementById('prod-price').value),
+                originalPrice: Number(document.getElementById('prod-old-price').value) || null,
+                priority: document.getElementById('prod-priority').value,
+                featured: document.getElementById('prod-priority').value === 'TOP VIRAL',
+                image: editingImages[0] || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
+                images: editingImages.slice(),
+                notes: document.getElementById('prod-notes').value,
+                description: document.getElementById('prod-desc').value,
+                size: document.getElementById('prod-size').value.trim().toUpperCase(),
+                concentration: document.getElementById('prod-concentration').value,
+                longevity: document.getElementById('prod-longevity').value.trim()
+            };
+            if (imagesBytes(payload.images) > MAX_DOC_IMAGES_BYTES) {
+                btnSave.innerText = "Guardar en Firebase";
+                btnSave.disabled = false;
+                return alert('Las fotos pesan demasiado para guardarse en Firebase (máximo ~1 MB por producto). Quita alguna o usa enlaces (URL).');
+            }
+
+            try {
+                if (id) {
+                    await window.updateDoc(window.doc(window.db, "products", id), payload);
+                    showToast("Producto editado exitosamente");
+                } else {
+                    payload.isActive = true;
+                    await window.addDoc(window.collection(window.db, "products"), payload);
+                    showToast("Nuevo producto agregado");
+                }
+                closeAdminModal();
+            } catch(err) {
+                alert("Error de permisos en Firebase: " + err.message);
+            } finally {
+                btnSave.innerText = "Guardar en Firebase";
+                btnSave.disabled = false;
+            }
+        }
+
+        async function deleteProductFromFirebase(id) {
+            if(!confirm("¿Estás seguro de eliminar esta fragancia definitivamente?")) return;
+            try {
+                await window.deleteDoc(window.doc(window.db, "products", id));
+                showToast("Fragancia eliminada");
+            } catch(err) {
+                alert("Error al eliminar: " + err.message);
+            }
+        }
+
+        function closePromoModal() { document.getElementById('promo-modal').classList.add('hidden'); }
+        
+        function addNewPromo() {
+            document.getElementById('promo-id').value = '';
+            document.getElementById('promo-title').value = '';
+            document.getElementById('promo-image').value = '';
+            document.getElementById('promo-category').value = 'Promociones';
+            document.getElementById('promo-timer-enable').checked = false;
+            document.getElementById('promo-timer-date').value = '';
+            
+            document.getElementById('promo-modal-title').innerHTML = '<i class="fas fa-plus text-amber-600"></i> Agregar Nueva Promo';
+            document.getElementById('promo-modal').classList.remove('hidden');
+        }
+
+        function editPromo(id) {
+            const slide = promoSlides.find(s => s.id === id);
+            if (!slide) return;
+            document.getElementById('promo-id').value = slide.id;
+            document.getElementById('promo-title').value = slide.title || '';
+            document.getElementById('promo-image').value = slide.image || '';
+            document.getElementById('promo-category').value = slide.category || 'Promociones';
+            document.getElementById('promo-timer-enable').checked = slide.hasTimer || false;
+            
+            if (slide.endTime) {
+                const d = new Date(slide.endTime);
+                const pad = n => n.toString().padStart(2, '0');
+                document.getElementById('promo-timer-date').value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            } else {
+                document.getElementById('promo-timer-date').value = '';
+            }
+
+            document.getElementById('promo-modal-title').innerHTML = '<i class="fas fa-edit text-amber-600"></i> Editar Promo Actual';
+            document.getElementById('promo-modal').classList.remove('hidden');
+        }
+        
+        function uploadPromoImageBase64(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => { document.getElementById('promo-image').value = e.target.result; };
+            reader.readAsDataURL(file);
+        }
+
+        async function handlePromoSubmit(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('promo-id').value;
+            const title = document.getElementById('promo-title').value;
+            const image = document.getElementById('promo-image').value;
+            const category = document.getElementById('promo-category').value;
+            const hasTimer = document.getElementById('promo-timer-enable').checked;
+            const timerDate = document.getElementById('promo-timer-date').value;
+
+            let endTime = null;
+            if (hasTimer && timerDate) {
+                endTime = new Date(timerDate).getTime();
+            }
+
+            const payload = { title, image, category, hasTimer, endTime };
+
+            try {
+                if (id) {
+                    await window.setDoc(window.doc(window.db, "promo_slides", id), payload, {merge: true});
+                    showToast("Imagen Promocional actualizada");
+                } else {
+                    await window.addDoc(window.collection(window.db, "promo_slides"), payload);
+                    showToast("Nueva Promoción agregada al carrusel");
+                }
+                closePromoModal();
+            } catch(err) {
+                alert("Error guardando promo en Firebase: " + err.message);
+            }
+        }
+
+        async function deletePromo(id) {
+            if(!confirm("¿Estás seguro de eliminar esta promoción?")) return;
+            try {
+                await window.deleteDoc(window.doc(window.db, "promo_slides", id));
+                showToast("Promoción eliminada del carrusel");
+                currentPromoIndex = 0; 
+            } catch(err) {
+                alert("Error al eliminar promo: " + err.message);
+            }
+        }
+        
+        async function promptSocialLinks() {
+            const ig = prompt("URL de Instagram (deja vacío para no cambiar):", document.getElementById('link-instagram').href);
+            const wa = prompt("Número de WhatsApp sin el '+' (Ej: 573105390115):", WHATSAPP_NUMBER);
+            const tk = prompt("URL de TikTok (deja vacío para no cambiar):", document.getElementById('link-tiktok').href);
+            
+            if (ig !== null || wa !== null || tk !== null) {
+                try {
+                    const payload = {};
+                    if (ig) payload.instagramUrl = ig;
+                    if (wa) payload.whatsappNumber = wa;
+                    if (tk) payload.tiktokUrl = tk;
+                    
+                    await window.setDoc(window.doc(window.db, "settings", "app_config"), payload, {merge: true});
+                    showToast("✅ Redes actualizadas correctamente");
+                } catch (e) {
+                    alert("Error al actualizar las redes: " + e.message);
+                }
+            }
+        }
+
+        function triggerLogoSelect() {
+            const choice = confirm("¿Deseas subir el Logo desde tu galería?\n(Haz clic en Aceptar para galería o Cancelar para pegar URL)");
+            if (choice) {
+                document.getElementById('logo-file-input').click();
+            } else {
+                const url = prompt("Pega aquí la URL de la imagen del logo:");
+                if (url) {
+                    window.setDoc(window.doc(window.db, "settings", "app_config"), { logoUrl: url }, {merge: true})
+                        .then(() => showToast("Logo actualizado por URL"));
+                }
+            }
+        }
+
+        function handleLogoUpload(e) { 
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    await window.setDoc(window.doc(window.db, "settings", "app_config"), { logoUrl: ev.target.result }, {merge: true});
+                    showToast("Logo subido y guardado exitosamente");
+                } catch(err) {
+                    alert("Error guardando logo: " + err.message);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function applyCustomLogo(url) { 
+            document.getElementById('buyer-logo-img').src = url; 
+            document.getElementById('admin-logo-img').src = url; 
+        }
+
+        function promptBannerUrl() { 
+            const url = prompt("Pega aquí la URL de la imagen de fondo para el Banner:");
+            if (url) {
+                window.setDoc(window.doc(window.db, "settings", "app_config"), { bannerUrl: url }, {merge: true})
+                    .then(() => showToast("Banner actualizado por URL"));
+            }
+        }
+
+        function handleBannerUpload(e) { 
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    await window.setDoc(window.doc(window.db, "settings", "app_config"), { bannerUrl: ev.target.result }, {merge: true});
+                    showToast("Fondo del banner subido exitosamente");
+                } catch(err) {
+                    alert("Error subiendo banner: " + err.message);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function applyCustomBannerBlur(url) { 
+            document.getElementById('banner-bg-blur').style.backgroundImage = `url(${url})`; 
+        }
+        
+        // ===================== AJUSTES EDITABLES DE LA TIENDA =====================
+        let storeSettings = {
+            shipMedellin: 12000,
+            shipNational: 14500,
+            codFeePct: 5,
+            shippingInfo: 'Medellín y área metropolitana: entrega de 1 a 2 días hábiles.\nResto del país: de 2 a 5 días hábiles con transportadora.\nTe enviamos la guía de seguimiento por WhatsApp.',
+            returnsInfo: 'Todos nuestros perfumes son 100% originales y se entregan sellados.\nAceptamos cambios dentro de los 5 días siguientes a la entrega si el producto llega averiado o no corresponde a tu pedido, siempre que esté sellado y en su empaque original.\nEscríbenos por WhatsApp para gestionarlo.',
+            trustText: '100% originales · Envíos a toda Colombia · Pago seguro'
+        };
+
+        function pickStoreSettings(data) {
+            const out = {};
+            if (data.shipMedellin !== undefined && !isNaN(Number(data.shipMedellin))) out.shipMedellin = Number(data.shipMedellin);
+            if (data.shipNational !== undefined && !isNaN(Number(data.shipNational))) out.shipNational = Number(data.shipNational);
+            if (data.codFeePct !== undefined && !isNaN(Number(data.codFeePct))) out.codFeePct = Number(data.codFeePct);
+            if (typeof data.shippingInfo === 'string' && data.shippingInfo.trim()) out.shippingInfo = data.shippingInfo;
+            if (typeof data.returnsInfo === 'string' && data.returnsInfo.trim()) out.returnsInfo = data.returnsInfo;
+            if (typeof data.trustText === 'string' && data.trustText.trim()) out.trustText = data.trustText;
+            return out;
+        }
+
+        function openStoreSettings() {
+            if (!isAdmin) return;
+            document.getElementById('set-ship-med').value = storeSettings.shipMedellin;
+            document.getElementById('set-ship-nat').value = storeSettings.shipNational;
+            document.getElementById('set-cod-fee').value = storeSettings.codFeePct;
+            document.getElementById('set-shipping-info').value = storeSettings.shippingInfo;
+            document.getElementById('set-returns-info').value = storeSettings.returnsInfo;
+            document.getElementById('set-trust-text').value = storeSettings.trustText;
+            document.getElementById('store-settings-modal').classList.remove('hidden');
+        }
+
+        function closeStoreSettings() { document.getElementById('store-settings-modal').classList.add('hidden'); }
+
+        async function saveStoreSettings(e) {
+            e.preventDefault();
+            const data = {
+                shipMedellin: Number(document.getElementById('set-ship-med').value) || 0,
+                shipNational: Number(document.getElementById('set-ship-nat').value) || 0,
+                codFeePct: Number(document.getElementById('set-cod-fee').value) || 0,
+                shippingInfo: document.getElementById('set-shipping-info').value.trim(),
+                returnsInfo: document.getElementById('set-returns-info').value.trim(),
+                trustText: document.getElementById('set-trust-text').value.trim()
+            };
+            try {
+                await window.setDoc(window.doc(window.db, "settings", "app_config"), data, { merge: true });
+                storeSettings = { ...storeSettings, ...pickStoreSettings(data) };
+                closeStoreSettings();
+                if (currentDetailId) renderDetail(currentDetailId, true);
+                showToast('Ajustes guardados');
+            } catch (err) {
+                alert('No se pudo guardar: ' + err.message);
+            }
+        }
+
+        // ===================== UTILIDADES =====================
+        function esc(str) {
+            return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function escMultiline(str) { return esc(str).replace(/\n/g, '<br>'); }
+        function getImages(p) {
+            const list = Array.isArray(p.images) && p.images.length ? p.images : (p.image ? [p.image] : []);
+            return list.length ? list : ['https://placehold.co/600x600/111315/d4af37?text=FRAGATTA'];
+        }
+        function discountPct(p) {
+            return p.oldPrice && p.oldPrice > p.price ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
+        }
+
+        // ===================== PÁGINA DE PRODUCTO =====================
+        let currentDetailId = null;
+        let detailImgIndex = 0;
+        let detailQty = 1;
+        let openedFromHash = false;
+        const ACCORD_COLORS = ['#d4af37', '#e8a87c', '#f3c4a2', '#c9a27e', '#e6cf8b', '#b8c99d', '#d9b8c4', '#a8c3d6', '#cfa58f', '#e2d4b7'];
+
+        function openDetailModal(id, fromHash) {
+            const p = products.find(prod => prod.id === id);
+            if (!p) return;
+            currentDetailId = id;
+            detailImgIndex = 0;
+            detailQty = 1;
+            renderDetail(id);
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            const sc = document.getElementById('detail-scroll');
+            if (sc) sc.scrollTop = 0;
+            const hash = '#producto=' + encodeURIComponent(id);
+            if (!fromHash && location.hash !== hash) history.pushState({ detail: id }, '', hash);
+        }
+
+        function renderDetail(id, keepState) {
+            const p = products.find(prod => prod.id === id);
+            if (!p) return;
+            const images = getImages(p);
+            if (!keepState) { detailImgIndex = 0; }
+            if (detailImgIndex >= images.length) detailImgIndex = 0;
+            const pct = discountPct(p);
+            const savings = p.oldPrice && p.oldPrice > p.price ? p.oldPrice - p.price : 0;
+            const notes = (p.notes || '').split(',').map(n => n.trim()).filter(Boolean);
+            const accords = notes.map((n, i) => {
+                const w = Math.max(38, 100 - i * (notes.length > 6 ? 8 : 11));
+                return `<div class="h-6 rounded-md flex items-center px-2.5 text-[11px] font-semibold text-gray-800 accord-bar" style="width:${w}%;background:${ACCORD_COLORS[i % ACCORD_COLORS.length]}">${esc(n)}</div>`;
+            }).join('');
+            const chips = [p.gender, p.category, p.size, p.concentration].filter(Boolean)
+                .map(c => `<span class="text-[11px] font-semibold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-full">${esc(c)}</span>`).join('');
+            const related = products.filter(x => x.id !== p.id && x.isActive && (x.category === p.category || x.gender === p.gender))
+                .sort((a, b) => (b.category === p.category) - (a.category === p.category)).slice(0, 8);
+            const waMsg = encodeURIComponent(`Hola, quiero más información sobre ${p.brand} ${p.title}.`);
+
+            document.getElementById('detail-content').innerHTML = `
+                ${isAdmin ? `
+                <div class="bg-luxury-dark text-white px-4 py-2 flex flex-wrap items-center gap-2 text-[11px]">
+                    <span class="bg-luxury-gold text-black font-extrabold px-2 py-0.5 rounded">ADMIN</span>
+                    <button onclick="openEditModal('${p.id}')" class="bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded font-bold"><i class="fas fa-pen mr-1"></i> Editar producto y fotos</button>
+                    <button onclick="openStoreSettings()" class="bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded font-bold"><i class="fas fa-sliders-h mr-1"></i> Envíos, devoluciones y tarifas</button>
+                    <button onclick="toggleProductActive('${p.id}', ${p.isActive})" class="bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded font-bold">${p.isActive ? '<i class="fas fa-eye-slash mr-1"></i> Ocultar' : '<i class="fas fa-eye mr-1"></i> Activar'}</button>
+                </div>` : ''}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-8 lg:p-6">
+                    <!-- GALERÍA -->
+                    <div class="lg:sticky lg:top-16 self-start">
+                        <div id="gallery-main" class="relative bg-gradient-to-b from-gray-50 to-white aspect-square overflow-hidden lg:rounded-2xl select-none">
+                            <img id="gallery-img" src="${images[detailImgIndex]}" alt="${esc(p.brand + ' ' + p.title)}" class="gallery-img w-full h-full object-contain cursor-zoom-in" onclick="openLightbox()">
+                            ${pct > 0 ? `<span class="absolute top-4 right-4 bg-luxury-dark text-luxury-gold font-black text-sm px-3 py-1.5 rounded-lg shadow">-${pct}%</span>` : ''}
+                            ${p.priority === 'LO NUEVO' ? '<span class="absolute top-4 left-4 bg-amber-500 text-slate-900 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow">🔥 LO NUEVO</span>' : (p.priority === 'TOP VIRAL' ? '<span class="absolute top-4 left-4 bg-yellow-400 text-slate-900 font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow">⚡ TOP VIRAL</span>' : '')}
+                            ${images.length > 1 ? `
+                                <button onclick="detailStep(-1)" class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center text-gray-800 hover:bg-white"><i class="fas fa-chevron-left"></i></button>
+                                <button onclick="detailStep(1)" class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center text-gray-800 hover:bg-white"><i class="fas fa-chevron-right"></i></button>
+                                <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">${images.map((_, i) => `<span class="h-1.5 rounded-full transition-all ${i === detailImgIndex ? 'w-5 bg-luxury-dark' : 'w-1.5 bg-gray-300'}"></span>`).join('')}</div>
+                            ` : ''}
+                            <button onclick="openLightbox()" class="absolute bottom-3 right-3 w-10 h-10 rounded-lg bg-white/95 border border-gray-200 shadow flex items-center justify-center text-gray-700 hover:text-black" title="Ampliar"><i class="fas fa-expand"></i></button>
+                        </div>
+                        ${images.length > 1 ? `
+                        <div class="flex gap-2 overflow-x-auto hide-scrollbar px-4 lg:px-0 py-3">
+                            ${images.map((src, i) => `<button onclick="setDetailImage(${i})" class="shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-50 border-2 ${i === detailImgIndex ? 'border-luxury-gold' : 'border-transparent opacity-70 hover:opacity-100'}"><img src="${src}" class="w-full h-full object-cover" alt=""></button>`).join('')}
+                        </div>` : ''}
+                    </div>
+
+                    <!-- INFORMACIÓN -->
+                    <div class="px-4 sm:px-6 lg:px-0 pt-4 lg:pt-0 ${related.length ? 'pb-6' : 'pb-28'} lg:pb-2 space-y-5">
+                        <div>
+                            <span class="text-xs font-bold text-luxury-gold-dark uppercase tracking-[0.2em]">${esc(p.brand)}</span>
+                            <h1 class="font-cinzel font-bold text-2xl sm:text-3xl text-gray-900 uppercase leading-tight mt-1">${esc(p.title)}</h1>
+                            ${chips ? `<div class="flex flex-wrap gap-1.5 mt-3">${chips}</div>` : ''}
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex items-baseline gap-3 flex-wrap">
+                                ${p.oldPrice && p.oldPrice > p.price ? `<span class="text-lg text-gray-400 line-through">${formatPrice(p.oldPrice)}</span>` : ''}
+                                <span class="text-3xl font-black text-rose-600">${formatPrice(p.price)}</span>
+                            </div>
+                            ${savings > 0 ? `<span class="inline-block text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full"><i class="fas fa-tag mr-1"></i> Ahorras ${formatPrice(savings)} (${pct}%)</span>` : ''}
+                        </div>
+
+                        ${accords ? `
+                        <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                            <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2.5">Acordes principales</p>
+                            <div class="space-y-1.5">${accords}</div>
+                        </div>` : ''}
+
+                        ${p.longevity ? `<p class="text-sm text-gray-700"><i class="fas fa-hourglass-half text-luxury-gold-dark mr-1.5"></i> <strong>Duración:</strong> ${esc(p.longevity)}</p>` : ''}
+
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center border-2 border-gray-200 rounded-full overflow-hidden">
+                                <button onclick="changeDetailQty(-1)" class="w-11 h-11 text-lg font-bold text-gray-700 hover:bg-gray-100">−</button>
+                                <span id="detail-qty" class="w-10 text-center font-bold">${detailQty}</span>
+                                <button onclick="changeDetailQty(1)" class="w-11 h-11 text-lg font-bold text-gray-700 hover:bg-gray-100">+</button>
+                            </div>
+                            <a href="https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}" target="_blank" rel="noopener" class="flex-1 h-11 border-2 border-emerald-500 text-emerald-700 rounded-full font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-50"><i class="fab fa-whatsapp text-base"></i> ¿Dudas? Escríbenos</a>
+                        </div>
+
+                        <div class="space-y-2.5">
+                            <button onclick="addDetailToCart()" class="w-full bg-luxury-gold-light hover:bg-amber-100 border border-luxury-gold text-luxury-dark font-bold py-3.5 rounded-full transition tracking-wide text-sm">
+                                <i class="fas fa-shopping-bag mr-1.5"></i> AÑADIR AL CARRITO
+                            </button>
+                            <button onclick="openCodCheckout('detail')" class="w-full bg-luxury-dark hover:bg-black text-white py-3.5 rounded-2xl transition shadow-lg">
+                                <span class="block font-bold text-base tracking-wide"><span class="text-luxury-gold">✦</span> Pago Contraentrega <span class="text-luxury-gold">✦</span></span>
+                                <span class="block text-[11px] text-gray-300">Pagas cuando lo recibes · Presiona aquí</span>
+                            </button>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-center gap-2 text-2xl text-gray-500">
+                            <i class="fab fa-cc-visa" title="Visa"></i>
+                            <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+                            <i class="fab fa-cc-amex" title="American Express"></i>
+                            <i class="fab fa-cc-diners-club" title="Diners Club"></i>
+                            <span class="text-[10px] font-black border border-gray-300 rounded px-1.5 py-0.5">PSE</span>
+                            <span class="text-[10px] font-black border border-gray-300 rounded px-1.5 py-0.5">Nequi</span>
+                            <span class="text-[10px] font-black border border-gray-300 rounded px-1.5 py-0.5">Contraentrega</span>
+                        </div>
+                        <p class="text-center text-[11px] text-gray-500 font-semibold"><i class="fas fa-shield-alt text-luxury-gold-dark mr-1"></i> ${esc(storeSettings.trustText)}</p>
+
+                        <div class="divide-y divide-gray-100 border-y border-gray-100">
+                            <details class="detail-accordion py-1" open>
+                                <summary class="flex items-center justify-between py-3 font-bold text-gray-900"><span>Descripción</span><span class="acc-icon w-8 h-8 rounded-lg bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-plus"></i></span></summary>
+                                <div class="pb-4 text-sm text-gray-600 leading-relaxed">${escMultiline(p.description || 'Fragancia exclusiva de alta calidad.')}</div>
+                            </details>
+                            ${notes.length ? `
+                            <details class="detail-accordion py-1">
+                                <summary class="flex items-center justify-between py-3 font-bold text-gray-900"><span>Notas olfativas</span><span class="acc-icon w-8 h-8 rounded-lg bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-plus"></i></span></summary>
+                                <div class="pb-4 flex flex-wrap gap-1.5">${notes.map(n => `<span class="text-[11px] text-gray-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100"><i class="fas fa-leaf text-amber-500 mr-1"></i>${esc(n)}</span>`).join('')}</div>
+                            </details>` : ''}
+                            <details class="detail-accordion py-1">
+                                <summary class="flex items-center justify-between py-3 font-bold text-gray-900"><span>Envíos</span><span class="acc-icon w-8 h-8 rounded-lg bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-plus"></i></span></summary>
+                                <div class="pb-4 text-sm text-gray-600 leading-relaxed space-y-2">
+                                    <p>${escMultiline(storeSettings.shippingInfo)}</p>
+                                    <p class="text-xs font-semibold text-gray-800">Medellín y área metropolitana: ${formatPrice(storeSettings.shipMedellin)} · Resto del país: ${formatPrice(storeSettings.shipNational)}</p>
+                                </div>
+                            </details>
+                            <details class="detail-accordion py-1">
+                                <summary class="flex items-center justify-between py-3 font-bold text-gray-900"><span>Cambios y devoluciones</span><span class="acc-icon w-8 h-8 rounded-lg bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-plus"></i></span></summary>
+                                <div class="pb-4 text-sm text-gray-600 leading-relaxed">${escMultiline(storeSettings.returnsInfo)}</div>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+
+                ${related.length ? `
+                <div class="px-4 sm:px-6 pb-32 lg:pb-8 pt-2">
+                    <h3 class="font-cinzel font-bold text-lg sm:text-xl text-center text-gray-900 mb-4 flex items-center justify-center gap-3"><span class="h-px w-10 bg-luxury-gold"></span> También te puede interesar <span class="h-px w-10 bg-luxury-gold"></span></h3>
+                    <div class="flex gap-3 overflow-x-auto hide-scrollbar snap-row pb-2">
+                        ${related.map(r => `
+                        <div class="shrink-0 w-40 sm:w-48 bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                            <div class="relative aspect-square bg-gray-50 cursor-pointer" onclick="openDetailModal('${r.id}')">
+                                <img src="${getImages(r)[0]}" alt="${esc(r.title)}" class="w-full h-full object-cover">
+                                ${discountPct(r) > 0 ? `<span class="absolute top-2 right-2 bg-luxury-dark text-luxury-gold font-extrabold text-[10px] px-1.5 py-0.5 rounded-full">-${discountPct(r)}%</span>` : ''}
+                            </div>
+                            <div class="p-2.5 text-center">
+                                <p class="text-[10px] font-bold text-luxury-gold-dark uppercase truncate">${esc(r.brand)}</p>
+                                <p class="font-cinzel text-xs font-bold text-gray-900 uppercase line-clamp-2 min-h-[2rem] cursor-pointer" onclick="openDetailModal('${r.id}')">${esc(r.title)}</p>
+                                <p class="text-sm font-extrabold text-rose-600 mt-1">${formatPrice(r.price)}</p>
+                                <button onclick="addToCart('${r.id}')" class="mt-2 w-full bg-luxury-dark text-white text-[11px] font-bold py-1.5 rounded-lg hover:bg-black"><i class="fas fa-cart-plus mr-1"></i> Añadir</button>
+                            </div>
+                        </div>`).join('')}
+                    </div>
+                </div>` : ''}
+
+                <!-- Barra fija inferior en celular -->
+                <div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 px-3 py-2.5 flex items-center gap-2 shadow-[0_-6px_20px_rgba(0,0,0,0.08)]">
+                    <div class="min-w-0">
+                        ${p.oldPrice && p.oldPrice > p.price ? `<p class="text-[10px] text-gray-400 line-through leading-none">${formatPrice(p.oldPrice)}</p>` : ''}
+                        <p class="text-base font-black text-rose-600 leading-tight">${formatPrice(p.price)}</p>
+                    </div>
+                    <button onclick="addDetailToCart()" class="ml-auto w-12 h-12 shrink-0 rounded-xl border border-luxury-gold bg-luxury-gold-light text-luxury-dark" title="Añadir al carrito"><i class="fas fa-cart-plus"></i></button>
+                    <button onclick="openCodCheckout('detail')" class="h-12 px-4 rounded-xl bg-luxury-dark text-white font-bold text-xs">Pago Contraentrega</button>
+                </div>
+            `;
+            attachGallerySwipe();
+        }
+
+        function setDetailImage(i) {
+            detailImgIndex = i;
+            renderDetail(currentDetailId, true);
+        }
+        function detailStep(dir) {
+            const p = products.find(x => x.id === currentDetailId);
+            if (!p) return;
+            const n = getImages(p).length;
+            setDetailImage((detailImgIndex + dir + n) % n);
+        }
+        function attachGallerySwipe() {
+            const el = document.getElementById('gallery-main');
+            if (!el) return;
+            let startX = null;
+            el.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+            el.addEventListener('touchend', (e) => {
+                if (startX === null) return;
+                const dx = e.changedTouches[0].clientX - startX;
+                if (Math.abs(dx) > 40) detailStep(dx < 0 ? 1 : -1);
+                startX = null;
+            });
+        }
+        function changeDetailQty(d) {
+            detailQty = Math.max(1, Math.min(20, detailQty + d));
+            const el = document.getElementById('detail-qty');
+            if (el) el.innerText = detailQty;
+        }
+        function addDetailToCart() {
+            const prod = products.find(p => p.id === currentDetailId);
+            if (!prod) return;
+            const existing = cart.find(i => i.id === prod.id);
+            if (existing) existing.quantity += detailQty;
+            else cart.push({ ...prod, images: undefined, quantity: detailQty });
+            saveCart();
+            updateCartUI();
+            showToast(`${detailQty} unidad(es) añadidas al carrito`);
+        }
+
+        function closeDetailModal(fromPop) {
+            document.getElementById('detail-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+            currentDetailId = null;
+            if (!fromPop && location.hash.startsWith('#producto=')) {
+                if (history.state && history.state.detail) history.back();
+                else history.replaceState(null, '', location.pathname + location.search);
+            }
+        }
+
+        function openProductFromHash() {
+            if (openedFromHash || !location.hash.startsWith('#producto=')) return;
+            const id = decodeURIComponent(location.hash.slice('#producto='.length));
+            if (products.some(p => p.id === id)) {
+                openedFromHash = true;
+                openDetailModal(id, true);
+            }
+        }
+
+        window.addEventListener('popstate', () => {
+            const isOpen = !document.getElementById('detail-modal').classList.contains('hidden');
+            if (location.hash.startsWith('#producto=')) {
+                const id = decodeURIComponent(location.hash.slice('#producto='.length));
+                if (id !== currentDetailId) openDetailModal(id, true);
+            } else if (isOpen) {
+                closeDetailModal(true);
+            }
+        });
+
+        async function shareCurrentProduct() {
+            const p = products.find(x => x.id === currentDetailId);
+            if (!p) return;
+            const url = location.origin + location.pathname + '#producto=' + encodeURIComponent(p.id);
+            const text = `${p.brand} ${p.title} - ${formatPrice(p.price)}`;
+            try {
+                if (navigator.share) { await navigator.share({ title: text, text, url }); return; }
+                await navigator.clipboard.writeText(url);
+                showToast('Enlace copiado');
+            } catch (err) { /* el usuario canceló */ }
+        }
+
+        // ===== Visor de fotos =====
+        let lightboxIndex = 0;
+        function openLightbox() {
+            const p = products.find(x => x.id === currentDetailId);
+            if (!p) return;
+            lightboxIndex = detailImgIndex;
+            updateLightbox();
+            document.getElementById('lightbox').classList.remove('hidden');
+        }
+        function updateLightbox() {
+            const p = products.find(x => x.id === currentDetailId);
+            if (!p) return;
+            const imgs = getImages(p);
+            document.getElementById('lightbox-img').src = imgs[lightboxIndex];
+            document.getElementById('lightbox-counter').innerText = `${lightboxIndex + 1} / ${imgs.length}`;
+            document.getElementById('lightbox-prev').classList.toggle('hidden', imgs.length < 2);
+            document.getElementById('lightbox-next').classList.toggle('hidden', imgs.length < 2);
+        }
+        function lightboxStep(d) {
+            const p = products.find(x => x.id === currentDetailId);
+            if (!p) return;
+            const n = getImages(p).length;
+            lightboxIndex = (lightboxIndex + d + n) % n;
+            updateLightbox();
+        }
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+            if (lightboxIndex !== detailImgIndex) setDetailImage(lightboxIndex);
+        }
+        document.addEventListener('keydown', (e) => {
+            const lb = !document.getElementById('lightbox').classList.contains('hidden');
+            if (lb) {
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowRight') lightboxStep(1);
+                if (e.key === 'ArrowLeft') lightboxStep(-1);
+                return;
+            }
+            if (!document.getElementById('cod-modal').classList.contains('hidden')) {
+                if (e.key === 'Escape') closeCodCheckout();
+                return;
+            }
+            if (!document.getElementById('detail-modal').classList.contains('hidden')) {
+                if (e.key === 'Escape') closeDetailModal();
+                if (e.key === 'ArrowRight') detailStep(1);
+                if (e.key === 'ArrowLeft') detailStep(-1);
+            }
+        });
+
+        // ===================== PAGO CONTRAENTREGA =====================
+        const DEPARTAMENTOS = ['Antioquia', 'Amazonas', 'Arauca', 'Atlántico', 'Bogotá D.C.', 'Bolívar', 'Boyacá', 'Caldas', 'Caquetá', 'Casanare', 'Cauca', 'Cesar', 'Chocó', 'Córdoba', 'Cundinamarca', 'Guainía', 'Guaviare', 'Huila', 'La Guajira', 'Magdalena', 'Meta', 'Nariño', 'Norte de Santander', 'Putumayo', 'Quindío', 'Risaralda', 'San Andrés y Providencia', 'Santander', 'Sucre', 'Tolima', 'Valle del Cauca', 'Vaupés', 'Vichada'];
+        const AREA_METRO = ['Medellín', 'Bello', 'Itagüí', 'Envigado', 'Sabaneta', 'La Estrella', 'Caldas', 'Copacabana', 'Girardota', 'Barbosa'];
+        const CAPITALES = { 'Atlántico': ['Barranquilla', 'Soledad'], 'Bogotá D.C.': ['Bogotá'], 'Bolívar': ['Cartagena'], 'Boyacá': ['Tunja', 'Duitama', 'Sogamoso'], 'Caldas': ['Manizales'], 'Cundinamarca': ['Soacha', 'Chía', 'Zipaquirá', 'Fusagasugá', 'Facatativá'], 'Huila': ['Neiva'], 'Magdalena': ['Santa Marta'], 'Meta': ['Villavicencio'], 'Nariño': ['Pasto'], 'Norte de Santander': ['Cúcuta'], 'Quindío': ['Armenia'], 'Risaralda': ['Pereira', 'Dosquebradas'], 'Santander': ['Bucaramanga', 'Floridablanca', 'Girón', 'Piedecuesta'], 'Tolima': ['Ibagué'], 'Valle del Cauca': ['Cali', 'Palmira', 'Tuluá', 'Buenaventura'], 'Córdoba': ['Montería'], 'Cesar': ['Valledupar'], 'Sucre': ['Sincelejo'], 'Cauca': ['Popayán'], 'La Guajira': ['Riohacha'], 'Antioquia': ['Rionegro', 'Marinilla', 'La Ceja', 'Apartadó', 'Turbo', 'Caucasia'] };
+        let codItems = [];
+        let codSource = 'detail';
+
+        function normalizeTxt(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim(); }
+
+        function openCodCheckout(source) {
+            codSource = source;
+            if (source === 'cart') {
+                codItems = cart.map(i => ({ id: i.id, brand: i.brand, title: i.title, price: i.price, oldPrice: i.oldPrice, image: i.image, quantity: i.quantity }));
+            } else {
+                const p = products.find(x => x.id === currentDetailId);
+                if (!p) return;
+                codItems = [{ id: p.id, brand: p.brand, title: p.title, price: p.price, oldPrice: p.oldPrice, image: getImages(p)[0], quantity: detailQty }];
+            }
+            if (codItems.length === 0) return alert('No hay productos para comprar.');
+            const dept = document.getElementById('cod-dept');
+            if (dept && dept.options.length === 0) {
+                dept.innerHTML = '<option value="">Selecciona tu departamento</option>' + DEPARTAMENTOS.map(d => `<option value="${d}">${d}</option>`).join('');
+            }
+            onCodLocationChange();
+            document.getElementById('cod-modal').classList.remove('hidden');
+        }
+
+        function closeCodCheckout() { document.getElementById('cod-modal').classList.add('hidden'); }
+
+        function computeCodShipping() {
+            const dept = document.getElementById('cod-dept').value;
+            const city = document.getElementById('cod-city').value.trim();
+            if (!dept || !city) return null;
+            const isMetro = dept === 'Antioquia' && AREA_METRO.some(c => normalizeTxt(c) === normalizeTxt(city));
+            return isMetro
+                ? { label: `Mensajería Medellín y Área Metropolitana`, cost: storeSettings.shipMedellin, metro: true }
+                : { label: `Envío nacional con transportadora a ${city}`, cost: storeSettings.shipNational, metro: false };
+        }
+
+        function onCodLocationChange() {
+            const dept = document.getElementById('cod-dept').value;
+            const list = document.getElementById('cod-city-list');
+            if (list) list.innerHTML = (dept === 'Antioquia' ? [...AREA_METRO, ...(CAPITALES['Antioquia'] || [])] : (CAPITALES[dept] || [])).map(c => `<option value="${c}">`).join('');
+            renderCodSummary();
+        }
+
+        function renderCodSummary() {
+            const subtotal = codItems.reduce((a, i) => a + i.price * i.quantity, 0);
+            const savings = codItems.reduce((a, i) => a + (i.oldPrice && i.oldPrice > i.price ? (i.oldPrice - i.price) * i.quantity : 0), 0);
+            const ship = computeCodShipping();
+            const fee = ship && !ship.metro ? Math.round((subtotal + ship.cost) * (storeSettings.codFeePct / 100)) : 0;
+            const total = subtotal + (ship ? ship.cost : 0) + fee;
+            document.getElementById('cod-items').innerHTML = codItems.map((i, idx) => `
+                <div class="flex items-center gap-3">
+                    <div class="relative shrink-0">
+                        <img src="${i.image}" class="w-16 h-16 rounded-xl object-cover bg-gray-50 border border-gray-100" alt="">
+                        <span class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-luxury-dark text-white text-[11px] font-bold flex items-center justify-center">${i.quantity}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[10px] font-bold text-luxury-gold-dark uppercase">${esc(i.brand || '')}</p>
+                        <p class="font-cinzel font-bold text-sm uppercase leading-tight">${esc(i.title)}</p>
+                        <div class="flex items-center gap-1 mt-1">
+                            <button type="button" onclick="changeCodQty(${idx}, -1)" class="w-6 h-6 rounded bg-gray-100 font-bold">−</button>
+                            <button type="button" onclick="changeCodQty(${idx}, 1)" class="w-6 h-6 rounded bg-gray-100 font-bold">+</button>
+                        </div>
+                    </div>
+                    <span class="font-black text-sm">${formatPrice(i.price * i.quantity)}</span>
+                </div>`).join('');
+            document.getElementById('cod-subtotal').innerText = formatPrice(subtotal);
+            document.getElementById('cod-shipping').innerText = ship ? formatPrice(ship.cost) : 'Selecciona tu ciudad';
+            document.getElementById('cod-fee-line').classList.toggle('hidden', fee <= 0);
+            document.getElementById('cod-fee').innerText = formatPrice(fee);
+            document.getElementById('cod-savings-line').classList.toggle('hidden', savings <= 0);
+            document.getElementById('cod-savings').innerText = formatPrice(savings);
+            document.getElementById('cod-total').innerText = formatPrice(total);
+            const method = document.getElementById('cod-ship-method');
+            method.classList.toggle('hidden', !ship);
+            if (ship) {
+                document.getElementById('cod-ship-label').innerText = ship.label;
+                document.getElementById('cod-ship-price').innerText = formatPrice(ship.cost);
+            }
+            document.getElementById('cod-submit-btn').innerText = `COMPLETAR COMPRA - ${formatPrice(total)}`;
+            return { subtotal, ship, fee, total };
+        }
+
+        function changeCodQty(idx, d) {
+            const it = codItems[idx];
+            if (!it) return;
+            it.quantity = Math.max(1, Math.min(20, it.quantity + d));
+            renderCodSummary();
+        }
+
+        function submitCodOrder(e) {
+            e.preventDefault();
+            const v = (id) => document.getElementById(id).value.trim();
+            const ship = computeCodShipping();
+            if (!ship) return alert('Selecciona el departamento y la ciudad.');
+            const phone = v('cod-phone').replace(/\D/g, '');
+            if (phone.length < 10) return alert('Escribe un número de WhatsApp válido de 10 dígitos.');
+            const t = renderCodSummary();
+            let msg = `*NUEVO PEDIDO CONTRAENTREGA - FRAGATTAPARFUMS*\n\n`;
+            msg += `*CLIENTE:*\n• Nombre: ${v('cod-name')} ${v('cod-lastname')}\n• ${v('cod-doc-type')}: ${v('cod-doc')}\n• WhatsApp: ${phone}\n`;
+            if (v('cod-email')) msg += `• Correo: ${v('cod-email')}\n`;
+            msg += `\n*ENTREGA:*\n• ${v('cod-city')}, ${v('cod-dept')}\n• Dirección: ${v('cod-address')}\n• ${v('cod-address2')}\n• Referencia: ${v('cod-reference')}\n`;
+            if (v('cod-notes')) msg += `• Notas: ${v('cod-notes')}\n`;
+            msg += `\n*PRODUCTOS:*\n`;
+            codItems.forEach(i => { msg += `• ${i.brand ? i.brand + ' ' : ''}${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
+            msg += `\n*RESUMEN:*\n• Subtotal: ${formatPrice(t.subtotal)}\n• Envío (${ship.label}): ${formatPrice(ship.cost)}\n`;
+            if (t.fee > 0) msg += `• Recargo contraentrega: ${formatPrice(t.fee)}\n`;
+            msg += `*TOTAL A PAGAR AL RECIBIR:* ${formatPrice(t.total)}\n\n*MÉTODO DE PAGO:* Pago Contraentrega`;
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+            if (codSource === 'cart') { cart = []; saveCart(); updateCartUI(); }
+            closeCodCheckout();
+            document.getElementById('cod-form').reset();
+            showToast('¡Pedido enviado! Te contactaremos por WhatsApp');
+        }
+
     </script>
 </body>
 </html>
