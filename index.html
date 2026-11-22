@@ -119,8 +119,8 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .detail-accordion summary { list-style: none; cursor: pointer; }
         .detail-accordion summary::-webkit-details-marker { display: none; }
-        .detail-accordion[open] .acc-icon { transform: rotate(45deg); }
-        .acc-icon { transition: transform .2s ease; }
+        .detail-accordion[open] .acc-icon i { transform: rotate(45deg); }
+        .acc-icon i { transition: transform .2s ease; }
         .accord-bar { transition: width .6s ease; }
         .gallery-img { transition: opacity .25s ease; }
         .snap-row { scroll-snap-type: x mandatory; }
@@ -612,7 +612,7 @@
                         COMPLETAR COMPRA
                     </button>
                     <button type="button" onclick="closeCodCheckout(); toggleCartModal(); goToStep2();" class="w-full border-2 border-luxury-gold text-luxury-gold-dark hover:bg-luxury-gold-light font-bold py-3 rounded-2xl transition text-xs">
-                        <i class="fas fa-credit-card mr-1"></i> Prefiero pagar en línea (tarjeta, PSE, Nequi)
+                        <i class="fas fa-lock mr-1"></i> Prefiero pagar en línea con Wompi (PSE, Nequi, Bancolombia)
                     </button>
                     <p class="text-[11px] text-gray-500 text-center"><i class="fas fa-lock mr-1"></i> Te escribiremos por WhatsApp para confirmar tu pedido antes de enviarlo.</p>
                 </form>
@@ -650,7 +650,7 @@
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">Frase de confianza (debajo de los botones)</label>
-                    <input type="text" id="set-trust-text" class="w-full p-2 border rounded-lg" placeholder="100% originales · Envíos a toda Colombia">
+                    <input type="text" id="set-trust-text" class="w-full p-2 border rounded-lg" placeholder="Envíos a toda Colombia · Pago seguro con Wompi">
                 </div>
                 <div class="pt-2 flex justify-end gap-2">
                     <button type="button" onclick="closeStoreSettings()" class="px-4 py-2 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
@@ -2076,8 +2076,8 @@
             shipNational: 14500,
             codFeePct: 5,
             shippingInfo: 'Medellín y área metropolitana: entrega de 1 a 2 días hábiles.\nResto del país: de 2 a 5 días hábiles con transportadora.\nTe enviamos la guía de seguimiento por WhatsApp.',
-            returnsInfo: 'Todos nuestros perfumes son 100% originales y se entregan sellados.\nAceptamos cambios dentro de los 5 días siguientes a la entrega si el producto llega averiado o no corresponde a tu pedido, siempre que esté sellado y en su empaque original.\nEscríbenos por WhatsApp para gestionarlo.',
-            trustText: '100% originales · Envíos a toda Colombia · Pago seguro'
+            returnsInfo: 'Todos nuestros perfumes se entregan sellados.\nAceptamos cambios dentro de los 5 días siguientes a la entrega si el producto llega averiado o no corresponde a tu pedido, siempre que esté sellado y en su empaque original.\nEscríbenos por WhatsApp para gestionarlo.',
+            trustText: 'Envíos a toda Colombia · Pago seguro con Wompi'
         };
 
         function pickStoreSettings(data) {
@@ -2250,14 +2250,14 @@
                             </button>
                         </div>
 
-                        <div class="flex flex-wrap items-center justify-center gap-2 text-2xl text-gray-500">
-                            <i class="fab fa-cc-visa" title="Visa"></i>
-                            <i class="fab fa-cc-mastercard" title="Mastercard"></i>
-                            <i class="fab fa-cc-amex" title="American Express"></i>
-                            <i class="fab fa-cc-diners-club" title="Diners Club"></i>
-                            <span class="text-[10px] font-black border border-gray-300 rounded px-1.5 py-0.5">PSE</span>
-                            <span class="text-[10px] font-black border border-gray-300 rounded px-1.5 py-0.5">Nequi</span>
-                            <span class="text-[10px] font-black border border-gray-300 rounded px-1.5 py-0.5">Contraentrega</span>
+                        <div class="text-center space-y-1.5">
+                            <p class="text-[11px] font-bold text-gray-500"><i class="fas fa-lock text-luxury-gold-dark mr-1"></i> Pagos en línea seguros con Wompi</p>
+                            <div class="flex flex-wrap items-center justify-center gap-2">
+                                <span class="text-[11px] font-black text-gray-700 border border-gray-300 rounded-lg px-2 py-1">PSE</span>
+                                <span class="text-[11px] font-black text-gray-700 border border-gray-300 rounded-lg px-2 py-1">Nequi</span>
+                                <span class="text-[11px] font-black text-gray-700 border border-gray-300 rounded-lg px-2 py-1">Botón Bancolombia</span>
+                                <span class="text-[11px] font-black text-gray-700 border border-gray-300 rounded-lg px-2 py-1">Contraentrega</span>
+                            </div>
                         </div>
                         <p class="text-center text-[11px] text-gray-500 font-semibold"><i class="fas fa-shield-alt text-luxury-gold-dark mr-1"></i> ${esc(storeSettings.trustText)}</p>
 
