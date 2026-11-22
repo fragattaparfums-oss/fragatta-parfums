@@ -410,7 +410,7 @@
 
                         <div class="flex flex-wrap items-center gap-2">
 
-                            <button onclick="exportExcelByMonth()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition shadow-md flex items-center gap-1.5 mr-2">
+                            <button onclick="exportExcelByMonth()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition shadow-md flex items-center gap-1.5 mr-2">
 
                                 <i class="fa-solid fa-file-excel"></i> Exportar Mes Seleccionado
 
@@ -702,26 +702,77 @@
 
 
 
-                        <!-- FILA 3 (MEJORADA) -->
+                        <!-- FILA 2.5: PROTECCIÓN DE CAPITAL & REPOSICIÓN DE STOCK (ANTI-DESCAPITALIZACIÓN - SOLO ADMIN) -->
+                        <div class="bg-slate-800/60 p-4 sm:p-5 rounded-2xl border border-emerald-500/40 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h4 class="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-shield-halved"></i> Protección Anti-Descapitalización &amp; Fondo de Reposición de Stock
+                                </h4>
+                                <span id="profit-status-badge" class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-900/80 text-slate-300 border border-slate-700">
+                                    Calculando estado...
+                                </span>
+                            </div>
+
+                            <p class="text-[11px] text-slate-300 leading-relaxed">
+                                Cuando vendes un perfume, parte del dinero es el <strong class="text-white">costo del stock que salió</strong> (debes guardarlo para volver a surtirte) y el resto es <strong class="text-emerald-300">ganancia</strong>. Define además qué % extra de tus ganancias guardarás para hacer crecer tu inventario sin descapitalizarte.
+                            </p>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <div class="bg-slate-900/85 p-3.5 rounded-xl border border-slate-700/80">
+                                    <p class="text-[10px] font-bold text-blue-300 uppercase tracking-wider">1. Reposición de Stock Vendido</p>
+                                    <h5 id="reserve-cogs-val" class="text-lg font-black text-blue-400 mt-1">$0</h5>
+                                    <p class="text-[10px] text-slate-400 mt-0.5"><span id="reserve-cogs-pct" class="font-bold text-blue-300">0%</span> de tus ventas (Intocable)</p>
+                                </div>
+
+                                <div class="bg-slate-900/85 p-3.5 rounded-xl border border-emerald-500/40">
+                                    <div class="flex items-center justify-between gap-1">
+                                        <label for="stock-reserve-pct-input" class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">2. % Extra Reinversión</label>
+                                        <div class="flex items-center gap-1">
+                                            <input type="number" id="stock-reserve-pct-input" min="0" max="100" step="1" value="20" onchange="updateStockReservePercent()" class="w-14 bg-slate-800 border border-emerald-500/60 rounded-lg px-1.5 py-0.5 text-xs font-black text-emerald-300 text-center focus:outline-none focus:border-emerald-400">
+                                            <span class="text-xs font-bold text-emerald-400">%</span>
+                                        </div>
+                                    </div>
+                                    <h5 id="reserve-reinvest-val" class="text-lg font-black text-emerald-400 mt-1">$0</h5>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">De la ganancia neta acumulada</p>
+                                </div>
+
+                                <div class="bg-amber-950/50 p-3.5 rounded-xl border border-amber-500/60">
+                                    <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Total Acumulado a Guardar</p>
+                                    <h5 id="reserve-total-save-val" class="text-lg font-black text-amber-400 mt-1">$0</h5>
+                                    <p class="text-[10px] text-amber-200 mt-0.5">Guarda el <span id="reserve-total-save-pct" class="font-black text-amber-300 underline">0%</span> de cada venta</p>
+                                </div>
+
+                                <div class="bg-purple-950/60 p-3.5 rounded-xl border border-purple-500/50">
+                                    <p class="text-[10px] font-bold text-purple-300 uppercase tracking-wider">Utilidad Libre Repartible</p>
+                                    <h5 id="distributable-profit-val" class="text-lg font-black text-white mt-1">$0</h5>
+                                    <p class="text-[10px] text-purple-200 mt-0.5">Disponible para repartir a socios</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FILA 3: REPARTO DE UTILIDADES & RETIROS DE SOCIOS CON % MODIFICABLES (SOLO ADMIN) -->
                         <div class="bg-slate-800/60 p-4 sm:p-5 rounded-2xl border border-slate-700/70 space-y-4">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <h4 class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-2">
-                                    <i class="fa-solid fa-users"></i> Reparto de Utilidades &amp; Retiros de Socios
+                                    <i class="fa-solid fa-users"></i> Reparto de Utilidades &amp; Retiros de Socios (Porcentajes Editables)
                                 </h4>
-                                <span class="text-[11px] text-slate-400 bg-slate-900/70 px-2.5 py-1 rounded-full border border-slate-700/60">
-                                    <i class="fa-solid fa-scale-balanced text-purple-400 mr-1"></i> División 50% / 50%
+                                <span id="partners-pct-summary" class="text-[11px] font-bold text-emerald-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-emerald-500/40">
+                                    Total asignado: 100%
                                 </span>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
                                 <!-- Socio 1 -->
                                 <div class="bg-slate-900/85 p-4 rounded-xl border border-slate-700/80 hover:border-purple-500/50 transition-colors space-y-3">
-                                    <div class="flex justify-between items-center">
+                                    <div class="flex justify-between items-center gap-2">
                                         <div class="flex items-center gap-2">
                                             <span class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center text-xs font-bold">S1</span>
                                             <span class="font-bold text-sm text-white">Socio 1 (Propietario A)</span>
                                         </div>
-                                        <span class="text-xs font-bold text-purple-300 bg-purple-500/15 px-2 py-0.5 rounded-md">50 %</span>
+                                        <div class="flex items-center gap-1 bg-purple-500/15 px-2 py-1 rounded-lg border border-purple-500/40">
+                                            <input type="number" id="socio1-pct-input" min="0" max="100" step="1" value="50" onchange="updatePartnerPercentages('socio1')" class="w-12 bg-slate-900 border border-purple-400/50 rounded px-1 py-0.5 text-xs font-black text-purple-300 text-center focus:outline-none">
+                                            <span class="text-xs font-bold text-purple-300">%</span>
+                                        </div>
                                     </div>
                                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[11px]">
                                         <div class="bg-slate-800/90 p-2.5 rounded-lg border border-slate-700/50">
@@ -740,13 +791,16 @@
                                 </div>
 
                                 <!-- Socio 2 -->
-                                <div class="bg-slate-900/85 p-4 rounded-xl border border-slate-700/80 hover:border-purple-500/50 transition-colors space-y-3">
-                                    <div class="flex justify-between items-center">
+                                <div class="bg-slate-900/85 p-4 rounded-xl border border-slate-700/80 hover:border-indigo-500/50 transition-colors space-y-3">
+                                    <div class="flex justify-between items-center gap-2">
                                         <div class="flex items-center gap-2">
                                             <span class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-300 flex items-center justify-center text-xs font-bold">S2</span>
                                             <span class="font-bold text-sm text-white">Socio 2 (Propietario B)</span>
                                         </div>
-                                        <span class="text-xs font-bold text-indigo-300 bg-indigo-500/15 px-2 py-0.5 rounded-md">50 %</span>
+                                        <div class="flex items-center gap-1 bg-indigo-500/15 px-2 py-1 rounded-lg border border-indigo-500/40">
+                                            <input type="number" id="socio2-pct-input" min="0" max="100" step="1" value="50" onchange="updatePartnerPercentages('socio2')" class="w-12 bg-slate-900 border border-indigo-400/50 rounded px-1 py-0.5 text-xs font-black text-indigo-300 text-center focus:outline-none">
+                                            <span class="text-xs font-bold text-indigo-300">%</span>
+                                        </div>
                                     </div>
                                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[11px]">
                                         <div class="bg-slate-800/90 p-2.5 rounded-lg border border-slate-700/50">
@@ -2644,6 +2698,9 @@
         let baseTarget = 0;
 
         let baseCurrent = 0;
+        let socio1Percent = 50;
+        let socio2Percent = 50;
+        let stockReservePercent = 20;
 
 
 
@@ -2676,6 +2733,12 @@
                 baseTarget = parseFloat(localStorage.getItem('fragatta_base_target')) || 0;
 
                 baseCurrent = parseFloat(localStorage.getItem('fragatta_base_current')) || 0;
+                const savedS1 = localStorage.getItem('fragatta_socio1_pct');
+                const savedS2 = localStorage.getItem('fragatta_socio2_pct');
+                const savedRes = localStorage.getItem('fragatta_stock_reserve_pct');
+                socio1Percent = savedS1 !== null ? (parseFloat(savedS1) || 0) : 50;
+                socio2Percent = savedS2 !== null ? (parseFloat(savedS2) || 0) : 50;
+                stockReservePercent = savedRes !== null ? (parseFloat(savedRes) || 0) : 20;
 
             } catch (e) {
 
@@ -2710,6 +2773,9 @@
             localStorage.setItem('fragatta_base_target', baseTarget.toString());
 
             localStorage.setItem('fragatta_base_current', baseCurrent.toString());
+            localStorage.setItem('fragatta_socio1_pct', socio1Percent.toString());
+            localStorage.setItem('fragatta_socio2_pct', socio2Percent.toString());
+            localStorage.setItem('fragatta_stock_reserve_pct', stockReservePercent.toString());
 
         }
 
@@ -3314,6 +3380,9 @@
                     baseTarget = data.baseTarget ?? baseTarget;
 
                     baseCurrent = data.baseCurrent ?? baseCurrent;
+                    socio1Percent = data.socio1Percent ?? socio1Percent;
+                    socio2Percent = data.socio2Percent ?? socio2Percent;
+                    stockReservePercent = data.stockReservePercent ?? stockReservePercent;
 
                     
 
@@ -3330,9 +3399,16 @@
                     }
 
                     if(document.activeElement !== document.getElementById('base-current-input')) {
-
                         const bc = document.getElementById('base-current-input'); if(bc) bc.value = baseCurrent;
-
+                    }
+                    if(document.activeElement !== document.getElementById('socio1-pct-input')) {
+                        const s1i = document.getElementById('socio1-pct-input'); if(s1i) s1i.value = socio1Percent;
+                    }
+                    if(document.activeElement !== document.getElementById('socio2-pct-input')) {
+                        const s2i = document.getElementById('socio2-pct-input'); if(s2i) s2i.value = socio2Percent;
+                    }
+                    if(document.activeElement !== document.getElementById('stock-reserve-pct-input')) {
+                        const sri = document.getElementById('stock-reserve-pct-input'); if(sri) sri.value = stockReservePercent;
                     }
 
                     saveDataLocalOnly();
@@ -3456,6 +3532,7 @@
                 loadMemory();
 
                 initApp();
+                updateAdminUI();
 
             } else {
 
@@ -3576,8 +3653,16 @@
             
 
             const currentEl = document.getElementById('base-current-input');
-
             if (currentEl) currentEl.value = baseCurrent;
+
+            const s1El = document.getElementById('socio1-pct-input');
+            if (s1El) s1El.value = socio1Percent;
+
+            const s2El = document.getElementById('socio2-pct-input');
+            if (s2El) s2El.value = socio2Percent;
+
+            const srEl = document.getElementById('stock-reserve-pct-input');
+            if (srEl) srEl.value = stockReservePercent;
 
             
 
@@ -3770,7 +3855,48 @@
             updateDashboard();
 
             showToast('Fondo base actualizado');
+        }
 
+        function updatePartnerPercentages(changedPartner) {
+            if (!isAdmin) return;
+            const s1Input = document.getElementById('socio1-pct-input');
+            const s2Input = document.getElementById('socio2-pct-input');
+            let p1 = Math.max(0, Math.min(100, parseFloat(s1Input ? s1Input.value : 50) || 0));
+            let p2 = Math.max(0, Math.min(100, parseFloat(s2Input ? s2Input.value : 50) || 0));
+
+            if (p1 + p2 > 100) {
+                if (changedPartner === 'socio1') {
+                    p2 = Math.max(0, 100 - p1);
+                    if (s2Input) s2Input.value = p2;
+                } else {
+                    p1 = Math.max(0, 100 - p2);
+                    if (s1Input) s1Input.value = p1;
+                }
+                showToast('Ajustado automáticamente para no superar el 100%');
+            }
+
+            socio1Percent = p1;
+            socio2Percent = p2;
+            saveDataLocalOnly();
+            if (isFirebaseConnected && db) {
+                db.collection("admin_config").doc("finance").set({ socio1Percent, socio2Percent }, { merge: true });
+            }
+            updateDashboard();
+            showToast(`Porcentajes guardados: Socio 1 (${socio1Percent}%) / Socio 2 (${socio2Percent}%)`);
+        }
+
+        function updateStockReservePercent() {
+            if (!isAdmin) return;
+            const srInput = document.getElementById('stock-reserve-pct-input');
+            let pct = Math.max(0, Math.min(100, parseFloat(srInput ? srInput.value : 20) || 0));
+            stockReservePercent = pct;
+            if (srInput) srInput.value = pct;
+            saveDataLocalOnly();
+            if (isFirebaseConnected && db) {
+                db.collection("admin_config").doc("finance").set({ stockReservePercent }, { merge: true });
+            }
+            updateDashboard();
+            showToast(`Reserva de reinversión en stock actualizada al ${pct}%`);
         }
 
 
@@ -3854,94 +3980,156 @@
 
 
         function exportExcelByMonth() {
+            if (!isAdmin) return showToast('Esta exportación detallada solo está disponible en Modo Admin', 'error');
 
             const filter = document.getElementById('dash-month-filter')?.value || 'CURRENT';
-
             let targetKey = filter;
 
-            
-
             if (filter === 'CURRENT') {
-
                 const now = new Date();
-
                 let year = now.getFullYear();
-
                 let month = now.getMonth() + 1;
-
                 targetKey = `${year}-${String(month).padStart(2, '0')}`;
-
             }
-
-            
 
             let filteredSales = sales;
-
             if (filter !== 'ALL') {
-
                 filteredSales = sales.filter(s => {
-
                     const d = new Date(s.rawDate || Date.now());
-
                     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === targetKey;
-
                 });
-
             }
-
-
 
             if (filteredSales.length === 0) {
-
                 return showToast(`No hay ventas registradas en el periodo seleccionado`, 'error');
-
             }
 
+            const orderedSales = filteredSales.slice().reverse();
 
+            // HOJA 1: DETALLE POR PRODUCTO DE CADA VENTA (Precio Producto, Ganancia y Total Venta)
+            const detailedRows = [];
+            orderedSales.forEach(s => {
+                const saleTotal = parseFloat(s.total) || 0;
+                const saleCost = parseFloat(s.cost) || 0;
+                const saleShipping = parseFloat(s.shipping) || 0;
+                const saleDiscount = parseFloat(s.discount) || 0;
+                const salePaid = parseFloat(s.paid) || 0;
+                const saleProfit = saleTotal - saleCost;
 
-            const data = filteredSales.slice().reverse().map(s => ({
+                if (Array.isArray(s.items) && s.items.length > 0) {
+                    s.items.forEach((item, idx) => {
+                        const qty = parseInt(item.qty) || 1;
+                        const unitPrice = parseFloat(item.price) || 0;
+                        const unitCost = parseFloat(item.cost) || 0;
+                        const prodSubtotal = unitPrice * qty;
+                        const prodCostTotal = unitCost * qty;
+                        const prodProfit = prodSubtotal - prodCostTotal;
 
-                'Nº Factura': s.id,
+                        detailedRows.push({
+                            'Nº Factura': s.id,
+                            'Fecha': s.date,
+                            'Cliente': s.clientName || 'Cliente General',
+                            'Canal': s.saleType || 'DETAL',
+                            'SKU': item.sku || '',
+                            'Producto': item.name || 'Producto',
+                            'Cant.': qty,
+                            'Precio Producto (Unit.)': unitPrice,
+                            'Costo Producto (Unit.)': unitCost,
+                            'Subtotal Producto': prodSubtotal,
+                            'Ganancia Producto': prodProfit,
+                            'Envío Factura': idx === 0 ? saleShipping : 0,
+                            'Descuento Factura': idx === 0 ? saleDiscount : 0,
+                            'Total Venta Factura': idx === 0 ? saleTotal : '',
+                            'Ganancia Total Venta': idx === 0 ? saleProfit : '',
+                            'Monto Cobrado': idx === 0 ? salePaid : '',
+                            'Estado': s.status || ''
+                        });
+                    });
+                } else {
+                    detailedRows.push({
+                        'Nº Factura': s.id,
+                        'Fecha': s.date,
+                        'Cliente': s.clientName || 'Cliente General',
+                        'Canal': s.saleType || 'DETAL',
+                        'SKU': '',
+                        'Producto': 'Venta general (sin detalle)',
+                        'Cant.': 1,
+                        'Precio Producto (Unit.)': saleTotal,
+                        'Costo Producto (Unit.)': saleCost,
+                        'Subtotal Producto': saleTotal,
+                        'Ganancia Producto': saleProfit,
+                        'Envío Factura': saleShipping,
+                        'Descuento Factura': saleDiscount,
+                        'Total Venta Factura': saleTotal,
+                        'Ganancia Total Venta': saleProfit,
+                        'Monto Cobrado': salePaid,
+                        'Estado': s.status || ''
+                    });
+                }
+            });
 
-                'Fecha': s.date,
+            // HOJA 2: RESUMEN POR VENTA + TOTALES DEL MES
+            let sumVentas = 0, sumCostos = 0, sumGanancias = 0, sumCobrado = 0;
+            const summaryRows = orderedSales.map(s => {
+                const saleTotal = parseFloat(s.total) || 0;
+                const saleCost = parseFloat(s.cost) || 0;
+                const salePaid = parseFloat(s.paid) || 0;
+                const saleProfit = saleTotal - saleCost;
+                const prodsList = Array.isArray(s.items) && s.items.length > 0
+                    ? s.items.map(i => `${i.qty}x ${i.name} ($${(parseFloat(i.price) || 0).toLocaleString('es-CO')})`).join(' | ')
+                    : 'Sin detalle';
 
-                'Cliente': s.clientName,
+                sumVentas += saleTotal;
+                sumCostos += saleCost;
+                sumGanancias += saleProfit;
+                sumCobrado += salePaid;
 
-                'Teléfono': s.clientPhone,
+                return {
+                    'Nº Factura': s.id,
+                    'Fecha': s.date,
+                    'Cliente': s.clientName,
+                    'Teléfono': s.clientPhone,
+                    'Dirección': s.clientAddr,
+                    'Canal': s.saleType || 'DETAL',
+                    'Productos y Precios': prodsList,
+                    'Costo Mercancía': saleCost,
+                    'Envío': parseFloat(s.shipping) || 0,
+                    'Descuento': parseFloat(s.discount) || 0,
+                    'Total Venta': saleTotal,
+                    'Ganancia Venta': saleProfit,
+                    'Monto Cobrado': salePaid,
+                    'Estado': s.status
+                };
+            });
 
-                'Dirección': s.clientAddr,
-
-                'Canal': s.saleType,
-
-                'Costo Mercancía': s.cost,
-
-                'Venta Total': s.total,
-
-                'Ganancia Bruta': Math.max(0, s.total - s.cost),
-
-                'Monto Cobrado': s.paid,
-
-                'Estado': s.status
-
-            }));
-
-
-
-            const ws = XLSX.utils.json_to_sheet(data);
+            summaryRows.push({
+                'Nº Factura': 'TOTALES',
+                'Fecha': '',
+                'Cliente': `${orderedSales.length} ventas`,
+                'Teléfono': '',
+                'Dirección': '',
+                'Canal': '',
+                'Productos y Precios': '',
+                'Costo Mercancía': sumCostos,
+                'Envío': '',
+                'Descuento': '',
+                'Total Venta': sumVentas,
+                'Ganancia Venta': sumGanancias,
+                'Monto Cobrado': sumCobrado,
+                'Estado': ''
+            });
 
             const wb = XLSX.utils.book_new();
+            const wsDetail = XLSX.utils.json_to_sheet(detailedRows);
+            const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
+
+            XLSX.utils.book_append_sheet(wb, wsDetail, 'Detalle_Productos');
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen_Ventas');
 
             const sheetName = filter === 'ALL' ? 'Historico_Completo' : `Ventas_${targetKey}`;
-
-            XLSX.utils.book_append_sheet(wb, ws, 'Ventas');
-
             XLSX.writeFile(wb, `Reporte_Ventas_Fragatta_${sheetName}.xlsx`);
-
-            showToast('Archivo Excel descargado exitosamente');
-
+            showToast('Excel detallado (productos, precios y ganancias) descargado');
         }
-
-
 
         function renderPosProducts() {
 
@@ -6859,35 +7047,79 @@
 
 
 
-            // REPARTO DE SOCIOS
+            // PROTECCIÓN ANTI-DESCAPITALIZACIÓN & REPARTO DE SOCIOS (ADMIN)
+            const totalHistoricalGrossSales = sales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
+            const totalHistoricalCogs = sales.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
+            const historicalProfit = totalHistoricalGrossSales - totalHistoricalCogs - totalExpenses;
 
-            const historicalProfit = sales.reduce((sum, s) => sum + ((parseFloat(s.total) || 0) - (parseFloat(s.cost) || 0)), 0) - totalExpenses;
+            const isGeneratingProfit = historicalProfit > 0;
+            const profitBadge = document.getElementById('profit-status-badge');
+            if (profitBadge) {
+                if (isGeneratingProfit) {
+                    profitBadge.innerHTML = `<i class="fa-solid fa-arrow-trend-up mr-1"></i> Generando Ganancias Netas ($${historicalProfit.toLocaleString('es-CO')})`;
+                    profitBadge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+                } else {
+                    profitBadge.innerHTML = `<i class="fa-solid fa-hourglass-half mr-1"></i> Cubriendo costos y gastos ($${historicalProfit.toLocaleString('es-CO')})`;
+                    profitBadge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40';
+                }
+            }
 
-            const socioHalfProfit = Math.max(0, historicalProfit / 2);
+            const safeReservePct = Math.max(0, Math.min(100, parseFloat(stockReservePercent) || 0));
+            const extraReinvestAmount = isGeneratingProfit ? Math.round(historicalProfit * (safeReservePct / 100)) : 0;
+            const totalToSaveForStock = totalHistoricalCogs + extraReinvestAmount;
+            const cogsPctOfSales = totalHistoricalGrossSales > 0 ? (totalHistoricalCogs / totalHistoricalGrossSales) * 100 : 0;
+            const totalSavePctOfSales = totalHistoricalGrossSales > 0 ? (totalToSaveForStock / totalHistoricalGrossSales) * 100 : 0;
+            const distributableProfit = isGeneratingProfit ? Math.max(0, historicalProfit - extraReinvestAmount) : 0;
 
+            if (document.getElementById('reserve-cogs-val')) document.getElementById('reserve-cogs-val').innerText = `$${Math.round(totalHistoricalCogs).toLocaleString('es-CO')}`;
+            if (document.getElementById('reserve-cogs-pct')) document.getElementById('reserve-cogs-pct').innerText = `${cogsPctOfSales.toFixed(1)}%`;
+            if (document.getElementById('reserve-reinvest-val')) document.getElementById('reserve-reinvest-val').innerText = `$${extraReinvestAmount.toLocaleString('es-CO')}`;
+            if (document.getElementById('reserve-total-save-val')) document.getElementById('reserve-total-save-val').innerText = `$${Math.round(totalToSaveForStock).toLocaleString('es-CO')}`;
+            if (document.getElementById('reserve-total-save-pct')) document.getElementById('reserve-total-save-pct').innerText = `${totalSavePctOfSales.toFixed(1)}%`;
+            if (document.getElementById('distributable-profit-val')) document.getElementById('distributable-profit-val').innerText = `$${Math.round(distributableProfit).toLocaleString('es-CO')}`;
 
+            const p1Pct = Math.max(0, Math.min(100, parseFloat(socio1Percent) || 0));
+            const p2Pct = Math.max(0, Math.min(100, parseFloat(socio2Percent) || 0));
+            const sumPct = p1Pct + p2Pct;
+
+            const pctSummaryEl = document.getElementById('partners-pct-summary');
+            if (pctSummaryEl) {
+                if (sumPct === 100) {
+                    pctSummaryEl.innerText = `Total asignado: 100%`;
+                    pctSummaryEl.className = 'text-[11px] font-bold text-emerald-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-emerald-500/40';
+                } else if (sumPct < 100) {
+                    pctSummaryEl.innerText = `Asignado: ${sumPct}% (Queda ${100 - sumPct}% en caja)`;
+                    pctSummaryEl.className = 'text-[11px] font-bold text-amber-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-amber-500/40';
+                } else {
+                    pctSummaryEl.innerText = `Aviso: Suma ${sumPct}% (>100%)`;
+                    pctSummaryEl.className = 'text-[11px] font-bold text-rose-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-rose-500/40';
+                }
+            }
+
+            const socio1Earned = Math.round(distributableProfit * (p1Pct / 100));
+            const socio2Earned = Math.round(distributableProfit * (p2Pct / 100));
 
             const wSocio1 = withdrawals.filter(w => w.partner === 'socio1').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
-
             const wSocio2 = withdrawals.filter(w => w.partner === 'socio2').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
 
+            const s1Avail = socio1Earned - wSocio1;
+            const s2Avail = socio2Earned - wSocio2;
 
-
-            if (document.getElementById('socio1-earned')) document.getElementById('socio1-earned').innerText = `$${socioHalfProfit.toLocaleString('es-CO')}`;
-
+            if (document.getElementById('socio1-earned')) document.getElementById('socio1-earned').innerText = `$${socio1Earned.toLocaleString('es-CO')}`;
             if (document.getElementById('socio1-withdrawn')) document.getElementById('socio1-withdrawn').innerText = `$${wSocio1.toLocaleString('es-CO')}`;
+            const s1AvailEl = document.getElementById('socio1-available');
+            if (s1AvailEl) {
+                s1AvailEl.innerText = `$${s1Avail.toLocaleString('es-CO')}`;
+                s1AvailEl.className = `font-black text-xs sm:text-sm mt-0.5 truncate ${s1Avail < 0 ? 'text-rose-400' : 'text-amber-400'}`;
+            }
 
-            if (document.getElementById('socio1-available')) document.getElementById('socio1-available').innerText = `$${(socioHalfProfit - wSocio1).toLocaleString('es-CO')}`;
-
-
-
-            if (document.getElementById('socio2-earned')) document.getElementById('socio2-earned').innerText = `$${socioHalfProfit.toLocaleString('es-CO')}`;
-
+            if (document.getElementById('socio2-earned')) document.getElementById('socio2-earned').innerText = `$${socio2Earned.toLocaleString('es-CO')}`;
             if (document.getElementById('socio2-withdrawn')) document.getElementById('socio2-withdrawn').innerText = `$${wSocio2.toLocaleString('es-CO')}`;
-
-            if (document.getElementById('socio2-available')) document.getElementById('socio2-available').innerText = `$${(socioHalfProfit - wSocio2).toLocaleString('es-CO')}`;
-
-
+            const s2AvailEl = document.getElementById('socio2-available');
+            if (s2AvailEl) {
+                s2AvailEl.innerText = `$${s2Avail.toLocaleString('es-CO')}`;
+                s2AvailEl.className = `font-black text-xs sm:text-sm mt-0.5 truncate ${s2Avail < 0 ? 'text-rose-400' : 'text-amber-400'}`;
+            }
 
             // ALERTA STOCK BAJO
 
