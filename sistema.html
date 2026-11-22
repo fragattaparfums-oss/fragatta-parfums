@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -335,13 +336,13 @@
                                 </span>
                             </div>
                             <p class="text-[11px] text-slate-300 leading-relaxed">
-                                <strong class="text-white">Fase 1:</strong> el dinero cobrado de las ventas paga primero las <strong class="text-white">facturas de proveedores</strong> (mercancía e insumos) y los gastos operativos. Mientras no estén cubiertas, no hay ganancia para repartir.
-                                <strong class="text-white">Fase 2:</strong> cuando ya están cubiertas, cada venta se separa en <strong class="text-blue-300">costo del producto</strong> (va al Fondo de Reposición para la próxima factura) y <strong class="text-emerald-300">ganancia neta</strong> (se reparte entre los socios, menos el % de reinversión).
-                                Cada factura nueva se paga primero con el Fondo de Reposición y la reinversión. Solo si no alcanzan, el faltante vuelve a la Fase 1.
+                                <strong class="text-white">Fase 1:</strong> el dinero cobrado de las ventas paga primero las <strong class="text-white">facturas de mercancía</strong> del proveedor. Mientras no estén cubiertas, no hay ganancia para repartir.
+                                <strong class="text-white">Fase 2:</strong> cuando ya están cubiertas, cada venta se separa en <strong class="text-blue-300">costo del producto</strong> (va al Fondo de Reposición para la próxima factura de mercancía) y <strong class="text-emerald-300">ganancia</strong>.
+                                Los <strong class="text-sky-300">insumos</strong> (papel, empaques, envíos) y los <strong class="text-white">gastos operativos</strong> se pagan <strong>con la ganancia</strong>, así nunca tocan el Fondo de Reposición. Lo que queda, menos el % de reinversión, es lo que se reparte entre los socios.
                             </p>
                             <div class="bg-slate-900/85 p-3.5 rounded-xl border border-slate-700/80 space-y-2">
                                 <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
-                                    <span class="font-bold text-rose-300 uppercase tracking-wider">Fase 1 · Recuperación de facturas y gastos</span>
+                                    <span class="font-bold text-rose-300 uppercase tracking-wider">Fase 1 · Recuperación de facturas de mercancía</span>
                                     <span id="cap-recovery-pct" class="font-black text-white">0%</span>
                                 </div>
                                 <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
@@ -349,21 +350,22 @@
                                 </div>
                                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 text-[11px] pt-1">
                                     <div><p class="text-slate-400">Facturas mercancía</p><p id="cap-inv-merc" class="font-bold text-white">$0</p></div>
-                                    <div><p class="text-slate-400">Facturas insumos / envíos</p><p id="cap-inv-ins" class="font-bold text-white">$0</p></div>
-                                    <div><p class="text-slate-400">Gastos operativos</p><p id="cap-op-exp" class="font-bold text-white">$0</p></div>
-                                    <div><p class="text-slate-400">Falta por recuperar</p><p id="cap-pending" class="font-black text-rose-400">$0</p></div>
+                                    <div><p class="text-slate-400">Falta por recuperar (mercancía)</p><p id="cap-pending" class="font-black text-rose-400">$0</p></div>
+                                    <div><p class="text-sky-300">Insumos / envíos (de la ganancia)</p><p id="cap-inv-ins" class="font-bold text-white">$0</p></div>
+                                    <div><p class="text-sky-300">Gastos operativos (de la ganancia)</p><p id="cap-op-exp" class="font-bold text-white">$0</p></div>
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                 <div class="bg-slate-900/85 p-3.5 rounded-xl border border-blue-500/40">
                                     <p class="text-[10px] font-bold text-blue-300 uppercase tracking-wider">1. Fondo de Reposición</p>
                                     <h5 id="reserve-cogs-val" class="text-lg font-black text-blue-400 mt-1">$0</h5>
-                                    <p class="text-[10px] text-slate-400 mt-0.5">Costo de los productos vendidos después de cubrir las facturas (no se toca)</p>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Costo de lo vendido después de cubrir las facturas de mercancía. Solo para comprar mercancía.</p>
                                 </div>
                                 <div class="bg-slate-900/85 p-3.5 rounded-xl border border-emerald-500/40">
                                     <p class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">2. Ganancia Neta Real</p>
                                     <h5 id="cap-net-profit-val" class="text-lg font-black text-emerald-400 mt-1">$0</h5>
-                                    <p class="text-[10px] text-slate-400 mt-0.5">Precio de venta menos costo, solo después de cubrir las facturas</p>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Ganancia <span id="cap-gross-margin" class="font-bold text-slate-300">$0</span> menos insumos y gastos</p>
+                                    <p id="cap-profit-debt" class="hidden text-[10px] font-bold text-amber-300 mt-0.5"></p>
                                 </div>
                                 <div class="bg-slate-900/85 p-3.5 rounded-xl border border-emerald-500/40">
                                     <div class="flex items-center justify-between gap-1">
@@ -560,10 +562,10 @@
                                         <i class="fa-solid fa-circle-check text-base"></i> VENDIDO / CONFIRMAR VENTA
                                     </button>
                                     <div class="grid grid-cols-2 gap-2 pt-1">
-                                        <button onclick="processSale('invoice')" class="bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                                        <button onclick="previewSaleDraft('invoice')" class="bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
                                             <i class="fa-solid fa-print"></i> Ver/Imprimir Factura
                                         </button>
-                                        <button onclick="processSale('label')" class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                                        <button onclick="previewSaleDraft('label')" class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
                                             <i class="fa-solid fa-truck-fast"></i> Guía Fragatta
                                         </button>
                                     </div>
@@ -655,6 +657,16 @@
                             <option value="POR_MAYOR">Solo Ventas Por Mayor</option>
                         </select>
                     </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <h3 class="font-bold text-slate-900 mb-3">Ventas, Costo y Ganancia por Mes</h3>
+                            <div class="relative w-full h-72"><canvas id="monthlyProfitChart"></canvas></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <h3 class="font-bold text-slate-900 mb-3">Margen de Ganancia % por Mes</h3>
+                            <div class="relative w-full h-72"><canvas id="monthlyMarginChart"></canvas></div>
+                        </div>
+                    </div>
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden p-6">
                         <div id="table-ganancias-monthly" class="overflow-x-auto"></div>
                     </div>
@@ -726,6 +738,11 @@
                             <h3 id="inv-sale-value" class="text-2xl font-black text-emerald-600 mt-1">$0</h3>
                             <p id="inv-potential-profit" class="text-[10px] text-slate-400 font-semibold mt-0.5">Ganancia potencial $0</p>
                         </div>
+                    </div>
+
+                    <div id="dup-sku-alert" class="hidden admin-only-flex bg-rose-50 border border-rose-200 rounded-2xl p-4 text-xs text-rose-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <p><i class="fa-solid fa-triangle-exclamation text-rose-600 mr-1"></i> <strong id="dup-sku-count">0</strong> producto(s) tienen el SKU repetido. Esto puede mezclar productos en los reportes. Con el botón de la derecha (Modo Admin) puedes asignarles un SKU nuevo.</p>
+                        <button onclick="fixDuplicateSkus()" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2 rounded-xl font-bold text-xs whitespace-nowrap"><i class="fa-solid fa-wrench"></i> Corregir SKUs repetidos</button>
                     </div>
 
                     <!-- MÁS VENDIDOS & SUGERENCIA DE COMPRA -->
@@ -853,6 +870,23 @@
                             <i class="fa-solid fa-plus"></i> Registrar Abono a Cliente
                         </button>
                     </div>
+                    <div class="bg-white p-5 rounded-3xl border border-rose-200 shadow-sm space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <h3 class="font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-bell text-rose-500"></i> Pagos Pendientes y Atrasados</h3>
+                                <p id="overdue-count" class="text-[11px] text-slate-500">0 clientes con saldo</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total por cobrar</p>
+                                <p id="overdue-total" class="text-xl font-black text-rose-600">$0</p>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-slate-400">Ordenado del más antiguo al más reciente. Colores: gris hasta 15 días, amarillo 16–30, naranja 31–60, rojo más de 60.</p>
+                        <div id="overdue-list" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
+                    </div>
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <input type="text" id="debts-search" oninput="renderDebtsTable()" placeholder="Buscar abonos por cliente, factura o concepto..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-x-auto">
                         <table class="w-full text-left text-xs whitespace-nowrap min-w-max">
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
@@ -883,6 +917,22 @@
                             <i class="fa-solid fa-plus"></i> + Nueva Factura por Pagar
                         </button>
                     </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="bg-white p-4 rounded-2xl border border-purple-200 shadow-sm">
+                            <p class="text-[10px] font-bold text-purple-500 uppercase tracking-wider">Deuda Proveedores de Mercancía</p>
+                            <h3 id="pay-debt-merc" class="text-xl font-black text-purple-700 mt-1">$0</h3>
+                            <p class="text-[10px] text-slate-400">Se paga con el Fondo de Reposición (costo de lo vendido)</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-sky-200 shadow-sm">
+                            <p class="text-[10px] font-bold text-sky-500 uppercase tracking-wider">Deuda Insumos / Envíos</p>
+                            <h3 id="pay-debt-ins" class="text-xl font-black text-sky-700 mt-1">$0</h3>
+                            <p class="text-[10px] text-slate-400">Se paga con la ganancia</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-rose-200 shadow-sm">
+                            <p class="text-[10px] font-bold text-rose-500 uppercase tracking-wider">Deuda Total</p>
+                            <h3 id="pay-debt-total" class="text-xl font-black text-rose-600 mt-1">$0</h3>
+                        </div>
+                    </div>
                     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-x-auto">
                         <table class="w-full text-left text-xs whitespace-nowrap min-w-max">
                             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
@@ -890,6 +940,7 @@
                                     <th class="p-4">Nº Factura Prov.</th>
                                     <th class="p-4">Proveedor</th>
                                     <th class="p-4">Tipo</th>
+                                    <th class="p-4">Observación</th>
                                     <th class="p-4">Fecha Emisión</th>
                                     <th class="p-4">Monto Total</th>
                                     <th class="p-4">Total Abonado</th>
@@ -919,6 +970,7 @@
                                 <tr>
                                     <th class="p-4">Fecha y Hora</th>
                                     <th class="p-4">Descripción del Gasto</th>
+                                    <th class="p-4">Observación</th>
                                     <th class="p-4">Monto</th>
                                     <th class="p-4 text-center">Acciones</th>
                                 </tr>
@@ -1194,6 +1246,10 @@
                     <label class="block font-bold text-slate-600 mb-1">Monto ($):</label>
                     <input type="number" id="exp-amount" min="1" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                 </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Observación (opcional):</label>
+                    <textarea id="exp-notes" rows="2" placeholder="Detalle adicional, quién lo pagó, número de recibo..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none"></textarea>
+                </div>
                 <div class="pt-2 flex justify-end gap-2">
                     <button type="button" onclick="closeExpenseModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
                     <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold">Registrar Gasto</button>
@@ -1207,6 +1263,11 @@
         <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
             <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3">Registrar Abono de Cliente</h3>
             <form onsubmit="saveDebtPayment(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Buscar cliente o factura:</label>
+                    <input type="text" id="debt-sale-search" oninput="filterDebtSaleOptions()" placeholder="Escribe nombre, teléfono o Nº de factura..." class="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <p id="debt-sale-search-info" class="text-[10px] text-slate-400 mt-1"></p>
+                </div>
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">Factura Pendiente:</label>
                     <select id="debt-sale-select" onchange="autoFillDebtClient()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
@@ -1253,7 +1314,11 @@
                         <option value="MERCANCIA">Mercancía (perfumes para la venta)</option>
                         <option value="INSUMOS">Insumos y envíos (papel, empaques, bolsas, etc.)</option>
                     </select>
-                    <p class="text-[10px] text-slate-400 mt-1">Ambas se recuperan con las ventas antes de contar ganancia libre.</p>
+                    <p class="text-[10px] text-slate-400 mt-1">Mercancía: se paga con el costo de lo vendido (Fondo de Reposición). Insumos: se pagan con la ganancia.</p>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Observación (opcional):</label>
+                    <textarea id="pay-notes" rows="2" placeholder="Qué productos trae, condiciones de pago, fecha límite..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -1301,12 +1366,16 @@
             <div class="flex justify-between items-center no-print border-b pb-3">
                 <h3 class="font-bold text-slate-800 text-sm">Vista Previa de Documento</h3>
                 <div class="flex gap-2">
+                    <button id="print-confirm-sale-btn" onclick="confirmSaleFromPreview()" class="hidden px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-check"></i> Vendido / Confirmar
+                    </button>
                     <button onclick="triggerPrint()" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5">
                         <i class="fa-solid fa-print"></i> Imprimir
                     </button>
                     <button onclick="closePrintModal()" class="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">Cerrar</button>
                 </div>
             </div>
+            <p id="print-draft-banner" class="hidden no-print text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fa-solid fa-eye"></i> Vista previa: la venta todavía NO está registrada ni se ha descontado el stock. Presiona "Vendido / Confirmar" para registrarla.</p>
             <div id="printable-area">
                 <div id="invoice-doc" class="hidden font-sans">
                     <div class="text-center border-b pb-4 mb-4">
@@ -1621,13 +1690,14 @@
                     const data = doc.data();
                     cloudProds.push({
                         id: String(doc.id),
-                        sku: (data.sku && data.sku !== "undefined") ? data.sku : generateAutoSKU(),
+                        sku: (data.sku && data.sku !== "undefined") ? data.sku : stableSkuFromId(doc.id),
                         name: data.name || data.title || "Perfume sin Nombre",
                         category: data.category || "Árabes",
                         cost: isNaN(parseFloat(data.cost)) ? 0 : parseFloat(data.cost),
                         price: isNaN(parseFloat(data.price)) ? 0 : parseFloat(data.price),
                         stock: isNaN(parseInt(data.stock)) ? 10 : parseInt(data.stock),
-                        items: data.items || []
+                        items: data.items || [],
+                        baseId: data.baseId || ''
                     });
                 });
                 if(cloudProds.length > 0) products = cloudProds;
@@ -1743,7 +1813,7 @@
                     if (!prodName) return;
                     const newProd = {
                         id: String(doc.id),
-                        sku: (data.sku && data.sku !== "undefined") ? data.sku : generateAutoSKU(),
+                        sku: (data.sku && data.sku !== "undefined") ? data.sku : stableSkuFromId(doc.id),
                         name: prodName.toUpperCase(),
                         category: data.category || "Árabes",
                         cost: isNaN(parseFloat(data.originalPrice || data.costPrice || data.cost)) ? 0 : parseFloat(data.originalPrice || data.costPrice || data.cost),
@@ -1938,16 +2008,14 @@
             const s2Input = document.getElementById('socio2-pct-input');
             let p1 = Math.max(0, Math.min(100, parseFloat(s1Input ? s1Input.value : 50) || 0));
             let p2 = Math.max(0, Math.min(100, parseFloat(s2Input ? s2Input.value : 50) || 0));
-            if (p1 + p2 > 100) {
-                if (changedPartner === 'socio1') {
-                    p2 = Math.max(0, 100 - p1);
-                    if (s2Input) s2Input.value = p2;
-                } else {
-                    p1 = Math.max(0, 100 - p2);
-                    if (s1Input) s1Input.value = p1;
-                }
-                showToast('Ajustado automáticamente para no superar el 100%');
+            // Porcentajes enlazados: siempre suman 100% (si un socio tiene 60%, el otro queda con 40%)
+            if (changedPartner === 'socio2') {
+                p1 = Math.round((100 - p2) * 100) / 100;
+            } else {
+                p2 = Math.round((100 - p1) * 100) / 100;
             }
+            if (s1Input) s1Input.value = p1;
+            if (s2Input) s2Input.value = p2;
             socio1Percent = p1;
             socio2Percent = p2;
             saveDataLocalOnly();
@@ -2125,18 +2193,18 @@
             });
 
             // ---------- HOJAS: GASTOS, PROVEEDORES, ABONOS, RETIROS ----------
-            const opExpRows = pOpExpenses.map(e => ({ 'Fecha': e.date, 'Descripción': e.desc, 'Monto': num(e.amount) }));
+            const opExpRows = pOpExpenses.map(e => ({ 'Fecha': e.date, 'Descripción': e.desc, 'Observación': e.notes || '', 'Monto': num(e.amount) }));
             const sumOpExp = opExpRows.reduce((a, r) => a + r['Monto'], 0);
-            if (opExpRows.length) opExpRows.push({ 'Fecha': 'TOTAL', 'Descripción': `${pOpExpenses.length} gastos`, 'Monto': sumOpExp });
+            if (opExpRows.length) opExpRows.push({ 'Fecha': 'TOTAL', 'Descripción': `${pOpExpenses.length} gastos`, 'Observación': '', 'Monto': sumOpExp });
 
             const payRows = pPayables.map(pb => ({
                 'Fecha Emisión': pb.date, 'Proveedor': pb.supplier, 'Nº Factura Prov.': pb.invoiceNum,
-                'Tipo': getPayableType(pb) === 'INSUMOS' ? 'Insumos / envíos' : 'Mercancía',
+                'Tipo': getPayableType(pb) === 'INSUMOS' ? 'Insumos / envíos' : 'Mercancía', 'Observación': pb.notes || '',
                 'Monto Total': num(pb.total), 'Total Abonado (a la fecha)': num(pb.paid), 'Saldo Pendiente': Math.max(0, num(pb.total) - num(pb.paid))
             }));
             const sumPurchMerc = pPayables.filter(pb => getPayableType(pb) !== 'INSUMOS').reduce((a, pb) => a + num(pb.total), 0);
             const sumPurchIns = pPayables.filter(pb => getPayableType(pb) === 'INSUMOS').reduce((a, pb) => a + num(pb.total), 0);
-            if (payRows.length) payRows.push({ 'Fecha Emisión': 'TOTAL', 'Proveedor': '', 'Nº Factura Prov.': '', 'Tipo': '', 'Monto Total': sumPurchMerc + sumPurchIns, 'Total Abonado (a la fecha)': payRows.reduce((a, r) => a + r['Total Abonado (a la fecha)'], 0), 'Saldo Pendiente': payRows.reduce((a, r) => a + r['Saldo Pendiente'], 0) });
+            if (payRows.length) payRows.push({ 'Fecha Emisión': 'TOTAL', 'Proveedor': '', 'Nº Factura Prov.': '', 'Tipo': '', 'Observación': '', 'Monto Total': sumPurchMerc + sumPurchIns, 'Total Abonado (a la fecha)': payRows.reduce((a, r) => a + r['Total Abonado (a la fecha)'], 0), 'Saldo Pendiente': payRows.reduce((a, r) => a + r['Saldo Pendiente'], 0) });
 
             const supPayRows = pSupplierPayments.map(e => ({ 'Fecha': e.date, 'Detalle': e.desc, 'Monto Pagado': num(e.amount) }));
             const sumSupPay = supPayRows.reduce((a, r) => a + r['Monto Pagado'], 0);
@@ -2250,7 +2318,7 @@
                 return matchesSearch && matchesCategory;
             });
             // LIMITE PARA QUE LA TABLET NO SE CIERRE
-            const itemsToRender = filtered.slice(0, 100);
+            const itemsToRender = sortByStockPriority(filtered).slice(0, 100);
             const html = [];
             itemsToRender.forEach(p => {
                 const safePrice = parseFloat(p.price) || 0;
@@ -2467,7 +2535,55 @@
             showToast('¡Venta registrada correctamente!');
         }
 
+        let printDraftType = null;
+        function setPrintDraftMode(type) {
+            printDraftType = type;
+            const btn = document.getElementById('print-confirm-sale-btn');
+            const banner = document.getElementById('print-draft-banner');
+            if (btn) btn.classList.toggle('hidden', !type);
+            if (banner) banner.classList.toggle('hidden', !type);
+        }
+
+        function previewSaleDraft(type) {
+            const shippingCost = parseFloat(document.getElementById('pos-shipping-cost')?.value) || 0;
+            const discountAmount = parseFloat(document.getElementById('pos-discount-amount')?.value) || 0;
+            const client = document.getElementById('pos-client-name')?.value.trim() || "Cliente General";
+            const phone = document.getElementById('pos-client-phone')?.value.trim() || "N/A";
+            const addr = document.getElementById('pos-client-address')?.value.trim() || "N/A";
+            if (type === 'label') {
+                showPrintPreview('label', { client, phone, addr });
+                if (cart.length > 0 || shippingCost > 0) setPrintDraftMode('label');
+                return;
+            }
+            if (cart.length === 0 && shippingCost === 0) return showToast('Agrega productos al carrito', 'error');
+            const totalProds = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * item.qty), 0);
+            const totalSale = Math.max(0, totalProds + shippingCost - discountAmount);
+            const status = document.getElementById('pos-payment-status')?.value || 'PAGADO';
+            const abonoInput = parseFloat(document.getElementById('pos-abono-amount')?.value) || 0;
+            const customDate = document.getElementById('pos-sale-date')?.value;
+            const now = customDate ? new Date(customDate + "T12:00:00") : new Date();
+            showPrintPreview('invoice', {
+                id: 'BORRADOR',
+                date: now.toLocaleDateString('es-CO'),
+                clientName: client, clientPhone: phone, clientAddr: addr,
+                saleType: document.getElementById('pos-sale-type')?.value || 'DETAL',
+                items: cart.map(i => ({ ...i })),
+                shipping: shippingCost, discount: discountAmount, total: totalSale,
+                paid: status === 'ABONO' ? abonoInput : totalSale, status
+            });
+            setPrintDraftMode('invoice');
+        }
+
+        function confirmSaleFromPreview() {
+            const type = printDraftType;
+            if (!type) return;
+            setPrintDraftMode(null);
+            closePrintModal();
+            processSale(type);
+        }
+
         function showPrintPreview(type, data) {
+            setPrintDraftMode(null);
             const invDoc = document.getElementById('invoice-doc');
             const lblDoc = document.getElementById('label-doc');
             if(invDoc) invDoc.classList.add('hidden');
@@ -2596,6 +2712,7 @@
             gHTML += `</tbody></table>`;
             const tableGan = document.getElementById('table-ganancias-monthly');
             if (tableGan) tableGan.innerHTML = gHTML;
+            try { renderMonthlyCharts(monthsMap); } catch (err) { console.error('Error en gráficas mensuales', err); }
         }
 
         function generateSalesTableRows(salesArr) {
@@ -2694,6 +2811,13 @@
         function deleteSale(saleId) {
             if (!isAdmin) return alert("Solo el Administrador puede eliminar registros de venta.");
             if (!confirm(`¿Estás seguro de eliminar la venta ${saleId}?`)) return;
+            const saleToDelete = sales.find(s => s.id === saleId);
+            if (saleToDelete && Array.isArray(saleToDelete.items) && saleToDelete.items.length > 0) {
+                const resumen = saleToDelete.items.map(i => `• ${i.qty}x ${i.name}`).join('\n');
+                if (confirm(`¿Quieres que los productos de esta venta vuelvan a cargarse al stock?\n\n${resumen}\n\nAceptar = SÍ, devolver al stock\nCancelar = NO, solo borrar la venta`)) {
+                    restoreSaleStock(saleToDelete);
+                }
+            }
             sales = sales.filter(s => s.id !== saleId);
             saveDataLocalOnly();
             if (isFirebaseConnected && db) {
@@ -2704,9 +2828,74 @@
             showToast('Venta eliminada por el Administrador');
         }
 
+        function restoreSaleStock(sale) {
+            const touched = [];
+            const giveBack = (prodId, qty) => {
+                const prod = products.find(x => String(x.id) === String(prodId));
+                if (!prod) return;
+                const current = isNaN(parseInt(prod.stock)) ? 0 : parseInt(prod.stock);
+                prod.stock = current + qty;
+                touched.push(prod);
+            };
+            sale.items.forEach(item => {
+                const qty = parseInt(item.qty) || 0;
+                if (qty <= 0) return;
+                const subItems = isPackageCategory(item.category) && Array.isArray(item.items) && item.items.length > 0 ? item.items : null;
+                if (subItems) subItems.forEach(sub => giveBack(sub.prodId, (parseInt(sub.qty) || 1) * qty));
+                else giveBack(item.id, qty);
+            });
+            if (isFirebaseConnected && db) touched.forEach(prod => db.collection("pos_products").doc(String(prod.id)).set({ stock: prod.stock }, { merge: true }));
+            renderInventoryTable();
+            renderWholesaleTable();
+            renderPosProducts();
+            showToast(`Stock devuelto (${touched.length} producto(s))`);
+        }
+
         function generateAutoSKU() {
-            const nextNum = products.length + 1001;
+            // Genera un SKU que no esté en uso (antes podía repetirse y mezclar productos)
+            const used = new Set(products.map(p => String(p.sku || '').toUpperCase()));
+            let nextNum = products.length + 1001;
+            while (used.has(`FRAG-${nextNum}`)) nextNum++;
             return `FRAG-${nextNum}`;
+        }
+
+        function stableSkuFromId(id) {
+            return `FRAG-${String(id).replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase()}`;
+        }
+
+        function getDuplicateSkuGroups() {
+            const groups = {};
+            products.forEach(p => {
+                const k = String(p.sku || '').trim().toUpperCase();
+                if (!k) return;
+                (groups[k] = groups[k] || []).push(p);
+            });
+            return Object.values(groups).filter(g => g.length > 1);
+        }
+
+        function fixDuplicateSkus() {
+            if (!isAdmin) return showToast('Disponible solo en Modo Admin', 'error');
+            const groups = getDuplicateSkuGroups();
+            if (groups.length === 0) return showToast('No hay SKUs repetidos');
+            const affected = groups.reduce((a, g) => a + g.length - 1, 0);
+            const detail = groups.slice(0, 8).map(g => `• ${g[0].sku}: ${g.map(x => x.name).join(', ')}`).join('\n');
+            if (!confirm(`Hay ${affected} producto(s) con el SKU repetido:\n\n${detail}${groups.length > 8 ? '\n...' : ''}\n\nSe dejará el SKU al primero de cada grupo y a los demás se les asignará uno nuevo. Las ventas ya registradas no cambian. ¿Continuar?`)) return;
+            const changed = [];
+            groups.forEach(g => {
+                g.slice(1).forEach(prod => {
+                    const isWs = isWholesaleCategory(prod.category);
+                    let newSku = generateAutoSKU();
+                    if (isWs) newSku = `${newSku}-PM`;
+                    prod.sku = newSku;
+                    changed.push(prod);
+                });
+            });
+            saveDataLocalOnly();
+            if (isFirebaseConnected && db) changed.forEach(prod => db.collection("pos_products").doc(String(prod.id)).set({ sku: prod.sku }, { merge: true }));
+            renderInventoryTable();
+            renderWholesaleTable();
+            renderPosProducts();
+            showToast(`${changed.length} SKU(s) corregidos`);
         }
 
         function applyGlobalStock() {
@@ -2765,11 +2954,12 @@
             let newWholesales = [];
             baseProducts.forEach((p) => {
                 const wholesaleName = `${p.name} - Por Mayor`;
-                const expectedSku = `${p.sku}-PM`;
-                const existing = products.find(ep => ep.sku === expectedSku);
+                const existing = findWholesaleCopy(p);
                 if (!existing) {
+                    const expectedSku = uniqueWholesaleSku(p);
                     const wholesaleProd = {
-                        id: `PM-${p.id}`,
+                        id: products.some(x => String(x.id) === `PM-${p.id}`) ? `PM-${p.id}-${Date.now()}` : `PM-${p.id}`,
+                        baseId: String(p.id),
                         sku: expectedSku,
                         name: wholesaleName,
                         category: 'Por Mayor',
@@ -2805,15 +2995,36 @@
             showToast(`¡Se duplicaron exitosamente los ${duplicatedCount} productos!`);
         }
 
+        function findWholesaleCopy(p) {
+            // Busca la copia Por Mayor de un producto por su vínculo (id) y, si el SKU es único, por SKU
+            const pid = String(p.id);
+            const byLink = products.find(ep => isWholesaleCategory(ep.category) && (String(ep.baseId || '') === pid || String(ep.id) === `PM-${pid}` || String(ep.id).startsWith(`PM-${pid}-`)));
+            if (byLink) return byLink;
+            const skuKey = String(p.sku || '').trim().toUpperCase();
+            if (!skuKey) return null;
+            const sameSkuBase = products.filter(x => !isWholesaleCategory(x.category) && String(x.sku || '').trim().toUpperCase() === skuKey);
+            if (sameSkuBase.length !== 1) return null; // SKU repetido: no se puede confiar en él
+            const wsName = `${p.name} - Por Mayor`.toLowerCase();
+            return products.find(ep => isWholesaleCategory(ep.category) && String(ep.sku || '').toUpperCase() === `${skuKey}-PM` && !ep.baseId && (ep.name || '').toLowerCase() === wsName) || null;
+        }
+
+        function uniqueWholesaleSku(p) {
+            const used = new Set(products.map(x => String(x.sku || '').toUpperCase()));
+            let candidate = `${p.sku}-PM`;
+            let n = 2;
+            while (used.has(candidate.toUpperCase())) { candidate = `${p.sku}-PM${n}`; n++; }
+            return candidate;
+        }
+
         function copyToWholesale(id) {
             if (!isAdmin) return showToast('Desbloquea el Modo Admin', 'error');
             const p = products.find(item => String(item.id) === String(id));
             if (p) {
-                const wholesaleSku = `${p.sku}-PM`;
+                const wholesaleSku = uniqueWholesaleSku(p);
                 const wholesaleName = `${p.name} - Por Mayor`;
-                const existing = products.find(ep => ep.sku === wholesaleSku);
+                const existing = findWholesaleCopy(p);
                 if (existing) {
-                    return showToast('Este producto ya existe en el Módulo Por Mayor', 'error');
+                    return showToast(`Este producto ya existe en Por Mayor como "${existing.name}"`, 'error');
                 }
                 const newWholesale = {
                     id: `PM-${p.id}-${Date.now()}`,
@@ -2822,7 +3033,8 @@
                     category: 'Por Mayor',
                     stock: isNaN(parseInt(p.stock)) ? 10 : parseInt(p.stock),
                     cost: parseFloat(p.cost) || 0,
-                    price: Math.round((parseFloat(p.price) || 0) * 0.75)
+                    price: Math.round((parseFloat(p.price) || 0) * 0.75),
+                    baseId: String(p.id)
                 };
                 products.push(newWholesale);
                 saveDataLocalOnly();
@@ -2851,7 +3063,7 @@
                 return;
             }
             // LIMITE PARA QUE LA TABLET NO SE CIERRE
-            const itemsToRender = wholesaleProducts.slice(0, 100);
+            const itemsToRender = sortByStockPriority(wholesaleProducts).slice(0, 100);
             const rows = [];
             itemsToRender.forEach(p => {
                 const costVal = parseFloat(p.cost) || 0;
@@ -2884,6 +3096,12 @@
         }
 
         // ===== INVENTARIO: CONTEO, MÁS VENDIDOS Y SUGERENCIA DE COMPRA =====
+        function sortByStockPriority(list) {
+            // Primero los que tienen stock (de más a menos), luego combos, al final los agotados
+            const rank = (p) => isPackageCategory(p.category) ? 1 : ((isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock)) > 0 ? 0 : 2);
+            return list.slice().sort((a, b) => (rank(a) - rank(b)) || ((parseInt(b.stock) || 0) - (parseInt(a.stock) || 0)) || (a.name || '').localeCompare(b.name || ''));
+        }
+
         function isPackageCategory(cat) {
             return ['Combos', 'Promociones'].includes(cat);
         }
@@ -2896,18 +3114,29 @@
             return String(sku || '').replace(/-PM$/i, '');
         }
 
+        function resolveBaseProduct(itemId, name) {
+            // Devuelve el perfume base (no Por Mayor, no combo) al que corresponde un producto vendido
+            const byId = products.find(x => String(x.id) === String(itemId));
+            const cleanName = String(name || '').replace(/ - Por Mayor$/i, '').trim().toLowerCase();
+            const findByName = () => products.find(x => !isWholesaleCategory(x.category) && !isPackageCategory(x.category) && (x.name || '').trim().toLowerCase() === cleanName) || null;
+            if (byId && !isWholesaleCategory(byId.category)) return byId;
+            if (byId && isWholesaleCategory(byId.category)) {
+                const baseKey = byId.baseId || (String(byId.id).match(/^PM-(.+?)(-\d{10,})?$/) || [])[1];
+                const base = baseKey ? products.find(x => String(x.id) === String(baseKey) && !isWholesaleCategory(x.category)) : null;
+                return base || findByName() || byId;
+            }
+            return findByName();
+        }
+
         function computeTopSellers(periodDays) {
             const since = periodDays === 'ALL' ? 0 : Date.now() - (parseInt(periodDays) || 90) * 86400000;
             const map = {};
-            const bySku = {};
-            products.forEach(p => { if (!isPackageCategory(p.category) && !isWholesaleCategory(p.category)) bySku[getBaseSku(p.sku)] = p; });
-            const add = (sku, name, qty, revenue, cost) => {
-                const key = getBaseSku(sku) || name;
-                if (!map[key]) {
-                    const base = bySku[key];
-                    map[key] = { sku: key, name: base ? base.name : String(name || '').replace(/ - Por Mayor$/i, ''), qty: 0, revenue: 0, cost: 0 };
-                }
+            const add = (itemId, name, qty, revenue, cost, viaCombo) => {
+                const base = resolveBaseProduct(itemId, name);
+                const key = base ? 'id:' + base.id : 'name:' + String(name || '').replace(/ - Por Mayor$/i, '').trim().toLowerCase();
+                if (!map[key]) map[key] = { base, sku: base ? base.sku : '', name: base ? base.name : String(name || '').replace(/ - Por Mayor$/i, ''), qty: 0, direct: 0, combo: 0, revenue: 0, cost: 0 };
                 map[key].qty += qty;
+                if (viaCombo) map[key].combo += qty; else map[key].direct += qty;
                 map[key].revenue += revenue;
                 map[key].cost += cost;
             };
@@ -2927,15 +3156,15 @@
                             const sp = products.find(x => String(x.id) === String(sub.prodId));
                             const subQty = (parseInt(sub.qty) || 1) * qty;
                             const subCost = sp ? (parseFloat(sp.cost) || 0) * subQty : 0;
-                            return { sp, subQty, subCost, name: sp ? sp.name : (sub.name || 'Perfume de combo') };
+                            return { id: sub.prodId, subQty, subCost, name: sp ? sp.name : (sub.name || 'Perfume de combo') };
                         });
                         const totalPartsCost = parts.reduce((a, x) => a + x.subCost, 0);
                         parts.forEach(x => {
                             const share = totalPartsCost > 0 ? x.subCost / totalPartsCost : 1 / parts.length;
-                            add(x.sp ? x.sp.sku : '', x.name, x.subQty, revenue * share, cost * share);
+                            add(x.id, x.name, x.subQty, revenue * share, cost * share, true);
                         });
                     } else {
-                        add(item.sku, item.name, qty, revenue, cost);
+                        add(item.id, item.name, qty, revenue, cost, false);
                     }
                 });
             });
@@ -2945,10 +3174,10 @@
                 days = Math.max(1, Math.ceil((Date.now() - first) / 86400000));
             }
             return Object.values(map).map(r => {
-                const base = bySku[r.sku];
+                const base = r.base;
                 const stock = base ? (isNaN(parseInt(base.stock)) ? 0 : parseInt(base.stock)) : 0;
                 const per30 = days > 0 ? (r.qty / days) * 30 : r.qty;
-                const suggested = Math.max(0, Math.ceil(per30 - stock));
+                const suggested = base ? Math.max(0, Math.ceil(per30 - stock)) : 0;
                 return { ...r, stock, profit: r.revenue - r.cost, per30, suggested, unitCost: base ? (parseFloat(base.cost) || 0) : (r.qty > 0 ? r.cost / r.qty : 0), exists: !!base };
             }).sort((a, b) => b.qty - a.qty || b.revenue - a.revenue);
         }
@@ -2975,6 +3204,13 @@
             setTxt('inv-cost-value', fmt(costValue));
             setTxt('inv-sale-value', fmt(saleValue));
             setTxt('inv-potential-profit', `Ganancia potencial ${fmt(saleValue - costValue)}`);
+            const dupGroups = getDuplicateSkuGroups();
+            const dupAlert = document.getElementById('dup-sku-alert');
+            if (dupAlert) {
+                const dupCount = dupGroups.reduce((a, g) => a + g.length, 0);
+                dupAlert.classList.toggle('hidden', dupCount === 0 || !isAdmin);
+                setTxt('dup-sku-count', dupCount);
+            }
             const tbody = document.getElementById('top-sellers-body');
             if (!tbody) return;
             const period = document.getElementById('top-sellers-period')?.value || '90';
@@ -2989,7 +3225,7 @@
                     <td class="p-3 font-black ${i < 3 ? 'text-amber-500' : 'text-slate-400'}">${i + 1}</td>
                     <td class="p-3 font-mono font-bold text-purple-600">${r.sku}</td>
                     <td class="p-3 font-bold text-slate-800">${r.name}${r.exists ? '' : ' <span class="text-[10px] text-slate-400">(ya no está en catálogo)</span>'}</td>
-                    <td class="p-3 font-black text-slate-900">${r.qty}</td>
+                    <td class="p-3 font-black text-slate-900">${r.qty}${r.combo > 0 ? `<span class="block text-[10px] font-semibold text-slate-400">${r.direct} sueltas · ${r.combo} en combos</span>` : ''}</td>
                     <td class="p-3 admin-only-cell font-bold text-emerald-600" style="${adminStyle}">${fmt(r.revenue)}</td>
                     <td class="p-3 admin-only-cell font-bold text-purple-600" style="${adminStyle}">${fmt(r.profit)}</td>
                     <td class="p-3 font-bold ${r.stock <= 0 ? 'text-rose-600' : (r.stock <= 3 ? 'text-amber-600' : 'text-slate-700')}">${r.stock}</td>
@@ -3078,7 +3314,7 @@
             const search = searchInput ? searchInput.value.toLowerCase() : '';
             const cat = catSelect ? catSelect.value : 'all';
             tbody.innerHTML = '';
-            const filtered = products.filter(p => (cat === 'all' || p.category === cat) && ((p.name || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search)));
+            const filtered = sortByStockPriority(products.filter(p => (cat === 'all' || p.category === cat) && ((p.name || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search))));
             // LIMITE PARA QUE LA TABLET NO SE CIERRE
             const itemsToRender = filtered.slice(0, 100);
             const rows = [];
@@ -3363,8 +3599,11 @@
             const tbody = document.getElementById('debts-table-body');
             if (!tbody) return;
             tbody.innerHTML = '';
+            try { renderOverdueAlerts(); } catch (err) { console.error('Error en alertas de cobro', err); }
+            const dq = (document.getElementById('debts-search')?.value || '').toLowerCase().trim();
+            const filteredDebts = dq ? debts.filter(d => `${d.client || ''} ${d.saleId || ''} ${d.concept || ''}`.toLowerCase().includes(dq)) : debts;
             // LIMITE PARA QUE LA TABLET NO SE CIERRE
-            const safeDebts = debts.slice(-100);
+            const safeDebts = filteredDebts.slice(-100);
             const rows = [];
             safeDebts.reverse().forEach(d => {
                 const amountVal = parseFloat(d.amount) || 0;
@@ -3384,19 +3623,74 @@
             tbody.innerHTML = rows.join('');
         }
 
-        function openDebtModal() {
+        function getPendingSales() {
+            return sales.filter(s => s.status !== 'PAGADO' && ((parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0) > 0.01));
+        }
+
+        function filterDebtSaleOptions() {
             const select = document.getElementById('debt-sale-select');
-            if (select) {
-                const opts = ['<option value="">Abono General</option>'];
-                const pendingSales = sales.filter(s => s.status === 'ABONO' && (s.total - s.paid > 0.01));
-                pendingSales.forEach(s => {
-                    const pend = (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0);
-                    opts.push(`<option value="${s.id}">${s.id} - ${s.clientName} (Pendiente: $${pend.toLocaleString('es-CO')})</option>`);
-                });
-                select.innerHTML = opts.join('');
+            if (!select) return;
+            const q = (document.getElementById('debt-sale-search')?.value || '').toLowerCase().trim();
+            const list = getPendingSales().filter(s => !q || `${s.id} ${s.clientName || ''} ${s.clientPhone || ''}`.toLowerCase().includes(q))
+                .sort((a, b) => new Date(a.rawDate || 0) - new Date(b.rawDate || 0));
+            const opts = ['<option value="">Abono General</option>'];
+            list.forEach(s => {
+                const pend = (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0);
+                opts.push(`<option value="${s.id}">${s.id} - ${s.clientName} (Pendiente: $${pend.toLocaleString('es-CO')})</option>`);
+            });
+            select.innerHTML = opts.join('');
+            const info = document.getElementById('debt-sale-search-info');
+            if (info) info.innerText = q ? `${list.length} factura(s) pendiente(s) encontradas` : `${list.length} factura(s) con saldo pendiente`;
+            if (q && list.length === 1) { select.value = list[0].id; autoFillDebtClient(); }
+        }
+
+        function openDebtModal(saleId) {
+            const search = document.getElementById('debt-sale-search');
+            if (search) search.value = '';
+            filterDebtSaleOptions();
+            if (saleId) {
+                const select = document.getElementById('debt-sale-select');
+                if (select) { select.value = saleId; autoFillDebtClient(); }
             }
             const m = document.getElementById('debt-modal');
             if (m) m.classList.remove('hidden');
+        }
+
+        function renderOverdueAlerts() {
+            const box = document.getElementById('overdue-list');
+            if (!box) return;
+            const now = Date.now();
+            const list = getPendingSales().map(s => {
+                const d = new Date(s.rawDate || 0);
+                const days = isNaN(d) ? 0 : Math.floor((now - d.getTime()) / 86400000);
+                return { s, days, pend: (parseFloat(s.total) || 0) - (parseFloat(s.paid) || 0) };
+            }).sort((a, b) => b.days - a.days);
+            const totalPend = list.reduce((a, x) => a + x.pend, 0);
+            const late = list.filter(x => x.days > 30);
+            const setTxt = (id, t) => { const el = document.getElementById(id); if (el) el.innerText = t; };
+            setTxt('overdue-total', `$${Math.round(totalPend).toLocaleString('es-CO')}`);
+            setTxt('overdue-count', `${list.length} cliente(s) con saldo · ${late.length} con más de 30 días`);
+            if (list.length === 0) { box.innerHTML = '<p class="text-xs text-slate-400 italic p-2">No hay clientes con saldo pendiente.</p>'; return; }
+            box.innerHTML = list.slice(0, 50).map(x => {
+                const color = x.days > 60 ? 'border-rose-300 bg-rose-50' : (x.days > 30 ? 'border-orange-300 bg-orange-50' : (x.days > 15 ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-slate-50'));
+                const tag = x.days > 60 ? 'text-rose-700 bg-rose-100' : (x.days > 30 ? 'text-orange-700 bg-orange-100' : (x.days > 15 ? 'text-amber-700 bg-amber-100' : 'text-slate-600 bg-slate-200'));
+                const phone = String(x.s.clientPhone || '').replace(/\D/g, '');
+                const waPhone = phone.length === 10 ? '57' + phone : phone;
+                const msg = encodeURIComponent(`Hola ${x.s.clientName || ''}, te escribimos de Fragatta Parfums. Tienes un saldo pendiente de $${Math.round(x.pend).toLocaleString('es-CO')} de la factura ${x.s.id}. ¡Gracias!`);
+                return `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border ${color} text-xs">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-900 truncate">${x.s.clientName || 'Cliente'} <span class="font-mono text-purple-600">${x.s.id}</span></p>
+                            <p class="text-slate-500">${x.s.date || ''} · Tel: ${x.s.clientPhone || 'N/A'}</p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="font-black px-2 py-0.5 rounded-full ${tag}">${x.days} días</span>
+                            <span class="font-black text-rose-600">$${Math.round(x.pend).toLocaleString('es-CO')}</span>
+                            ${waPhone.length >= 10 ? `<a href="https://wa.me/${waPhone}?text=${msg}" target="_blank" rel="noopener" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-lg" title="Cobrar por WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
+                            <button onclick="openDebtModal('${x.s.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg">+ Abonar</button>
+                        </div>
+                    </div>`;
+            }).join('');
         }
 
         function autoFillDebtClient() {
@@ -3475,6 +3769,12 @@
             if (!tbody) return;
             tbody.innerHTML = '';
             // LIMITE PARA QUE LA TABLET NO SE CIERRE
+            const debtByType = { MERCANCIA: 0, INSUMOS: 0 };
+            payables.forEach(pb => { debtByType[getPayableType(pb)] += Math.max(0, (parseFloat(pb.total) || 0) - (parseFloat(pb.paid) || 0)); });
+            const setPayTxt = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = `$${Math.round(v).toLocaleString('es-CO')}`; };
+            setPayTxt('pay-debt-merc', debtByType.MERCANCIA);
+            setPayTxt('pay-debt-ins', debtByType.INSUMOS);
+            setPayTxt('pay-debt-total', debtByType.MERCANCIA + debtByType.INSUMOS);
             const safePayables = payables.slice(-100);
             const rows = [];
             safePayables.forEach(p => {
@@ -3486,6 +3786,7 @@
                         <td class="p-4 font-mono font-bold text-rose-600">${p.invoiceNum}</td>
                         <td class="p-4 font-bold text-slate-800">${p.supplier}</td>
                         <td class="p-4"><span class="${getPayableType(p) === 'INSUMOS' ? 'bg-sky-50 text-sky-700' : 'bg-purple-50 text-purple-700'} font-bold px-2.5 py-1 rounded-full text-[10px]">${getPayableType(p) === 'INSUMOS' ? 'Insumos' : 'Mercancía'}</span></td>
+                        <td class="p-4 text-slate-500 whitespace-normal max-w-xs">${p.notes || ''}</td>
                         <td class="p-4 text-slate-500 font-mono">${p.date}</td>
                         <td class="p-4 font-bold text-slate-800">$${totalVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 font-bold text-emerald-600">$${paidVal.toLocaleString('es-CO')}</td>
@@ -3504,6 +3805,8 @@
         function openPayableModal() {
             if (document.getElementById('pay-id')) document.getElementById('pay-id').value = '';
             if (document.getElementById('pay-type')) document.getElementById('pay-type').value = 'MERCANCIA';
+            ['pay-supplier', 'pay-invoice-num', 'pay-total', 'pay-notes'].forEach(fid => { const el = document.getElementById(fid); if (el) el.value = ''; });
+            if (document.getElementById('pay-abono')) document.getElementById('pay-abono').value = '0';
             if (document.getElementById('payable-modal-title')) document.getElementById('payable-modal-title').innerText = "Registrar Deuda a Proveedor";
             const m = document.getElementById('payable-modal');
             if (m) m.classList.remove('hidden');
@@ -3524,6 +3827,7 @@
                 if (document.getElementById('pay-total')) document.getElementById('pay-total').value = parseFloat(p.total) || 0;
                 if (document.getElementById('pay-abono')) document.getElementById('pay-abono').value = parseFloat(p.paid) || 0;
                 if (document.getElementById('pay-type')) document.getElementById('pay-type').value = getPayableType(p);
+                if (document.getElementById('pay-notes')) document.getElementById('pay-notes').value = p.notes || '';
                 if (document.getElementById('payable-modal-title')) document.getElementById('payable-modal-title').innerText = "Editar Deuda de Proveedor (Admin)";
                 const m = document.getElementById('payable-modal');
                 if (m) m.classList.remove('hidden');
@@ -3538,17 +3842,18 @@
             const total = parseFloat(document.getElementById('pay-total')?.value) || 0;
             const abono = parseFloat(document.getElementById('pay-abono')?.value) || 0;
             const type = document.getElementById('pay-type')?.value || 'MERCANCIA';
+            const notes = document.getElementById('pay-notes')?.value.trim() || '';
             const now = new Date();
             const dateStr = now.toLocaleDateString('es-CO');
             let finalP;
             if (id) {
                 const p = payables.find(item => item.id === id);
                 if (p) {
-                    p.supplier = supplier; p.invoiceNum = invoiceNum; p.total = total; p.paid = abono; p.type = type;
+                    p.supplier = supplier; p.invoiceNum = invoiceNum; p.total = total; p.paid = abono; p.type = type; p.notes = notes;
                     finalP = p;
                 }
             } else {
-                finalP = { id: 'PAY-' + Date.now(), date: dateStr, rawDate: now.toISOString(), supplier, invoiceNum, total, paid: abono, type };
+                finalP = { id: 'PAY-' + Date.now(), date: dateStr, rawDate: now.toISOString(), supplier, invoiceNum, total, paid: abono, type, notes };
                 payables.push(finalP);
             }
             saveDataLocalOnly();
@@ -3629,6 +3934,7 @@
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 text-slate-500 font-mono">${exp.date}</td>
                         <td class="p-4 font-bold text-slate-800">${exp.desc}</td>
+                        <td class="p-4 text-slate-500 whitespace-normal max-w-xs">${exp.notes || ''}</td>
                         <td class="p-4 font-black text-rose-600">$${amountVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 text-center">
                             ${isAdmin ? `<button onclick="deleteExpense('${exp.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Eliminar Gasto (Admin)"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-[10px] text-slate-400 font-bold">Protegido</span>`}
@@ -3642,6 +3948,7 @@
         function openExpenseModal() {
             if (document.getElementById('exp-desc')) document.getElementById('exp-desc').value = '';
             if (document.getElementById('exp-amount')) document.getElementById('exp-amount').value = '';
+            if (document.getElementById('exp-notes')) document.getElementById('exp-notes').value = '';
             const m = document.getElementById('expense-modal');
             if (m) m.classList.remove('hidden');
         }
@@ -3655,9 +3962,10 @@
             e.preventDefault();
             const desc = document.getElementById('exp-desc')?.value.trim() || '';
             const amount = parseFloat(document.getElementById('exp-amount')?.value) || 0;
+            const notes = document.getElementById('exp-notes')?.value.trim() || '';
             const now = new Date();
             const fullDateTime = now.toLocaleDateString('es-CO') + " " + now.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
-            const newE = { id: 'EXP-' + Date.now(), date: fullDateTime, desc, amount };
+            const newE = { id: 'EXP-' + Date.now(), date: fullDateTime, desc, amount, notes };
             expenses.push(newE);
             saveDataLocalOnly();
             if(isFirebaseConnected && db) db.collection("expenses").doc(String(newE.id)).set(newE, { merge: true });
@@ -3712,8 +4020,9 @@
             payables.forEach(p => {
                 const amount = parseFloat(p.total) || 0;
                 if (amount <= 0) return;
-                if (getPayableType(p) === 'INSUMOS') invIns += amount; else invMerc += amount;
-                events.push({ t: getPayableDate(p).getTime(), order: 0, kind: 'invoice', amount });
+                const isIns = getPayableType(p) === 'INSUMOS';
+                if (isIns) invIns += amount; else invMerc += amount;
+                events.push({ t: getPayableDate(p).getTime(), order: 0, kind: isIns ? 'expense' : 'invoice', amount });
             });
             expenses.forEach(e => {
                 if (isSupplierPaymentExpense(e)) return;
@@ -3733,19 +4042,33 @@
             // Ajuste manual de ventas: se aplica al inicio (positivo = dinero cobrado sin costo, negativo = monto por recuperar)
             const adj = parseFloat(salesAdjustment) || 0;
             if (adj > 0) events.push({ t: -1, order: 1, kind: 'sale', cash: adj, cost: 0 });
-            else if (adj < 0) events.push({ t: -1, order: 0, kind: 'expense', amount: -adj });
+            else if (adj < 0) events.push({ t: -1, order: 0, kind: 'invoice', amount: -adj });
             events.sort((x, y) => (x.t - y.t) || (x.order - y.order));
 
-            let pending = 0, fund = 0, reinvest = 0, netProfit = 0, distributable = 0;
+            let pending = 0, fund = 0, reinvest = 0, grossMargin = 0, distributable = 0, profitDebt = 0;
+            const applyMargin = (m) => {
+                // La ganancia primero cubre insumos y gastos pendientes; lo que sobra se reinvierte (%) y se reparte
+                if (m <= 0) { profitDebt += -m; return; }
+                const cover = Math.min(profitDebt, m);
+                profitDebt -= cover;
+                m -= cover;
+                const reinv = m * pct;
+                reinvest += reinv;
+                distributable += m - reinv;
+            };
             events.forEach(ev => {
                 if (ev.kind === 'invoice') {
-                    // Una factura nueva se paga primero con el Fondo de Reposición y luego con la reinversión
+                    // Factura de MERCANCÍA: se paga con el Fondo de Reposición, luego con la reinversión.
+                    // Lo que falte se recupera con las próximas ventas antes de contar ganancia (Fase 1).
                     let rest = ev.amount;
                     const fromFund = Math.min(fund, rest); fund -= fromFund; rest -= fromFund;
                     const fromReinv = Math.min(reinvest, rest); reinvest -= fromReinv; rest -= fromReinv;
                     pending += rest; recoverTotal += rest;
                 } else if (ev.kind === 'expense') {
-                    pending += ev.amount; recoverTotal += ev.amount;
+                    // INSUMOS y GASTOS OPERATIVOS: salen de la ganancia, nunca del Fondo de Reposición
+                    const fromProfit = Math.min(Math.max(0, distributable), ev.amount);
+                    distributable -= fromProfit;
+                    profitDebt += ev.amount - fromProfit;
                 } else {
                     const toCover = Math.min(pending, ev.cash);
                     pending -= toCover;
@@ -3754,14 +4077,13 @@
                         const costShare = remaining * (ev.cost / ev.cash);
                         const marginShare = remaining - costShare;
                         fund += costShare;
-                        netProfit += marginShare;
-                        const reinv = marginShare > 0 ? marginShare * pct : 0;
-                        reinvest += reinv;
-                        distributable += marginShare - reinv;
+                        grossMargin += marginShare;
+                        applyMargin(marginShare);
                     }
                 }
             });
-            return { invMerc, invIns, opExpenses, pending, fund, reinvest, netProfit, distributable, recoverTotal };
+            const netProfit = grossMargin - invIns - opExpenses;
+            return { invMerc, invIns, opExpenses, pending, fund, reinvest, grossMargin, netProfit, distributable, recoverTotal, profitDebt };
         }
 
         function updateDashboard() {
@@ -3822,10 +4144,10 @@
             const profitBadge = document.getElementById('profit-status-badge');
             if (profitBadge) {
                 if (cap.pending > 0) {
-                    profitBadge.innerHTML = `<i class="fa-solid fa-hourglass-half mr-1"></i> Fase 1: cubriendo facturas (faltan ${fmtCOP(cap.pending)})`;
+                    profitBadge.innerHTML = `<i class="fa-solid fa-hourglass-half mr-1"></i> Fase 1: cubriendo facturas de mercancía (faltan ${fmtCOP(cap.pending)})`;
                     profitBadge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40';
                 } else {
-                    profitBadge.innerHTML = `<i class="fa-solid fa-arrow-trend-up mr-1"></i> Fase 2: facturas cubiertas, generando ganancia neta`;
+                    profitBadge.innerHTML = `<i class="fa-solid fa-arrow-trend-up mr-1"></i> Fase 2: mercancía cubierta, generando ganancia`;
                     profitBadge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
                 }
             }
@@ -3840,40 +4162,41 @@
             setTxt('cap-pending', fmtCOP(cap.pending));
             setTxt('reserve-cogs-val', fmtCOP(cap.fund));
             setTxt('cap-net-profit-val', fmtCOP(cap.netProfit));
+            setTxt('cap-gross-margin', fmtCOP(cap.grossMargin));
+            const debtEl = document.getElementById('cap-profit-debt');
+            if (debtEl) {
+                debtEl.classList.toggle('hidden', cap.profitDebt <= 0);
+                debtEl.innerText = `Faltan ${fmtCOP(cap.profitDebt)} de insumos/gastos por cubrir con ganancia`;
+            }
             setTxt('reserve-reinvest-val', fmtCOP(cap.reinvest));
             setTxt('reserve-total-save-val', fmtCOP(cap.fund + cap.reinvest));
             const distributableProfit = Math.max(0, cap.distributable);
             setTxt('distributable-profit-val', fmtCOP(distributableProfit));
-            const p1Pct = Math.max(0, Math.min(100, parseFloat(socio1Percent) || 0));
-            const p2Pct = Math.max(0, Math.min(100, parseFloat(socio2Percent) || 0));
-            const sumPct = p1Pct + p2Pct;
+            // Reparto proporcional: cada socio recibe su % de la utilidad repartible (los % siempre se normalizan a 100)
+            let p1Raw = Math.max(0, parseFloat(socio1Percent) || 0);
+            let p2Raw = Math.max(0, parseFloat(socio2Percent) || 0);
+            if (p1Raw + p2Raw <= 0) { p1Raw = 50; p2Raw = 50; }
+            const p1Pct = (p1Raw / (p1Raw + p2Raw)) * 100;
+            const p2Pct = 100 - p1Pct;
             const pctSummaryEl = document.getElementById('partners-pct-summary');
             if (pctSummaryEl) {
-                if (sumPct === 100) {
-                    pctSummaryEl.innerText = `Total asignado: 100%`;
-                    pctSummaryEl.className = 'text-[11px] font-bold text-emerald-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-emerald-500/40';
-                } else if (sumPct < 100) {
-                    pctSummaryEl.innerText = `Asignado: ${sumPct}% (Queda ${100 - sumPct}% en caja)`;
-                    pctSummaryEl.className = 'text-[11px] font-bold text-amber-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-amber-500/40';
-                } else {
-                    pctSummaryEl.innerText = `Aviso: Suma ${sumPct}% (>100%)`;
-                    pctSummaryEl.className = 'text-[11px] font-bold text-rose-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-rose-500/40';
-                }
+                pctSummaryEl.innerText = `Socio 1: ${Math.round(p1Pct * 10) / 10}% · Socio 2: ${Math.round(p2Pct * 10) / 10}% · Total 100%`;
+                pctSummaryEl.className = 'text-[11px] font-bold text-emerald-300 bg-slate-900/80 px-2.5 py-1 rounded-full border border-emerald-500/40';
             }
             const socio1Earned = Math.round(distributableProfit * (p1Pct / 100));
-            const socio2Earned = Math.round(distributableProfit * (p2Pct / 100));
+            const socio2Earned = Math.round(distributableProfit) - socio1Earned;
             const wSocio1 = withdrawals.filter(w => w.partner === 'socio1').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
             const wSocio2 = withdrawals.filter(w => w.partner === 'socio2').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
             const s1Avail = socio1Earned - wSocio1;
             const s2Avail = socio2Earned - wSocio2;
-            if (document.getElementById('socio1-earned')) document.getElementById('socio1-earned').innerText = `$${socio1Earned.toLocaleString('es-CO')}`;
+            if (document.getElementById('socio1-earned')) document.getElementById('socio1-earned').innerHTML = `$${socio1Earned.toLocaleString('es-CO')}<span class="block text-[9px] font-semibold text-slate-400">${Math.round(p1Pct * 10) / 10}% de $${Math.round(distributableProfit).toLocaleString('es-CO')}</span>`;
             if (document.getElementById('socio1-withdrawn')) document.getElementById('socio1-withdrawn').innerText = `$${wSocio1.toLocaleString('es-CO')}`;
             const s1AvailEl = document.getElementById('socio1-available');
             if (s1AvailEl) {
                 s1AvailEl.innerText = `$${s1Avail.toLocaleString('es-CO')}`;
                 s1AvailEl.className = `font-black text-xs sm:text-sm mt-0.5 truncate ${s1Avail < 0 ? 'text-rose-400' : 'text-amber-400'}`;
             }
-            if (document.getElementById('socio2-earned')) document.getElementById('socio2-earned').innerText = `$${socio2Earned.toLocaleString('es-CO')}`;
+            if (document.getElementById('socio2-earned')) document.getElementById('socio2-earned').innerHTML = `$${socio2Earned.toLocaleString('es-CO')}<span class="block text-[9px] font-semibold text-slate-400">${Math.round(p2Pct * 10) / 10}% de $${Math.round(distributableProfit).toLocaleString('es-CO')}</span>`;
             if (document.getElementById('socio2-withdrawn')) document.getElementById('socio2-withdrawn').innerText = `$${wSocio2.toLocaleString('es-CO')}`;
             const s2AvailEl = document.getElementById('socio2-available');
             if (s2AvailEl) {
@@ -3903,9 +4226,55 @@
             renderChart(totalSalesVal, totalCostVal, netProfitVal);
         }
 
+        let monthlyProfitChart = null;
+        let monthlyMarginChart = null;
+        function renderMonthlyCharts(monthsMap) {
+            if (typeof Chart === 'undefined') return;
+            const keys = Object.keys(monthsMap).sort().slice(-12);
+            const names = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const labels = keys.map(k => { const [y, m] = k.split('-'); return `${names[parseInt(m) - 1]} ${y.slice(2)}`; });
+            const money = (v) => `$${Math.round(v).toLocaleString('es-CO')}`;
+            const c1 = document.getElementById('monthlyProfitChart');
+            if (c1) {
+                if (monthlyProfitChart) monthlyProfitChart.destroy();
+                monthlyProfitChart = new Chart(c1, {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: 'Ventas', data: keys.map(k => monthsMap[k].ventas), backgroundColor: '#10b981', borderRadius: 6 },
+                            { label: 'Costo Mercancía', data: keys.map(k => monthsMap[k].costo), backgroundColor: '#f59e0b', borderRadius: 6 },
+                            { label: 'Ganancia', data: keys.map(k => monthsMap[k].ganancia), backgroundColor: '#a855f7', borderRadius: 6 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${money(ctx.parsed.y)}` } } },
+                        scales: { y: { beginAtZero: true, ticks: { callback: (v) => money(v) } } }
+                    }
+                });
+            }
+            const c2 = document.getElementById('monthlyMarginChart');
+            if (c2) {
+                if (monthlyMarginChart) monthlyMarginChart.destroy();
+                monthlyMarginChart = new Chart(c2, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{ label: 'Margen %', data: keys.map(k => monthsMap[k].ventas > 0 ? Math.round((monthsMap[k].ganancia / monthsMap[k].ventas) * 1000) / 10 : 0), borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.15)', fill: true, tension: 0.3, pointRadius: 4 }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `Margen: ${ctx.parsed.y}%` } } },
+                        scales: { y: { beginAtZero: true, ticks: { callback: (v) => `${v}%` } } }
+                    }
+                });
+            }
+        }
+
         function renderChart(salesVal, costVal, profitVal) {
             const ctx = document.getElementById('financeChart');
-            if (!ctx) return;
+            if (!ctx || typeof Chart === 'undefined') return;
             if (financeChart) financeChart.destroy();
             financeChart = new Chart(ctx, {
                 type: 'bar',
