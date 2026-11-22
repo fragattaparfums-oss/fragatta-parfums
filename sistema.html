@@ -276,9 +276,6 @@
                                 <button onclick="openWithdrawalModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
                                     <i class="fa-solid fa-hand-holding-dollar"></i> Registrar Retiro de Socio
                                 </button>
-                                <button onclick="openResetModal()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
-                                    <i class="fa-solid fa-rotate-right"></i> Resetear Datos
-                                </button>
                             </div>
                         </div>
 
@@ -327,46 +324,70 @@
                             </div>
                         </div>
 
-                        <!-- FILA 2.5: PROTECCIÓN DE CAPITAL & REPOSICIÓN DE STOCK (ANTI-DESCAPITALIZACIÓN - SOLO ADMIN) -->
+                        <!-- FILA 2.5: PROTECCIÓN DE CAPITAL & CAPITALIZACIÓN POR FASES (SOLO ADMIN) -->
                         <div class="bg-slate-800/60 p-4 sm:p-5 rounded-2xl border border-emerald-500/40 space-y-4">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <h4 class="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-2">
-                                    <i class="fa-solid fa-shield-halved"></i> Protección Anti-Descapitalización &amp; Fondo de Reposición de Stock
+                                    <i class="fa-solid fa-shield-halved"></i> Protección Anti-Descapitalización &amp; Capitalización del Negocio
                                 </h4>
                                 <span id="profit-status-badge" class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-900/80 text-slate-300 border border-slate-700">
                                     Calculando estado...
                                 </span>
                             </div>
                             <p class="text-[11px] text-slate-300 leading-relaxed">
-                                Cuando vendes un perfume, parte del dinero es el <strong class="text-white">costo del stock que salió</strong> (debes guardarlo para volver a surtirte) y el resto es <strong class="text-emerald-300">ganancia</strong>. Define además qué % extra de tus ganancias guardarás para hacer crecer tu inventario sin descapitalizarte.
+                                <strong class="text-white">Fase 1:</strong> el dinero cobrado de las ventas paga primero las <strong class="text-white">facturas de proveedores</strong> (mercancía e insumos) y los gastos operativos. Mientras no estén cubiertas, no hay ganancia para repartir.
+                                <strong class="text-white">Fase 2:</strong> cuando ya están cubiertas, cada venta se separa en <strong class="text-blue-300">costo del producto</strong> (va al Fondo de Reposición para la próxima factura) y <strong class="text-emerald-300">ganancia neta</strong> (se reparte entre los socios, menos el % de reinversión).
+                                Cada factura nueva se paga primero con el Fondo de Reposición y la reinversión. Solo si no alcanzan, el faltante vuelve a la Fase 1.
                             </p>
+                            <div class="bg-slate-900/85 p-3.5 rounded-xl border border-slate-700/80 space-y-2">
+                                <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                                    <span class="font-bold text-rose-300 uppercase tracking-wider">Fase 1 · Recuperación de facturas y gastos</span>
+                                    <span id="cap-recovery-pct" class="font-black text-white">0%</span>
+                                </div>
+                                <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                                    <div id="cap-recovery-bar" class="h-full bg-gradient-to-r from-rose-500 to-emerald-500 rounded-full transition-all" style="width:0%"></div>
+                                </div>
+                                <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 text-[11px] pt-1">
+                                    <div><p class="text-slate-400">Facturas mercancía</p><p id="cap-inv-merc" class="font-bold text-white">$0</p></div>
+                                    <div><p class="text-slate-400">Facturas insumos / envíos</p><p id="cap-inv-ins" class="font-bold text-white">$0</p></div>
+                                    <div><p class="text-slate-400">Gastos operativos</p><p id="cap-op-exp" class="font-bold text-white">$0</p></div>
+                                    <div><p class="text-slate-400">Falta por recuperar</p><p id="cap-pending" class="font-black text-rose-400">$0</p></div>
+                                </div>
+                            </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                <div class="bg-slate-900/85 p-3.5 rounded-xl border border-slate-700/80">
-                                    <p class="text-[10px] font-bold text-blue-300 uppercase tracking-wider">1. Reposición de Stock Vendido</p>
+                                <div class="bg-slate-900/85 p-3.5 rounded-xl border border-blue-500/40">
+                                    <p class="text-[10px] font-bold text-blue-300 uppercase tracking-wider">1. Fondo de Reposición</p>
                                     <h5 id="reserve-cogs-val" class="text-lg font-black text-blue-400 mt-1">$0</h5>
-                                    <p class="text-[10px] text-slate-400 mt-0.5"><span id="reserve-cogs-pct" class="font-bold text-blue-300">0%</span> de tus ventas (Intocable)</p>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Costo de los productos vendidos después de cubrir las facturas (no se toca)</p>
+                                </div>
+                                <div class="bg-slate-900/85 p-3.5 rounded-xl border border-emerald-500/40">
+                                    <p class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">2. Ganancia Neta Real</p>
+                                    <h5 id="cap-net-profit-val" class="text-lg font-black text-emerald-400 mt-1">$0</h5>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Precio de venta menos costo, solo después de cubrir las facturas</p>
                                 </div>
                                 <div class="bg-slate-900/85 p-3.5 rounded-xl border border-emerald-500/40">
                                     <div class="flex items-center justify-between gap-1">
-                                        <label for="stock-reserve-pct-input" class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">2. % Extra Reinversión</label>
+                                        <label for="stock-reserve-pct-input" class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">3. % Reinversión</label>
                                         <div class="flex items-center gap-1">
                                             <input type="number" id="stock-reserve-pct-input" min="0" max="100" step="1" value="20" onchange="updateStockReservePercent()" class="w-14 bg-slate-800 border border-emerald-500/60 rounded-lg px-1.5 py-0.5 text-xs font-black text-emerald-300 text-center focus:outline-none focus:border-emerald-400">
                                             <span class="text-xs font-bold text-emerald-400">%</span>
                                         </div>
                                     </div>
                                     <h5 id="reserve-reinvest-val" class="text-lg font-black text-emerald-400 mt-1">$0</h5>
-                                    <p class="text-[10px] text-slate-400 mt-0.5">De la ganancia neta acumulada</p>
-                                </div>
-                                <div class="bg-amber-950/50 p-3.5 rounded-xl border border-amber-500/60">
-                                    <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Total Acumulado a Guardar</p>
-                                    <h5 id="reserve-total-save-val" class="text-lg font-black text-amber-400 mt-1">$0</h5>
-                                    <p class="text-[10px] text-amber-200 mt-0.5">Guarda el <span id="reserve-total-save-pct" class="font-black text-amber-300 underline">0%</span> de cada venta</p>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">De la ganancia neta, para comprar más mercancía</p>
                                 </div>
                                 <div class="bg-purple-950/60 p-3.5 rounded-xl border border-purple-500/50">
-                                    <p class="text-[10px] font-bold text-purple-300 uppercase tracking-wider">Utilidad Libre Repartible</p>
+                                    <p class="text-[10px] font-bold text-purple-300 uppercase tracking-wider">4. Utilidad Libre Repartible</p>
                                     <h5 id="distributable-profit-val" class="text-lg font-black text-white mt-1">$0</h5>
-                                    <p class="text-[10px] text-purple-200 mt-0.5">Disponible para repartir a socios</p>
+                                    <p class="text-[10px] text-purple-200 mt-0.5">Para repartir entre los socios</p>
                                 </div>
+                            </div>
+                            <div class="bg-amber-950/50 p-3.5 rounded-xl border border-amber-500/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div>
+                                    <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Disponible para la próxima factura de mercancía</p>
+                                    <p class="text-[10px] text-amber-200">Fondo de Reposición + Reinversión acumulada (ya descontadas las facturas nuevas)</p>
+                                </div>
+                                <h5 id="reserve-total-save-val" class="text-xl font-black text-amber-400">$0</h5>
                             </div>
                         </div>
 
@@ -678,6 +699,76 @@
                             </button>
                         </div>
                     </div>
+                    <!-- RESUMEN DE INVENTARIO (CONTEO TOTAL DE STOCK) -->
+                    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unidades en Stock (Detal)</p>
+                            <h3 id="inv-total-units" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+                            <p id="inv-total-refs" class="text-[10px] text-slate-400 font-semibold mt-0.5">0 referencias</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unidades Por Mayor</p>
+                            <h3 id="inv-wholesale-units" class="text-2xl font-black text-amber-600 mt-1">0</h3>
+                            <p id="inv-wholesale-refs" class="text-[10px] text-slate-400 font-semibold mt-0.5">0 referencias</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Agotados / Stock Bajo</p>
+                            <h3 class="text-2xl font-black mt-1"><span id="inv-out-count" class="text-rose-600">0</span> <span class="text-slate-300">/</span> <span id="inv-low-count" class="text-amber-500">0</span></h3>
+                            <p class="text-[10px] text-slate-400 font-semibold mt-0.5">0 unidades / 1 a 3 unidades</p>
+                        </div>
+                        <div class="admin-only hidden bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Valor Stock a Costo</p>
+                            <h3 id="inv-cost-value" class="text-2xl font-black text-blue-600 mt-1">$0</h3>
+                            <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Lo que costó la mercancía en bodega</p>
+                        </div>
+                        <div class="admin-only hidden bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Valor Stock a Precio Venta</p>
+                            <h3 id="inv-sale-value" class="text-2xl font-black text-emerald-600 mt-1">$0</h3>
+                            <p id="inv-potential-profit" class="text-[10px] text-slate-400 font-semibold mt-0.5">Ganancia potencial $0</p>
+                        </div>
+                    </div>
+
+                    <!-- MÁS VENDIDOS & SUGERENCIA DE COMPRA -->
+                    <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div>
+                                <h3 class="font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-ranking-star text-amber-500"></i> Más Vendidos &amp; Sugerencia de Compra</h3>
+                                <p class="text-[11px] text-slate-500">Los combos se cuentan por los perfumes que traen. Las ventas Por Mayor se suman al perfume base. "Sugerido comprar" = lo vendido en el periodo, llevado a 30 días, menos el stock actual.</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <select id="top-sellers-period" onchange="renderInventoryInsights()" class="bg-slate-50 border border-slate-200 text-slate-700 font-bold rounded-xl px-3 py-2 text-xs focus:outline-none">
+                                    <option value="30">Últimos 30 días</option>
+                                    <option value="60">Últimos 60 días</option>
+                                    <option value="90" selected>Últimos 90 días</option>
+                                    <option value="ALL">Histórico completo</option>
+                                </select>
+                                <button onclick="exportPurchaseOrder()" class="admin-only hidden bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-2 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md">
+                                    <i class="fa-solid fa-cart-flatbed"></i> Excel Pedido a Proveedor
+                                </button>
+                                <button onclick="exportInventoryCount()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md">
+                                    <i class="fa-solid fa-clipboard-list"></i> Excel Conteo de Inventario
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs whitespace-nowrap min-w-max">
+                                <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-3">#</th>
+                                        <th class="p-3">SKU</th>
+                                        <th class="p-3">Perfume</th>
+                                        <th class="p-3">Unid. Vendidas</th>
+                                        <th class="p-3 admin-only-cell" style="display:none;">Ingresos</th>
+                                        <th class="p-3 admin-only-cell" style="display:none;">Ganancia</th>
+                                        <th class="p-3">Stock Actual</th>
+                                        <th class="p-3">Sugerido Comprar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="top-sellers-body" class="divide-y divide-slate-100 text-slate-700 font-medium"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row gap-3">
                         <input type="text" id="inv-search" oninput="renderInventoryTable()" placeholder="Buscar por SKU o Nombre..." class="flex-1 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500">
                         <select id="inv-filter-cat" onchange="renderInventoryTable()" class="bg-slate-50 border border-slate-200 text-slate-700 font-bold rounded-xl px-3 py-2 text-xs focus:outline-none">
@@ -798,6 +889,7 @@
                                 <tr>
                                     <th class="p-4">Nº Factura Prov.</th>
                                     <th class="p-4">Proveedor</th>
+                                    <th class="p-4">Tipo</th>
                                     <th class="p-4">Fecha Emisión</th>
                                     <th class="p-4">Monto Total</th>
                                     <th class="p-4">Total Abonado</th>
@@ -890,35 +982,6 @@
                     <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold">Guardar Retiro</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- MODAL RESET CON PISTA EN PANTALLA Y OJO DE CLAVE -->
-    <div id="reset-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white border border-rose-200 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
-            <div class="flex items-center gap-3 text-rose-600">
-                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
-                <h3 class="font-black text-slate-900 text-base">Confirmar Reset de Datos</h3>
-            </div>
-            <p class="text-xs text-slate-600">Ingresa la clave de reset para limpiar los datos locales de caja y ventas.</p>
-            <div class="bg-rose-50 border border-rose-200 p-2.5 rounded-xl text-center">
-                <span class="text-[11px] font-extrabold text-rose-700 uppercase tracking-wider">🔑 Pista de Clave Reset: <span class="underline">123456</span></span>
-            </div>
-            <div class="space-y-3 text-xs">
-                <div>
-                    <label class="block font-bold text-slate-600 mb-1">Clave de Reset:</label>
-                    <div class="relative">
-                        <input type="password" id="reset-pass-input" placeholder="••••••" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
-                        <button type="button" onclick="togglePasswordVisibility('reset-pass-input', 'toggle-pass-icon-reset')" class="absolute right-3 top-3 text-slate-400 hover:text-rose-600">
-                            <i id="toggle-pass-icon-reset" class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="pt-2 flex justify-end gap-2">
-                    <button type="button" onclick="closeResetModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">Cancelar</button>
-                    <button type="button" onclick="executeResetMemory()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold">Confirmar Reset</button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -1184,6 +1247,14 @@
                     <label class="block font-bold text-slate-600 mb-1">Nº Factura Proveedor:</label>
                     <input type="text" id="pay-invoice-num" required placeholder="Ej: FAC-9821" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                 </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Tipo de Factura:</label>
+                    <select id="pay-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-bold focus:outline-none">
+                        <option value="MERCANCIA">Mercancía (perfumes para la venta)</option>
+                        <option value="INSUMOS">Insumos y envíos (papel, empaques, bolsas, etc.)</option>
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">Ambas se recuperan con las ventas antes de contar ganancia libre.</p>
+                </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-bold text-slate-600 mb-1">Monto Total ($):</label>
@@ -1320,7 +1391,6 @@
         };
         const SYSTEM_PASS = "J.p12022013";
         const ADMIN_PASS = "J.p1000191803";
-        const RESET_PASS = "123456";
         let isAdmin = false;
         let db = null;
         let isFirebaseConnected = false;
@@ -1395,13 +1465,6 @@
             }
         }
 
-        function openResetModal() {
-            const el = document.getElementById('reset-pass-input');
-            if(el) el.value = '';
-            const m = document.getElementById('reset-modal');
-            if(m) m.classList.remove('hidden');
-        }
-
         function openArqueoModal() {
             const historicalPaidSales = sales.reduce((sum, s) => sum + (parseFloat(s.paid) || 0), 0) + salesAdjustment;
             const totalWithdrawals = withdrawals.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
@@ -1472,23 +1535,6 @@
                     updateDashboard();
                     showToast('Ajuste de ventas aplicado correctamente');
                 }
-            }
-        }
-
-        function closeResetModal() {
-            const m = document.getElementById('reset-modal');
-            if(m) m.classList.add('hidden');
-        }
-
-        function executeResetMemory() {
-            const inputField = document.getElementById('reset-pass-input');
-            const inputPass = inputField ? inputField.value.trim() : '';
-            if (inputPass === RESET_PASS) {
-                localStorage.clear();
-                showToast('Memoria local borrada exitosamente');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                alert("Contraseña de Reset incorrecta. (Recuerda que es 123456)");
             }
         }
 
@@ -1963,138 +2009,232 @@
         function exportExcelByMonth() {
             if (!isAdmin) return showToast('Esta exportación detallada solo está disponible en Modo Admin', 'error');
             const filter = document.getElementById('dash-month-filter')?.value || 'CURRENT';
-            let targetKey = filter;
-            if (filter === 'CURRENT') {
-                const now = new Date();
-                let year = now.getFullYear();
-                let month = now.getMonth() + 1;
-                targetKey = `${year}-${String(month).padStart(2, '0')}`;
+            const targetKey = filter === 'CURRENT' ? getMonthKey(new Date()) : filter;
+            const isAll = filter === 'ALL';
+            const inPeriod = (d) => d && !isNaN(d) && (isAll || getMonthKey(d) === targetKey);
+            const saleDate = (s) => new Date(s.rawDate || 0);
+            const num = (v) => parseFloat(v) || 0;
+            const r0 = (v) => Math.round(v);
+            const pctTxt = (part, whole) => whole !== 0 ? `${((part / whole) * 100).toFixed(1)}%` : '0.0%';
+            const partnerName = (id) => id === 'socio2' ? 'Socio 2 (Propietario B)' : 'Socio 1 (Propietario A)';
+
+            const pSales = sales.filter(s => inPeriod(saleDate(s))).sort((x, y) => saleDate(x) - saleDate(y));
+            const pExpensesAll = expenses.filter(e => inPeriod(parseEsDate(e.date)));
+            const pOpExpenses = pExpensesAll.filter(e => !isSupplierPaymentExpense(e));
+            const pSupplierPayments = pExpensesAll.filter(e => isSupplierPaymentExpense(e));
+            const pPayables = payables.filter(pb => inPeriod(getPayableDate(pb)));
+            const pDebts = debts.filter(d => inPeriod(parseEsDate(d.date)));
+            const pWithdrawals = withdrawals.filter(w => inPeriod(parseEsDate(w.date)));
+
+            if (pSales.length === 0 && pOpExpenses.length === 0 && pPayables.length === 0 && pSupplierPayments.length === 0) {
+                return showToast('No hay movimientos registrados en el periodo seleccionado', 'error');
             }
-            let filteredSales = sales;
-            if (filter !== 'ALL') {
-                filteredSales = sales.filter(s => {
-                    const d = new Date(s.rawDate || Date.now());
-                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === targetKey;
-                });
-            }
-            if (filteredSales.length === 0) {
-                return showToast(`No hay ventas registradas en el periodo seleccionado`, 'error');
-            }
-            const orderedSales = filteredSales.slice().reverse();
-            // HOJA 1: DETALLE POR PRODUCTO DE CADA VENTA (Precio Producto, Ganancia y Total Venta)
+
+            // ---------- HOJA: DETALLE POR PRODUCTO (con descuento prorrateado) ----------
             const detailedRows = [];
-            orderedSales.forEach(s => {
-                const saleTotal = parseFloat(s.total) || 0;
-                const saleCost = parseFloat(s.cost) || 0;
-                const saleShipping = parseFloat(s.shipping) || 0;
-                const saleDiscount = parseFloat(s.discount) || 0;
-                const salePaid = parseFloat(s.paid) || 0;
-                const saleProfit = saleTotal - saleCost;
-                if (Array.isArray(s.items) && s.items.length > 0) {
-                    s.items.forEach((item, idx) => {
-                        const qty = parseInt(item.qty) || 1;
-                        const unitPrice = parseFloat(item.price) || 0;
-                        const unitCost = parseFloat(item.cost) || 0;
-                        const prodSubtotal = unitPrice * qty;
-                        const prodCostTotal = unitCost * qty;
-                        const prodProfit = prodSubtotal - prodCostTotal;
-                        detailedRows.push({
-                            'Nº Factura': s.id,
-                            'Fecha': s.date,
-                            'Cliente': s.clientName || 'Cliente General',
-                            'Canal': s.saleType || 'DETAL',
-                            'SKU': item.sku || '',
-                            'Producto': item.name || 'Producto',
-                            'Cant.': qty,
-                            'Precio Producto (Unit.)': unitPrice,
-                            'Costo Producto (Unit.)': unitCost,
-                            'Subtotal Producto': prodSubtotal,
-                            'Ganancia Producto': prodProfit,
-                            'Envío Factura': idx === 0 ? saleShipping : 0,
-                            'Descuento Factura': idx === 0 ? saleDiscount : 0,
-                            'Total Venta Factura': idx === 0 ? saleTotal : '',
-                            'Ganancia Total Venta': idx === 0 ? saleProfit : '',
-                            'Monto Cobrado': idx === 0 ? salePaid : '',
-                            'Estado': s.status || ''
-                        });
-                    });
-                } else {
+            const productAgg = {};
+            pSales.forEach(s => {
+                const saleDiscount = num(s.discount);
+                const saleShipping = num(s.shipping);
+                const items = Array.isArray(s.items) && s.items.length > 0 ? s.items : null;
+                const prodsSubtotal = items ? items.reduce((a, i) => a + num(i.price) * (parseInt(i.qty) || 1), 0) : (num(s.total) - saleShipping + saleDiscount);
+                const lines = items || [{ sku: '', name: 'Venta general (sin detalle)', qty: 1, price: prodsSubtotal, cost: num(s.cost), category: '' }];
+                lines.forEach(item => {
+                    const qty = parseInt(item.qty) || 1;
+                    const unitPrice = num(item.price);
+                    const unitCost = num(item.cost);
+                    const gross = unitPrice * qty;
+                    const costTotal = unitCost * qty;
+                    const discShare = prodsSubtotal > 0 ? saleDiscount * (gross / prodsSubtotal) : 0;
+                    const netRevenue = gross - discShare;
+                    const profit = netRevenue - costTotal;
                     detailedRows.push({
                         'Nº Factura': s.id,
                         'Fecha': s.date,
                         'Cliente': s.clientName || 'Cliente General',
                         'Canal': s.saleType || 'DETAL',
-                        'SKU': '',
-                        'Producto': 'Venta general (sin detalle)',
-                        'Cant.': 1,
-                        'Precio Producto (Unit.)': saleTotal,
-                        'Costo Producto (Unit.)': saleCost,
-                        'Subtotal Producto': saleTotal,
-                        'Ganancia Producto': saleProfit,
-                        'Envío Factura': saleShipping,
-                        'Descuento Factura': saleDiscount,
-                        'Total Venta Factura': saleTotal,
-                        'Ganancia Total Venta': saleProfit,
-                        'Monto Cobrado': salePaid,
-                        'Estado': s.status || ''
+                        'Estado Pago': s.status || '',
+                        'SKU': item.sku || '',
+                        'Producto': item.name || 'Producto',
+                        'Categoría': item.category || '',
+                        'Cant.': qty,
+                        'Precio Unit.': unitPrice,
+                        'Costo Unit.': unitCost,
+                        'Subtotal Bruto': gross,
+                        'Descuento Aplicado (prorrateado)': r0(discShare),
+                        'Venta Neta Producto': r0(netRevenue),
+                        'Costo Total Producto': costTotal,
+                        'Ganancia Neta Producto': r0(profit),
+                        'Margen %': pctTxt(profit, netRevenue)
                     });
-                }
+                    const key = `${item.sku || ''}|${item.name || ''}`;
+                    if (!productAgg[key]) productAgg[key] = { sku: item.sku || '', name: item.name || 'Producto', category: item.category || '', qty: 0, gross: 0, disc: 0, cost: 0 };
+                    productAgg[key].qty += qty;
+                    productAgg[key].gross += gross;
+                    productAgg[key].disc += discShare;
+                    productAgg[key].cost += costTotal;
+                });
             });
-            // HOJA 2: RESUMEN POR VENTA + TOTALES DEL MES
-            let sumVentas = 0, sumCostos = 0, sumGanancias = 0, sumCobrado = 0;
-            const summaryRows = orderedSales.map(s => {
-                const saleTotal = parseFloat(s.total) || 0;
-                const saleCost = parseFloat(s.cost) || 0;
-                const salePaid = parseFloat(s.paid) || 0;
-                const saleProfit = saleTotal - saleCost;
-                const prodsList = Array.isArray(s.items) && s.items.length > 0
-                    ? s.items.map(i => `${i.qty}x ${i.name} ($${(parseFloat(i.price) || 0).toLocaleString('es-CO')})`).join(' | ')
-                    : 'Sin detalle';
-                sumVentas += saleTotal;
-                sumCostos += saleCost;
-                sumGanancias += saleProfit;
-                sumCobrado += salePaid;
+
+            // ---------- HOJA: VENTAS POR FACTURA ----------
+            let tGross = 0, tDisc = 0, tShip = 0, tTotal = 0, tCost = 0, tPaid = 0, tPending = 0;
+            const salesRows = pSales.map(s => {
+                const ship = num(s.shipping), disc = num(s.discount), total = num(s.total), cost = num(s.cost), paid = num(s.paid);
+                const items = Array.isArray(s.items) ? s.items : [];
+                const gross = items.length ? items.reduce((a, i) => a + num(i.price) * (parseInt(i.qty) || 1), 0) : (total - ship + disc);
+                const pending = s.status === 'PAGADO' ? 0 : Math.max(0, total - paid);
+                tGross += gross; tDisc += disc; tShip += ship; tTotal += total; tCost += cost; tPaid += paid; tPending += pending;
                 return {
                     'Nº Factura': s.id,
                     'Fecha': s.date,
-                    'Cliente': s.clientName,
-                    'Teléfono': s.clientPhone,
-                    'Dirección': s.clientAddr,
+                    'Cliente': s.clientName || 'Cliente General',
+                    'Teléfono': s.clientPhone || '',
+                    'Dirección': s.clientAddr || '',
                     'Canal': s.saleType || 'DETAL',
-                    'Productos y Precios': prodsList,
-                    'Costo Mercancía': saleCost,
-                    'Envío': parseFloat(s.shipping) || 0,
-                    'Descuento': parseFloat(s.discount) || 0,
-                    'Total Venta': saleTotal,
-                    'Ganancia Venta': saleProfit,
-                    'Monto Cobrado': salePaid,
-                    'Estado': s.status
+                    'Productos': items.length ? items.map(i => `${i.qty}x ${i.name}`).join(' | ') : 'Sin detalle',
+                    'Unidades': items.reduce((a, i) => a + (parseInt(i.qty) || 0), 0),
+                    'Subtotal Productos': gross,
+                    'Descuento': disc,
+                    'Envío Cobrado': ship,
+                    'Total Factura': total,
+                    'Costo Mercancía': cost,
+                    'Ganancia Venta': total - cost,
+                    'Margen %': pctTxt(total - cost, total),
+                    'Cobrado': paid,
+                    'Saldo Pendiente': pending,
+                    'Estado': s.status || ''
                 };
             });
-            summaryRows.push({
-                'Nº Factura': 'TOTALES',
-                'Fecha': '',
-                'Cliente': `${orderedSales.length} ventas`,
-                'Teléfono': '',
-                'Dirección': '',
-                'Canal': '',
-                'Productos y Precios': '',
-                'Costo Mercancía': sumCostos,
-                'Envío': '',
-                'Descuento': '',
-                'Total Venta': sumVentas,
-                'Ganancia Venta': sumGanancias,
-                'Monto Cobrado': sumCobrado,
-                'Estado': ''
+            if (salesRows.length) {
+                salesRows.push({
+                    'Nº Factura': 'TOTALES', 'Fecha': '', 'Cliente': `${pSales.length} ventas`, 'Teléfono': '', 'Dirección': '', 'Canal': '', 'Productos': '',
+                    'Unidades': salesRows.reduce((a, r) => a + r['Unidades'], 0),
+                    'Subtotal Productos': tGross, 'Descuento': tDisc, 'Envío Cobrado': tShip, 'Total Factura': tTotal, 'Costo Mercancía': tCost,
+                    'Ganancia Venta': tTotal - tCost, 'Margen %': pctTxt(tTotal - tCost, tTotal), 'Cobrado': tPaid, 'Saldo Pendiente': tPending, 'Estado': ''
+                });
+            }
+
+            // ---------- HOJA: PRODUCTOS VENDIDOS (agrupado) ----------
+            const prodRows = Object.values(productAgg).sort((x, y) => y.qty - x.qty).map((r, i) => {
+                const net = r.gross - r.disc;
+                return {
+                    'Ranking': i + 1, 'SKU': r.sku, 'Producto': r.name, 'Categoría': r.category, 'Unidades Vendidas': r.qty,
+                    'Venta Bruta': r0(r.gross), 'Descuentos': r0(r.disc), 'Venta Neta': r0(net), 'Costo Total': r0(r.cost),
+                    'Ganancia Neta': r0(net - r.cost), 'Margen %': pctTxt(net - r.cost, net)
+                };
             });
+
+            // ---------- HOJAS: GASTOS, PROVEEDORES, ABONOS, RETIROS ----------
+            const opExpRows = pOpExpenses.map(e => ({ 'Fecha': e.date, 'Descripción': e.desc, 'Monto': num(e.amount) }));
+            const sumOpExp = opExpRows.reduce((a, r) => a + r['Monto'], 0);
+            if (opExpRows.length) opExpRows.push({ 'Fecha': 'TOTAL', 'Descripción': `${pOpExpenses.length} gastos`, 'Monto': sumOpExp });
+
+            const payRows = pPayables.map(pb => ({
+                'Fecha Emisión': pb.date, 'Proveedor': pb.supplier, 'Nº Factura Prov.': pb.invoiceNum,
+                'Tipo': getPayableType(pb) === 'INSUMOS' ? 'Insumos / envíos' : 'Mercancía',
+                'Monto Total': num(pb.total), 'Total Abonado (a la fecha)': num(pb.paid), 'Saldo Pendiente': Math.max(0, num(pb.total) - num(pb.paid))
+            }));
+            const sumPurchMerc = pPayables.filter(pb => getPayableType(pb) !== 'INSUMOS').reduce((a, pb) => a + num(pb.total), 0);
+            const sumPurchIns = pPayables.filter(pb => getPayableType(pb) === 'INSUMOS').reduce((a, pb) => a + num(pb.total), 0);
+            if (payRows.length) payRows.push({ 'Fecha Emisión': 'TOTAL', 'Proveedor': '', 'Nº Factura Prov.': '', 'Tipo': '', 'Monto Total': sumPurchMerc + sumPurchIns, 'Total Abonado (a la fecha)': payRows.reduce((a, r) => a + r['Total Abonado (a la fecha)'], 0), 'Saldo Pendiente': payRows.reduce((a, r) => a + r['Saldo Pendiente'], 0) });
+
+            const supPayRows = pSupplierPayments.map(e => ({ 'Fecha': e.date, 'Detalle': e.desc, 'Monto Pagado': num(e.amount) }));
+            const sumSupPay = supPayRows.reduce((a, r) => a + r['Monto Pagado'], 0);
+            if (supPayRows.length) supPayRows.push({ 'Fecha': 'TOTAL', 'Detalle': '', 'Monto Pagado': sumSupPay });
+
+            const debtRows = pDebts.map(d => ({ 'Fecha': d.date, 'Factura': d.saleId, 'Cliente': d.client, 'Concepto': d.concept, 'Monto Abonado': num(d.amount) }));
+            const sumDebts = debtRows.reduce((a, r) => a + r['Monto Abonado'], 0);
+            if (debtRows.length) debtRows.push({ 'Fecha': 'TOTAL', 'Factura': '', 'Cliente': '', 'Concepto': '', 'Monto Abonado': sumDebts });
+
+            const witRows = pWithdrawals.map(w => ({ 'Fecha': w.date, 'Socio': partnerName(w.partner), 'Concepto': w.concept, 'Monto': num(w.amount) }));
+            const sumWit = witRows.reduce((a, r) => a + r['Monto'], 0);
+            if (witRows.length) witRows.push({ 'Fecha': 'TOTAL', 'Socio': '', 'Concepto': '', 'Monto': sumWit });
+
+            // ---------- HOJA: RESUMEN (ESTADO DE RESULTADOS DEL PERIODO) ----------
+            const netSales = tGross - tDisc;
+            const grossProfit = netSales + tShip - tCost;
+            const opProfit = grossProfit - sumOpExp;
+            const periodLabel = isAll ? 'Histórico completo' : targetKey;
+            const summary = [
+                { 'Concepto': 'FRAGATTA PARFUMS - REPORTE CONTABLE', 'Valor': '', 'Nota': `Periodo: ${periodLabel}` },
+                { 'Concepto': 'Fecha de generación', 'Valor': new Date().toLocaleString('es-CO'), 'Nota': '' },
+                { 'Concepto': '', 'Valor': '', 'Nota': '' },
+                { 'Concepto': 'VENTAS', 'Valor': '', 'Nota': '' },
+                { 'Concepto': 'Número de facturas de venta', 'Valor': pSales.length, 'Nota': '' },
+                { 'Concepto': 'Unidades vendidas', 'Valor': prodRows.reduce((a, r) => a + r['Unidades Vendidas'], 0), 'Nota': '' },
+                { 'Concepto': 'Ventas brutas de productos', 'Valor': r0(tGross), 'Nota': 'Precio de lista x cantidad' },
+                { 'Concepto': '(-) Descuentos concedidos', 'Valor': r0(tDisc), 'Nota': 'Descuentos aplicados en las facturas' },
+                { 'Concepto': '= Ventas netas de productos', 'Valor': r0(netSales), 'Nota': '' },
+                { 'Concepto': '(+) Envíos cobrados', 'Valor': r0(tShip), 'Nota': '' },
+                { 'Concepto': '= Total facturado', 'Valor': r0(tTotal), 'Nota': '' },
+                { 'Concepto': '(-) Costo de la mercancía vendida', 'Valor': r0(tCost), 'Nota': 'Costo unitario x unidades vendidas' },
+                { 'Concepto': '= UTILIDAD BRUTA', 'Valor': r0(grossProfit), 'Nota': `Margen ${pctTxt(grossProfit, tTotal)}` },
+                { 'Concepto': '(-) Gastos operativos', 'Valor': r0(sumOpExp), 'Nota': 'No incluye pagos a proveedores' },
+                { 'Concepto': '= UTILIDAD OPERACIONAL', 'Valor': r0(opProfit), 'Nota': `Margen ${pctTxt(opProfit, tTotal)}` },
+                { 'Concepto': '', 'Valor': '', 'Nota': '' },
+                { 'Concepto': 'COBROS Y CARTERA', 'Valor': '', 'Nota': '' },
+                { 'Concepto': 'Cobrado de las ventas del periodo', 'Valor': r0(tPaid), 'Nota': '' },
+                { 'Concepto': 'Saldo pendiente de las ventas del periodo', 'Valor': r0(tPending), 'Nota': 'Cuentas por cobrar' },
+                { 'Concepto': 'Abonos de clientes recibidos en el periodo', 'Valor': r0(sumDebts), 'Nota': 'Ver hoja Abonos_Clientes' },
+                { 'Concepto': '', 'Valor': '', 'Nota': '' },
+                { 'Concepto': 'COMPRAS A PROVEEDORES', 'Valor': '', 'Nota': '' },
+                { 'Concepto': 'Facturas de mercancía registradas', 'Valor': r0(sumPurchMerc), 'Nota': '' },
+                { 'Concepto': 'Facturas de insumos / envíos registradas', 'Valor': r0(sumPurchIns), 'Nota': 'Papel, empaques, etc.' },
+                { 'Concepto': 'Pagos (abonos) realizados a proveedores', 'Valor': r0(sumSupPay), 'Nota': 'Ver hoja Pagos_Proveedores' },
+                { 'Concepto': '', 'Valor': '', 'Nota': '' },
+                { 'Concepto': 'SOCIOS', 'Valor': '', 'Nota': '' },
+                { 'Concepto': 'Retiros Socio 1', 'Valor': r0(pWithdrawals.filter(w => w.partner !== 'socio2').reduce((a, w) => a + num(w.amount), 0)), 'Nota': '' },
+                { 'Concepto': 'Retiros Socio 2', 'Valor': r0(pWithdrawals.filter(w => w.partner === 'socio2').reduce((a, w) => a + num(w.amount), 0)), 'Nota': '' },
+                { 'Concepto': '', 'Valor': '', 'Nota': '' },
+                { 'Concepto': 'VENTAS POR CANAL', 'Valor': '', 'Nota': '' }
+            ];
+            const channels = {};
+            pSales.forEach(s => { const c = s.saleType || 'DETAL'; if (!channels[c]) channels[c] = { n: 0, total: 0, cost: 0 }; channels[c].n++; channels[c].total += num(s.total); channels[c].cost += num(s.cost); });
+            Object.keys(channels).forEach(c => summary.push({ 'Concepto': `${c === 'POR_MAYOR' ? 'Por Mayor' : 'Detal'} (${channels[c].n} ventas)`, 'Valor': r0(channels[c].total), 'Nota': `Ganancia ${r0(channels[c].total - channels[c].cost).toLocaleString('es-CO')}` }));
+
+            // ---------- HOJA: MES A MES (solo histórico) ----------
+            let monthlyRows = null;
+            if (isAll) {
+                const months = {};
+                const ensure = (k) => months[k] || (months[k] = { ventas: 0, desc: 0, env: 0, total: 0, costo: 0, gastos: 0, comprasMerc: 0, comprasIns: 0, pagosProv: 0, retiros: 0, cobrado: 0, n: 0 });
+                sales.forEach(s => {
+                    const d = saleDate(s); if (isNaN(d)) return;
+                    const m = ensure(getMonthKey(d));
+                    const items = Array.isArray(s.items) ? s.items : [];
+                    const gross = items.length ? items.reduce((a, i) => a + num(i.price) * (parseInt(i.qty) || 1), 0) : (num(s.total) - num(s.shipping) + num(s.discount));
+                    m.ventas += gross; m.desc += num(s.discount); m.env += num(s.shipping); m.total += num(s.total); m.costo += num(s.cost); m.cobrado += num(s.paid); m.n++;
+                });
+                expenses.forEach(e => { const d = parseEsDate(e.date); if (!d) return; const m = ensure(getMonthKey(d)); if (isSupplierPaymentExpense(e)) m.pagosProv += num(e.amount); else m.gastos += num(e.amount); });
+                payables.forEach(pb => { const d = getPayableDate(pb); if (!d || d.getTime() <= 0) return; const m = ensure(getMonthKey(d)); if (getPayableType(pb) === 'INSUMOS') m.comprasIns += num(pb.total); else m.comprasMerc += num(pb.total); });
+                withdrawals.forEach(w => { const d = parseEsDate(w.date); if (!d) return; ensure(getMonthKey(d)).retiros += num(w.amount); });
+                monthlyRows = Object.keys(months).sort().map(k => {
+                    const m = months[k];
+                    const ub = m.total - m.costo;
+                    return {
+                        'Año-Mes': k, 'Nº Ventas': m.n, 'Ventas Brutas': r0(m.ventas), 'Descuentos': r0(m.desc), 'Envíos': r0(m.env), 'Total Facturado': r0(m.total),
+                        'Costo Mercancía': r0(m.costo), 'Utilidad Bruta': r0(ub), 'Margen %': pctTxt(ub, m.total), 'Gastos Operativos': r0(m.gastos),
+                        'Utilidad Operacional': r0(ub - m.gastos), 'Compras Mercancía': r0(m.comprasMerc), 'Compras Insumos': r0(m.comprasIns),
+                        'Pagos a Proveedores': r0(m.pagosProv), 'Retiros Socios': r0(m.retiros), 'Cobrado': r0(m.cobrado)
+                    };
+                });
+            }
+
             const wb = XLSX.utils.book_new();
-            const wsDetail = XLSX.utils.json_to_sheet(detailedRows);
-            const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
-            XLSX.utils.book_append_sheet(wb, wsDetail, 'Detalle_Productos');
-            XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen_Ventas');
-            const sheetName = filter === 'ALL' ? 'Historico_Completo' : `Ventas_${targetKey}`;
-            XLSX.writeFile(wb, `Reporte_Ventas_Fragatta_${sheetName}.xlsx`);
-            showToast('Excel detallado (productos, precios y ganancias) descargado');
+            const wsSummary = makeSheet(summary);
+            wsSummary['!cols'] = [{ wch: 48 }, { wch: 18 }, { wch: 40 }];
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen');
+            if (monthlyRows) XLSX.utils.book_append_sheet(wb, makeSheet(monthlyRows), 'Mes_a_Mes');
+            XLSX.utils.book_append_sheet(wb, makeSheet(salesRows), 'Ventas');
+            XLSX.utils.book_append_sheet(wb, makeSheet(detailedRows), 'Detalle_Productos');
+            XLSX.utils.book_append_sheet(wb, makeSheet(prodRows), 'Productos_Vendidos');
+            XLSX.utils.book_append_sheet(wb, makeSheet(opExpRows), 'Gastos_Operativos');
+            XLSX.utils.book_append_sheet(wb, makeSheet(payRows), 'Facturas_Proveedores');
+            XLSX.utils.book_append_sheet(wb, makeSheet(supPayRows), 'Pagos_Proveedores');
+            XLSX.utils.book_append_sheet(wb, makeSheet(debtRows), 'Abonos_Clientes');
+            XLSX.utils.book_append_sheet(wb, makeSheet(witRows), 'Retiros_Socios');
+            const fileTag = isAll ? 'Historico_Completo' : targetKey;
+            XLSX.writeFile(wb, `Reporte_Contable_Fragatta_${fileTag}.xlsx`);
+            showToast('Reporte contable detallado descargado');
         }
 
         function renderPosProducts() {
@@ -2743,7 +2883,194 @@
             tbody.innerHTML = rows.join('');
         }
 
+        // ===== INVENTARIO: CONTEO, MÁS VENDIDOS Y SUGERENCIA DE COMPRA =====
+        function isPackageCategory(cat) {
+            return ['Combos', 'Promociones'].includes(cat);
+        }
+
+        function isWholesaleCategory(cat) {
+            return (cat || '').toLowerCase().trim() === 'por mayor';
+        }
+
+        function getBaseSku(sku) {
+            return String(sku || '').replace(/-PM$/i, '');
+        }
+
+        function computeTopSellers(periodDays) {
+            const since = periodDays === 'ALL' ? 0 : Date.now() - (parseInt(periodDays) || 90) * 86400000;
+            const map = {};
+            const bySku = {};
+            products.forEach(p => { if (!isPackageCategory(p.category) && !isWholesaleCategory(p.category)) bySku[getBaseSku(p.sku)] = p; });
+            const add = (sku, name, qty, revenue, cost) => {
+                const key = getBaseSku(sku) || name;
+                if (!map[key]) {
+                    const base = bySku[key];
+                    map[key] = { sku: key, name: base ? base.name : String(name || '').replace(/ - Por Mayor$/i, ''), qty: 0, revenue: 0, cost: 0 };
+                }
+                map[key].qty += qty;
+                map[key].revenue += revenue;
+                map[key].cost += cost;
+            };
+            sales.forEach(s => {
+                const d = new Date(s.rawDate || 0);
+                if (isNaN(d) || d.getTime() < since) return;
+                if (!Array.isArray(s.items)) return;
+                s.items.forEach(item => {
+                    const qty = parseInt(item.qty) || 0;
+                    if (qty <= 0) return;
+                    const revenue = (parseFloat(item.price) || 0) * qty;
+                    const cost = (parseFloat(item.cost) || 0) * qty;
+                    const subItems = isPackageCategory(item.category) && Array.isArray(item.items) ? item.items : [];
+                    if (subItems.length > 0) {
+                        // Repartir ingresos y costo del combo según el costo de cada perfume que trae
+                        const parts = subItems.map(sub => {
+                            const sp = products.find(x => String(x.id) === String(sub.prodId));
+                            const subQty = (parseInt(sub.qty) || 1) * qty;
+                            const subCost = sp ? (parseFloat(sp.cost) || 0) * subQty : 0;
+                            return { sp, subQty, subCost, name: sp ? sp.name : (sub.name || 'Perfume de combo') };
+                        });
+                        const totalPartsCost = parts.reduce((a, x) => a + x.subCost, 0);
+                        parts.forEach(x => {
+                            const share = totalPartsCost > 0 ? x.subCost / totalPartsCost : 1 / parts.length;
+                            add(x.sp ? x.sp.sku : '', x.name, x.subQty, revenue * share, cost * share);
+                        });
+                    } else {
+                        add(item.sku, item.name, qty, revenue, cost);
+                    }
+                });
+            });
+            let days = periodDays === 'ALL' ? 0 : (parseInt(periodDays) || 90);
+            if (periodDays === 'ALL') {
+                const first = sales.reduce((min, s) => { const t = new Date(s.rawDate || 0).getTime(); return (t > 0 && t < min) ? t : min; }, Date.now());
+                days = Math.max(1, Math.ceil((Date.now() - first) / 86400000));
+            }
+            return Object.values(map).map(r => {
+                const base = bySku[r.sku];
+                const stock = base ? (isNaN(parseInt(base.stock)) ? 0 : parseInt(base.stock)) : 0;
+                const per30 = days > 0 ? (r.qty / days) * 30 : r.qty;
+                const suggested = Math.max(0, Math.ceil(per30 - stock));
+                return { ...r, stock, profit: r.revenue - r.cost, per30, suggested, unitCost: base ? (parseFloat(base.cost) || 0) : (r.qty > 0 ? r.cost / r.qty : 0), exists: !!base };
+            }).sort((a, b) => b.qty - a.qty || b.revenue - a.revenue);
+        }
+
+        function renderInventoryInsights() {
+            const fmt = (v) => `$${Math.round(v).toLocaleString('es-CO')}`;
+            const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
+            let units = 0, refs = 0, wsUnits = 0, wsRefs = 0, out = 0, low = 0, costValue = 0, saleValue = 0;
+            products.forEach(p => {
+                if (isPackageCategory(p.category)) return;
+                const stock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
+                if (isWholesaleCategory(p.category)) { wsUnits += stock; wsRefs++; return; }
+                units += stock; refs++;
+                if (stock <= 0) out++; else if (stock <= 3) low++;
+                costValue += stock * (parseFloat(p.cost) || 0);
+                saleValue += stock * (parseFloat(p.price) || 0);
+            });
+            setTxt('inv-total-units', units.toLocaleString('es-CO'));
+            setTxt('inv-total-refs', `${refs} referencias`);
+            setTxt('inv-wholesale-units', wsUnits.toLocaleString('es-CO'));
+            setTxt('inv-wholesale-refs', `${wsRefs} referencias`);
+            setTxt('inv-out-count', out);
+            setTxt('inv-low-count', low);
+            setTxt('inv-cost-value', fmt(costValue));
+            setTxt('inv-sale-value', fmt(saleValue));
+            setTxt('inv-potential-profit', `Ganancia potencial ${fmt(saleValue - costValue)}`);
+            const tbody = document.getElementById('top-sellers-body');
+            if (!tbody) return;
+            const period = document.getElementById('top-sellers-period')?.value || '90';
+            const rows = computeTopSellers(period).slice(0, 20);
+            if (rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">No hay ventas en este periodo.</td></tr>`;
+                return;
+            }
+            const adminStyle = isAdmin ? '' : 'display:none;';
+            tbody.innerHTML = rows.map((r, i) => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3 font-black ${i < 3 ? 'text-amber-500' : 'text-slate-400'}">${i + 1}</td>
+                    <td class="p-3 font-mono font-bold text-purple-600">${r.sku}</td>
+                    <td class="p-3 font-bold text-slate-800">${r.name}${r.exists ? '' : ' <span class="text-[10px] text-slate-400">(ya no está en catálogo)</span>'}</td>
+                    <td class="p-3 font-black text-slate-900">${r.qty}</td>
+                    <td class="p-3 admin-only-cell font-bold text-emerald-600" style="${adminStyle}">${fmt(r.revenue)}</td>
+                    <td class="p-3 admin-only-cell font-bold text-purple-600" style="${adminStyle}">${fmt(r.profit)}</td>
+                    <td class="p-3 font-bold ${r.stock <= 0 ? 'text-rose-600' : (r.stock <= 3 ? 'text-amber-600' : 'text-slate-700')}">${r.stock}</td>
+                    <td class="p-3">${r.suggested > 0 ? `<span class="bg-purple-100 text-purple-800 font-black px-2.5 py-1 rounded-full">${r.suggested} unid.</span>` : '<span class="text-slate-400 font-bold">Suficiente</span>'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function autoFitColumns(ws, rows) {
+            if (!rows || rows.length === 0) return;
+            const keys = Object.keys(rows[0]);
+            ws['!cols'] = keys.map(k => ({ wch: Math.min(50, Math.max(k.length, ...rows.map(r => String(r[k] ?? '').length)) + 2) }));
+        }
+
+        function moneyFormat(ws) {
+            // Aplica formato de miles a todas las celdas numéricas (excepto cantidades pequeñas que igual se ven bien)
+            Object.keys(ws).forEach(addr => {
+                if (addr[0] === '!') return;
+                const c = ws[addr];
+                if (c && c.t === 'n' && Math.abs(c.v) >= 1000) c.z = '#,##0';
+            });
+        }
+
+        function makeSheet(rows) {
+            const ws = XLSX.utils.json_to_sheet(rows.length ? rows : [{ 'Sin datos': '' }]);
+            autoFitColumns(ws, rows.length ? rows : [{ 'Sin datos': '' }]);
+            moneyFormat(ws);
+            return ws;
+        }
+
+        function exportInventoryCount() {
+            const list = products.filter(p => !isPackageCategory(p.category))
+                .slice().sort((a, b) => (a.category || '').localeCompare(b.category || '') || (a.name || '').localeCompare(b.name || ''));
+            if (list.length === 0) return showToast('No hay productos en el inventario', 'error');
+            const rows = list.map(p => {
+                const stock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
+                const row = { 'SKU': p.sku, 'Producto': p.name, 'Categoría': p.category, 'Stock en Sistema': stock, 'Conteo Físico': '', 'Diferencia': '' };
+                if (isAdmin) {
+                    row['Costo Unit.'] = parseFloat(p.cost) || 0;
+                    row['Valor a Costo'] = stock * (parseFloat(p.cost) || 0);
+                    row['Precio Venta'] = parseFloat(p.price) || 0;
+                }
+                return row;
+            });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, makeSheet(rows), 'Conteo_Inventario');
+            const today = new Date();
+            XLSX.writeFile(wb, `Inventario_Fragatta_${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}.xlsx`);
+            showToast('Excel de conteo de inventario descargado');
+        }
+
+        function exportPurchaseOrder() {
+            if (!isAdmin) return showToast('Disponible solo en Modo Admin', 'error');
+            const period = document.getElementById('top-sellers-period')?.value || '90';
+            const rows = computeTopSellers(period).filter(r => r.exists);
+            if (rows.length === 0) return showToast('No hay ventas en este periodo para sugerir compras', 'error');
+            const cap = computeCapitalFlow();
+            const orderRows = rows.map((r, i) => ({
+                'Ranking': i + 1,
+                'SKU': r.sku,
+                'Perfume': r.name,
+                'Vendidos en Periodo': r.qty,
+                'Promedio Vendido (30 días)': Math.round(r.per30 * 10) / 10,
+                'Stock Actual': r.stock,
+                'Cantidad Sugerida': r.suggested,
+                'Costo Unit.': r.unitCost,
+                'Costo Estimado Pedido': r.suggested * r.unitCost,
+                'Ganancia Generada en Periodo': Math.round(r.profit)
+            }));
+            const totalOrder = orderRows.reduce((a, r) => a + r['Costo Estimado Pedido'], 0);
+            orderRows.push({ 'Ranking': '', 'SKU': '', 'Perfume': 'TOTAL PEDIDO SUGERIDO', 'Vendidos en Periodo': '', 'Promedio Vendido (30 días)': '', 'Stock Actual': '', 'Cantidad Sugerida': orderRows.reduce((a, r) => a + (r['Cantidad Sugerida'] || 0), 0), 'Costo Unit.': '', 'Costo Estimado Pedido': totalOrder, 'Ganancia Generada en Periodo': '' });
+            orderRows.push({ 'Ranking': '', 'SKU': '', 'Perfume': 'DISPONIBLE PARA FACTURA (Fondo + Reinversión)', 'Vendidos en Periodo': '', 'Promedio Vendido (30 días)': '', 'Stock Actual': '', 'Cantidad Sugerida': '', 'Costo Unit.': '', 'Costo Estimado Pedido': Math.round(cap.fund + cap.reinvest), 'Ganancia Generada en Periodo': '' });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, makeSheet(orderRows), 'Pedido_Sugerido');
+            const today = new Date();
+            XLSX.writeFile(wb, `Pedido_Sugerido_Fragatta_${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}.xlsx`);
+            showToast('Excel de pedido sugerido descargado');
+        }
+
         function renderInventoryTable() {
+            try { renderInventoryInsights(); } catch (err) { console.error('Error en resumen de inventario', err); }
             const searchInput = document.getElementById('inv-search');
             const catSelect = document.getElementById('inv-filter-cat');
             const tbody = document.getElementById('inventory-table-body');
@@ -3158,6 +3485,7 @@
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 font-mono font-bold text-rose-600">${p.invoiceNum}</td>
                         <td class="p-4 font-bold text-slate-800">${p.supplier}</td>
+                        <td class="p-4"><span class="${getPayableType(p) === 'INSUMOS' ? 'bg-sky-50 text-sky-700' : 'bg-purple-50 text-purple-700'} font-bold px-2.5 py-1 rounded-full text-[10px]">${getPayableType(p) === 'INSUMOS' ? 'Insumos' : 'Mercancía'}</span></td>
                         <td class="p-4 text-slate-500 font-mono">${p.date}</td>
                         <td class="p-4 font-bold text-slate-800">$${totalVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 font-bold text-emerald-600">$${paidVal.toLocaleString('es-CO')}</td>
@@ -3175,6 +3503,7 @@
 
         function openPayableModal() {
             if (document.getElementById('pay-id')) document.getElementById('pay-id').value = '';
+            if (document.getElementById('pay-type')) document.getElementById('pay-type').value = 'MERCANCIA';
             if (document.getElementById('payable-modal-title')) document.getElementById('payable-modal-title').innerText = "Registrar Deuda a Proveedor";
             const m = document.getElementById('payable-modal');
             if (m) m.classList.remove('hidden');
@@ -3194,6 +3523,7 @@
                 if (document.getElementById('pay-invoice-num')) document.getElementById('pay-invoice-num').value = p.invoiceNum;
                 if (document.getElementById('pay-total')) document.getElementById('pay-total').value = parseFloat(p.total) || 0;
                 if (document.getElementById('pay-abono')) document.getElementById('pay-abono').value = parseFloat(p.paid) || 0;
+                if (document.getElementById('pay-type')) document.getElementById('pay-type').value = getPayableType(p);
                 if (document.getElementById('payable-modal-title')) document.getElementById('payable-modal-title').innerText = "Editar Deuda de Proveedor (Admin)";
                 const m = document.getElementById('payable-modal');
                 if (m) m.classList.remove('hidden');
@@ -3207,17 +3537,18 @@
             const invoiceNum = document.getElementById('pay-invoice-num')?.value.trim() || '';
             const total = parseFloat(document.getElementById('pay-total')?.value) || 0;
             const abono = parseFloat(document.getElementById('pay-abono')?.value) || 0;
+            const type = document.getElementById('pay-type')?.value || 'MERCANCIA';
             const now = new Date();
             const dateStr = now.toLocaleDateString('es-CO');
             let finalP;
             if (id) {
                 const p = payables.find(item => item.id === id);
                 if (p) {
-                    p.supplier = supplier; p.invoiceNum = invoiceNum; p.total = total; p.paid = abono;
+                    p.supplier = supplier; p.invoiceNum = invoiceNum; p.total = total; p.paid = abono; p.type = type;
                     finalP = p;
                 }
             } else {
-                finalP = { id: 'PAY-' + Date.now(), date: dateStr, supplier, invoiceNum, total, paid: abono };
+                finalP = { id: 'PAY-' + Date.now(), date: dateStr, rawDate: now.toISOString(), supplier, invoiceNum, total, paid: abono, type };
                 payables.push(finalP);
             }
             saveDataLocalOnly();
@@ -3347,6 +3678,92 @@
             showToast('Gasto eliminado');
         }
 
+        // ===== CAPITALIZACIÓN POR FASES =====
+        function parseEsDate(str) {
+            // Convierte "dd/mm/aaaa ..." (formato es-CO) a fecha
+            if (!str) return null;
+            const m = String(str).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+            if (!m) return null;
+            return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]), 0, 0, 0);
+        }
+
+        function getPayableDate(p) {
+            if (p && p.rawDate) { const d = new Date(p.rawDate); if (!isNaN(d)) return d; }
+            return parseEsDate(p && p.date) || new Date(0);
+        }
+
+        function getPayableType(p) {
+            return (p && p.type === 'INSUMOS') ? 'INSUMOS' : 'MERCANCIA';
+        }
+
+        function isSupplierPaymentExpense(e) {
+            // Los abonos a proveedores se registran como gasto para la caja, pero la factura ya se cuenta completa
+            return String(e.id || '').startsWith('EXP-PROV-') || String(e.desc || '').startsWith('Abono a Proveedor');
+        }
+
+        function getMonthKey(d) {
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function computeCapitalFlow() {
+            const pct = Math.max(0, Math.min(100, parseFloat(stockReservePercent) || 0)) / 100;
+            const events = [];
+            let invMerc = 0, invIns = 0, opExpenses = 0, recoverTotal = 0;
+            payables.forEach(p => {
+                const amount = parseFloat(p.total) || 0;
+                if (amount <= 0) return;
+                if (getPayableType(p) === 'INSUMOS') invIns += amount; else invMerc += amount;
+                events.push({ t: getPayableDate(p).getTime(), order: 0, kind: 'invoice', amount });
+            });
+            expenses.forEach(e => {
+                if (isSupplierPaymentExpense(e)) return;
+                const amount = parseFloat(e.amount) || 0;
+                if (amount <= 0) return;
+                opExpenses += amount;
+                events.push({ t: (parseEsDate(e.date) || new Date(0)).getTime(), order: 0, kind: 'expense', amount });
+            });
+            sales.forEach(s => {
+                const total = parseFloat(s.total) || 0;
+                const paid = parseFloat(s.paid) || 0;
+                if (paid <= 0 || total <= 0) return;
+                const cost = (parseFloat(s.cost) || 0) * Math.min(1, paid / total);
+                const d = new Date(s.rawDate || 0);
+                events.push({ t: isNaN(d) ? 0 : d.getTime(), order: 1, kind: 'sale', cash: paid, cost });
+            });
+            // Ajuste manual de ventas: se aplica al inicio (positivo = dinero cobrado sin costo, negativo = monto por recuperar)
+            const adj = parseFloat(salesAdjustment) || 0;
+            if (adj > 0) events.push({ t: -1, order: 1, kind: 'sale', cash: adj, cost: 0 });
+            else if (adj < 0) events.push({ t: -1, order: 0, kind: 'expense', amount: -adj });
+            events.sort((x, y) => (x.t - y.t) || (x.order - y.order));
+
+            let pending = 0, fund = 0, reinvest = 0, netProfit = 0, distributable = 0;
+            events.forEach(ev => {
+                if (ev.kind === 'invoice') {
+                    // Una factura nueva se paga primero con el Fondo de Reposición y luego con la reinversión
+                    let rest = ev.amount;
+                    const fromFund = Math.min(fund, rest); fund -= fromFund; rest -= fromFund;
+                    const fromReinv = Math.min(reinvest, rest); reinvest -= fromReinv; rest -= fromReinv;
+                    pending += rest; recoverTotal += rest;
+                } else if (ev.kind === 'expense') {
+                    pending += ev.amount; recoverTotal += ev.amount;
+                } else {
+                    const toCover = Math.min(pending, ev.cash);
+                    pending -= toCover;
+                    const remaining = ev.cash - toCover;
+                    if (remaining > 0) {
+                        const costShare = remaining * (ev.cost / ev.cash);
+                        const marginShare = remaining - costShare;
+                        fund += costShare;
+                        netProfit += marginShare;
+                        const reinv = marginShare > 0 ? marginShare * pct : 0;
+                        reinvest += reinv;
+                        distributable += marginShare - reinv;
+                    }
+                }
+            });
+            return { invMerc, invIns, opExpenses, pending, fund, reinvest, netProfit, distributable, recoverTotal };
+        }
+
         function updateDashboard() {
             const filter = document.getElementById('dash-month-filter')?.value || 'CURRENT';
             const now = new Date();
@@ -3398,33 +3815,35 @@
             if (document.getElementById('admin-total-expected-money')) document.getElementById('admin-total-expected-money').innerText = `$${totalExpected.toLocaleString('es-CO')}`;
             const baseMissing = Math.max(0, baseTarget - baseCurrent);
             if (document.getElementById('base-missing-val')) document.getElementById('base-missing-val').innerText = `$${baseMissing.toLocaleString('es-CO')}`;
-            // PROTECCIÓN ANTI-DESCAPITALIZACIÓN & REPARTO DE SOCIOS (ADMIN)
-            const totalHistoricalGrossSales = sales.reduce((sum, s) => sum + (parseFloat(s.total) || 0), 0);
-            const totalHistoricalCogs = sales.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
-            const historicalProfit = totalHistoricalGrossSales - totalHistoricalCogs - totalExpenses;
-            const isGeneratingProfit = historicalProfit > 0;
+            // PROTECCIÓN ANTI-DESCAPITALIZACIÓN POR FASES & REPARTO DE SOCIOS (ADMIN)
+            const cap = computeCapitalFlow();
+            const fmtCOP = (v) => `$${Math.round(v).toLocaleString('es-CO')}`;
+            const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
             const profitBadge = document.getElementById('profit-status-badge');
             if (profitBadge) {
-                if (isGeneratingProfit) {
-                    profitBadge.innerHTML = `<i class="fa-solid fa-arrow-trend-up mr-1"></i> Generando Ganancias Netas ($${historicalProfit.toLocaleString('es-CO')})`;
-                    profitBadge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
-                } else {
-                    profitBadge.innerHTML = `<i class="fa-solid fa-hourglass-half mr-1"></i> Cubriendo costos y gastos ($${historicalProfit.toLocaleString('es-CO')})`;
+                if (cap.pending > 0) {
+                    profitBadge.innerHTML = `<i class="fa-solid fa-hourglass-half mr-1"></i> Fase 1: cubriendo facturas (faltan ${fmtCOP(cap.pending)})`;
                     profitBadge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40';
+                } else {
+                    profitBadge.innerHTML = `<i class="fa-solid fa-arrow-trend-up mr-1"></i> Fase 2: facturas cubiertas, generando ganancia neta`;
+                    profitBadge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
                 }
             }
-            const safeReservePct = Math.max(0, Math.min(100, parseFloat(stockReservePercent) || 0));
-            const extraReinvestAmount = isGeneratingProfit ? Math.round(historicalProfit * (safeReservePct / 100)) : 0;
-            const totalToSaveForStock = totalHistoricalCogs + extraReinvestAmount;
-            const cogsPctOfSales = totalHistoricalGrossSales > 0 ? (totalHistoricalCogs / totalHistoricalGrossSales) * 100 : 0;
-            const totalSavePctOfSales = totalHistoricalGrossSales > 0 ? (totalToSaveForStock / totalHistoricalGrossSales) * 100 : 0;
-            const distributableProfit = isGeneratingProfit ? Math.max(0, historicalProfit - extraReinvestAmount) : 0;
-            if (document.getElementById('reserve-cogs-val')) document.getElementById('reserve-cogs-val').innerText = `$${Math.round(totalHistoricalCogs).toLocaleString('es-CO')}`;
-            if (document.getElementById('reserve-cogs-pct')) document.getElementById('reserve-cogs-pct').innerText = `${cogsPctOfSales.toFixed(1)}%`;
-            if (document.getElementById('reserve-reinvest-val')) document.getElementById('reserve-reinvest-val').innerText = `$${extraReinvestAmount.toLocaleString('es-CO')}`;
-            if (document.getElementById('reserve-total-save-val')) document.getElementById('reserve-total-save-val').innerText = `$${Math.round(totalToSaveForStock).toLocaleString('es-CO')}`;
-            if (document.getElementById('reserve-total-save-pct')) document.getElementById('reserve-total-save-pct').innerText = `${totalSavePctOfSales.toFixed(1)}%`;
-            if (document.getElementById('distributable-profit-val')) document.getElementById('distributable-profit-val').innerText = `$${Math.round(distributableProfit).toLocaleString('es-CO')}`;
+            const toRecover = cap.recoverTotal;
+            const recoveryPct = toRecover > 0 ? Math.max(0, Math.min(100, ((toRecover - cap.pending) / toRecover) * 100)) : 100;
+            setTxt('cap-recovery-pct', `${recoveryPct.toFixed(1)}% recuperado`);
+            const bar = document.getElementById('cap-recovery-bar');
+            if (bar) bar.style.width = `${recoveryPct}%`;
+            setTxt('cap-inv-merc', fmtCOP(cap.invMerc));
+            setTxt('cap-inv-ins', fmtCOP(cap.invIns));
+            setTxt('cap-op-exp', fmtCOP(cap.opExpenses));
+            setTxt('cap-pending', fmtCOP(cap.pending));
+            setTxt('reserve-cogs-val', fmtCOP(cap.fund));
+            setTxt('cap-net-profit-val', fmtCOP(cap.netProfit));
+            setTxt('reserve-reinvest-val', fmtCOP(cap.reinvest));
+            setTxt('reserve-total-save-val', fmtCOP(cap.fund + cap.reinvest));
+            const distributableProfit = Math.max(0, cap.distributable);
+            setTxt('distributable-profit-val', fmtCOP(distributableProfit));
             const p1Pct = Math.max(0, Math.min(100, parseFloat(socio1Percent) || 0));
             const p2Pct = Math.max(0, Math.min(100, parseFloat(socio2Percent) || 0));
             const sumPct = p1Pct + p2Pct;
