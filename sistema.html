@@ -402,6 +402,21 @@
                                     <div id="cap-distribution-table" class="overflow-x-auto"></div>
                                 </div>
                             </div>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                                <div class="bg-emerald-950/40 p-3.5 rounded-xl border border-emerald-500/50 space-y-2">
+                                    <p class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider"><i class="fa-solid fa-lightbulb"></i> % de Reinversión Recomendado</p>
+                                    <div class="flex items-center justify-between gap-2">
+                                        <h5 id="reinv-reco-val" class="text-2xl font-black text-emerald-400">—</h5>
+                                        <button id="reinv-reco-btn" onclick="applyRecommendedReinvest()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs px-3 py-1.5 rounded-xl transition">Aplicar</button>
+                                    </div>
+                                    <p id="reinv-reco-why" class="text-[10px] text-slate-300 leading-relaxed"></p>
+                                </div>
+                                <div class="bg-slate-900/85 p-3.5 rounded-xl border border-sky-500/50 space-y-2">
+                                    <p class="text-[10px] font-bold text-sky-300 uppercase tracking-wider"><i class="fa-solid fa-calculator"></i> Simulador: si cobro toda la cartera</p>
+                                    <p class="text-[10px] text-slate-400">Solo es una proyección: no cambia ninguna cuenta real.</p>
+                                    <div id="cap-simulator" class="overflow-x-auto"></div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- FILA 3: REPARTO DE UTILIDADES & RETIROS DE SOCIOS CON % MODIFICABLES (SOLO ADMIN) -->
@@ -2035,6 +2050,15 @@
             }
             updateDashboard();
             showToast(`Porcentajes guardados: Socio 1 (${socio1Percent}%) / Socio 2 (${socio2Percent}%)`);
+        }
+
+        let recommendedReinvestPct = null;
+        function applyRecommendedReinvest() {
+            if (!isAdmin || recommendedReinvestPct === null) return;
+            if (!confirm(`¿Cambiar el % de reinversión de ${stockReservePercent}% a ${recommendedReinvestPct}%?`)) return;
+            const srInput = document.getElementById('stock-reserve-pct-input');
+            if (srInput) srInput.value = recommendedReinvestPct;
+            updateStockReservePercent();
         }
 
         function updateStockReservePercent() {
@@ -4024,8 +4048,10 @@
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         }
 
-        function computeCapitalFlow() {
-            const pct = Math.max(0, Math.min(100, parseFloat(stockReservePercent) || 0)) / 100;
+        function computeCapitalFlow(opts) {
+            const assumeAllCollected = !!(opts && opts.assumeAllCollected);
+            const pctOverride = opts && opts.pct !== undefined ? opts.pct : null;
+            const pct = pctOverride !== null ? pctOverride : Math.max(0, Math.min(100, parseFloat(stockReservePercent) || 0)) / 100;
             const events = [];
             let invMerc = 0, invIns = 0, opExpenses = 0, recoverTotal = 0;
             payables.forEach(p => {
@@ -4044,7 +4070,7 @@
             });
             sales.forEach(s => {
                 const total = parseFloat(s.total) || 0;
-                const paid = parseFloat(s.paid) || 0;
+                const paid = assumeAllCollected ? total : (parseFloat(s.paid) || 0);
                 if (paid <= 0 || total <= 0) return;
                 const cost = (parseFloat(s.cost) || 0) * Math.min(1, paid / total);
                 const d = new Date(s.rawDate || 0);
@@ -4106,6 +4132,99 @@
             });
             const netProfit = grossMargin - invIns - opExpenses;
             return { invMerc, invIns, opExpenses, pending, fund, reinvest, grossMargin, netProfit, distributable, recoverTotal, profitDebt, flow, pct };
+        }
+
+        function renderReinvestRecommendation(cap) {
+            const money = (v) => `$${Math.round(v).toLocaleString('es-CO')}`;
+            const valEl = document.getElementById('reinv-reco-val');
+            const whyEl = document.getElementById('reinv-reco-why');
+            const btn = document.getElementById('reinv-reco-btn');
+            if (!valEl || !whyEl) return;
+            // 1) Lo que cuesta el pedido sugerido (lo que más se vende, para 30 días)
+            const order = computeTopSellers('90').filter(r => r.exists && r.suggested > 0);
+            const orderCost = order.reduce((a, r) => a + r.suggested * r.unitCost, 0);
+            const available = cap.fund + cap.reinvest;
+            const gap = Math.max(0, orderCost - available);
+            // 2) Ganancia promedio mensual de los últimos 90 días (ventas cobradas)
+            const since = Date.now() - 90 * 86400000;
+            const margin90 = sales.reduce((a, sl) => {
+                const t = new Date(sl.rawDate || 0).getTime();
+                const total = parseFloat(sl.total) || 0;
+                if (t < since || total <= 0) return a;
+                const paid = parseFloat(sl.paid) || 0;
+                return a + (total - (parseFloat(sl.cost) || 0)) * Math.min(1, paid / total);
+            }, 0);
+            const monthlyMargin = margin90 / 3;
+            // 3) % necesario para cubrir el faltante en un mes; mínimo 10% para crecer, máximo 50% para no dejar sin ganancia a los socios
+            let reco;
+            let why;
+            if (monthlyMargin <= 0) {
+                reco = 10;
+                why = 'Aún no hay ganancia cobrada en los últimos 90 días. Se recomienda el mínimo de 10% para empezar a crecer.';
+            } else {
+                const needed = (gap / monthlyMargin) * 100;
+                reco = Math.min(50, Math.max(10, Math.ceil(needed / 5) * 5));
+                if (gap <= 0) {
+                    why = `El próximo pedido sugerido cuesta ${money(orderCost)} y ya tienes ${money(available)} disponibles. Con 10% sigues creciendo sin quitarle ganancia a los socios.`;
+                } else {
+                    why = `El próximo pedido sugerido cuesta ${money(orderCost)} y tienes ${money(available)} disponibles: faltan ${money(gap)}. Tu ganancia promedio es de ${money(monthlyMargin)} al mes, así que con ${reco}% ${needed > 50 ? 'cubres una parte en un mes (el máximo recomendado es 50% para no dejar sin ganancia a los socios)' : 'cubres el faltante en aproximadamente un mes'}.`;
+                }
+            }
+            recommendedReinvestPct = reco;
+            const current = Math.round((cap.pct || 0) * 100);
+            valEl.innerText = `${reco}%`;
+            whyEl.innerText = `${why} Tienes configurado ${current}%.`;
+            if (btn) btn.classList.toggle('hidden', reco === current);
+        }
+
+        function renderCollectionSimulator(cap, p1Pct, p2Pct, cashNow) {
+            const box = document.getElementById('cap-simulator');
+            if (!box) return;
+            const money = (v) => `${v < 0 ? '-' : ''}$${Math.abs(Math.round(v)).toLocaleString('es-CO')}`;
+            const pendingSales = sales.filter(sl => sl.status !== 'PAGADO');
+            const cartera = pendingSales.reduce((a, sl) => a + Math.max(0, (parseFloat(sl.total) || 0) - (parseFloat(sl.paid) || 0)), 0);
+            const carteraCost = pendingSales.reduce((a, sl) => {
+                const total = parseFloat(sl.total) || 0;
+                if (total <= 0) return a;
+                const pend = Math.max(0, total - (parseFloat(sl.paid) || 0));
+                return a + (parseFloat(sl.cost) || 0) * (pend / total);
+            }, 0);
+            let debtMerc = 0, debtIns = 0;
+            payables.forEach(pb => {
+                const pend = Math.max(0, (parseFloat(pb.total) || 0) - (parseFloat(pb.paid) || 0));
+                if (getPayableType(pb) === 'INSUMOS') debtIns += pend; else debtMerc += pend;
+            });
+            const sim = computeCapitalFlow({ assumeAllCollected: true });
+            const cashAfter = (parseFloat(cashNow) || 0) + cartera - debtMerc - debtIns;
+            const simDist = Math.max(0, sim.distributable);
+            const s1 = simDist * (p1Pct / 100);
+            const s2 = simDist - s1;
+            const tr = (label, now, after, color, bold) => `
+                <tr class="border-b border-slate-800 ${bold ? 'font-black' : ''}">
+                    <td class="py-1.5 pr-2 ${color}">${label}</td>
+                    <td class="py-1.5 px-2 text-right text-slate-300">${now}</td>
+                    <td class="py-1.5 pl-2 text-right font-bold text-white">${after}</td>
+                </tr>`;
+            box.innerHTML = `
+                <table class="w-full text-[11px]">
+                    <thead><tr class="text-slate-400 border-b border-slate-700"><th class="py-1 text-left pr-2 font-bold">Concepto</th><th class="py-1 text-right px-2 font-bold">Hoy</th><th class="py-1 text-right pl-2 font-bold">Si cobro todo</th></tr></thead>
+                    <tbody>
+                        ${tr('Caja (total esperado)', money(cashNow), money((parseFloat(cashNow) || 0) + cartera), 'text-amber-300')}
+                        ${tr('Cartera por cobrar', money(cartera), money(0), 'text-amber-300')}
+                        ${tr('&nbsp;&nbsp;↳ de eso es costo de mercancía', money(carteraCost), '—', 'text-slate-400')}
+                        ${tr('Deuda proveedores mercancía', money(debtMerc), '—', 'text-rose-300')}
+                        ${tr('Deuda proveedores insumos', money(debtIns), '—', 'text-rose-300')}
+                        ${tr('Caja después de pagar a todos los proveedores', money((parseFloat(cashNow) || 0) - debtMerc - debtIns), money(cashAfter), cashAfter < 0 ? 'text-rose-400' : 'text-emerald-300', true)}
+                        ${tr('Falta por recuperar (Fase 1)', money(cap.pending), money(sim.pending), 'text-rose-300')}
+                        ${tr('Fondo de Reposición', money(cap.fund), money(sim.fund), 'text-blue-300')}
+                        ${tr('Reinversión', money(cap.reinvest), money(sim.reinvest), 'text-emerald-300')}
+                        ${tr('Disponible para comprar mercancía', money(cap.fund + cap.reinvest), money(sim.fund + sim.reinvest), 'text-amber-300', true)}
+                        ${tr('Utilidad repartible', money(Math.max(0, cap.distributable)), money(simDist), 'text-purple-300', true)}
+                        ${tr(`&nbsp;&nbsp;↳ Socio 1 (${Math.round(p1Pct * 10) / 10}%)`, money(Math.max(0, cap.distributable) * (p1Pct / 100)), money(s1), 'text-purple-300')}
+                        ${tr(`&nbsp;&nbsp;↳ Socio 2 (${Math.round(p2Pct * 10) / 10}%)`, money(Math.max(0, cap.distributable) * (p2Pct / 100)), money(s2), 'text-indigo-300')}
+                    </tbody>
+                </table>
+                <p class="text-[10px] ${cashAfter < 0 ? 'text-rose-300' : 'text-slate-400'} mt-2">${cashAfter < 0 ? 'Ni cobrando toda la cartera alcanza para pagar a todos los proveedores. Prioriza cobrar y evita retiros de socios.' : 'Mientras no cobres la cartera, la columna "Hoy" es la real. Prioriza cobrar a los clientes más atrasados.'}</p>`;
         }
 
         function renderCapitalTables(cap, p1Pct, p2Pct) {
@@ -4274,6 +4393,8 @@
             const s1Avail = socio1Earned - wSocio1;
             const s2Avail = socio2Earned - wSocio2;
             try { renderCapitalTables(cap, p1Pct, p2Pct); } catch (err) { console.error('Error en tablas de reparto', err); }
+            try { renderReinvestRecommendation(cap); } catch (err) { console.error('Error en % recomendado', err); }
+            try { renderCollectionSimulator(cap, p1Pct, p2Pct, totalExpected); } catch (err) { console.error('Error en simulador', err); }
             if (document.getElementById('socio1-earned')) document.getElementById('socio1-earned').innerHTML = `$${socio1Earned.toLocaleString('es-CO')}<span class="block text-[9px] font-semibold text-slate-400">${Math.round(p1Pct * 10) / 10}% de $${Math.round(distributableProfit).toLocaleString('es-CO')}</span>`;
             if (document.getElementById('socio1-withdrawn')) document.getElementById('socio1-withdrawn').innerText = `$${wSocio1.toLocaleString('es-CO')}`;
             const s1AvailEl = document.getElementById('socio1-available');
