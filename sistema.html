@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -390,6 +389,18 @@
                                     <p class="text-[10px] text-amber-200">Fondo de Reposición + Reinversión acumulada (ya descontadas las facturas nuevas)</p>
                                 </div>
                                 <h5 id="reserve-total-save-val" class="text-xl font-black text-amber-400">$0</h5>
+                            </div>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                                <div class="bg-slate-900/85 p-3.5 rounded-xl border border-slate-700/80">
+                                    <p class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider mb-1">Por cada $100.000 que vendes</p>
+                                    <p class="text-[10px] text-slate-400 mb-2">Según el costo y la ganancia promedio de tus ventas, el % de reinversión y el % de cada socio.</p>
+                                    <div id="cap-per-sale-table" class="overflow-x-auto"></div>
+                                </div>
+                                <div class="bg-slate-900/85 p-3.5 rounded-xl border border-slate-700/80">
+                                    <p class="text-[10px] font-bold text-amber-300 uppercase tracking-wider mb-1">A dónde ha ido el dinero cobrado (acumulado)</p>
+                                    <p class="text-[10px] text-slate-400 mb-2">Todo lo cobrado de las ventas, repartido en cada destino. La suma da el 100%.</p>
+                                    <div id="cap-distribution-table" class="overflow-x-auto"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -4046,15 +4057,20 @@
             events.sort((x, y) => (x.t - y.t) || (x.order - y.order));
 
             let pending = 0, fund = 0, reinvest = 0, grossMargin = 0, distributable = 0, profitDebt = 0;
+            // Flujos acumulados: a dónde fue cada peso cobrado
+            const flow = { cash: 0, cost: 0, phase1: 0, fund: 0, expenses: 0, reinvest: 0, partners: 0 };
             const applyMargin = (m) => {
                 // La ganancia primero cubre insumos y gastos pendientes; lo que sobra se reinvierte (%) y se reparte
                 if (m <= 0) { profitDebt += -m; return; }
                 const cover = Math.min(profitDebt, m);
                 profitDebt -= cover;
+                flow.expenses += cover;
                 m -= cover;
                 const reinv = m * pct;
                 reinvest += reinv;
                 distributable += m - reinv;
+                flow.reinvest += reinv;
+                flow.partners += m - reinv;
             };
             events.forEach(ev => {
                 if (ev.kind === 'invoice') {
@@ -4068,22 +4084,90 @@
                     // INSUMOS y GASTOS OPERATIVOS: salen de la ganancia, nunca del Fondo de Reposición
                     const fromProfit = Math.min(Math.max(0, distributable), ev.amount);
                     distributable -= fromProfit;
+                    flow.partners -= fromProfit;
+                    flow.expenses += fromProfit;
                     profitDebt += ev.amount - fromProfit;
                 } else {
                     const toCover = Math.min(pending, ev.cash);
                     pending -= toCover;
+                    flow.cash += ev.cash;
+                    flow.cost += ev.cost;
+                    flow.phase1 += toCover;
                     const remaining = ev.cash - toCover;
                     if (remaining > 0) {
                         const costShare = remaining * (ev.cost / ev.cash);
                         const marginShare = remaining - costShare;
                         fund += costShare;
+                        flow.fund += costShare;
                         grossMargin += marginShare;
                         applyMargin(marginShare);
                     }
                 }
             });
             const netProfit = grossMargin - invIns - opExpenses;
-            return { invMerc, invIns, opExpenses, pending, fund, reinvest, grossMargin, netProfit, distributable, recoverTotal, profitDebt };
+            return { invMerc, invIns, opExpenses, pending, fund, reinvest, grossMargin, netProfit, distributable, recoverTotal, profitDebt, flow, pct };
+        }
+
+        function renderCapitalTables(cap, p1Pct, p2Pct) {
+            const money = (v) => `$${Math.round(v).toLocaleString('es-CO')}`;
+            const pc = (v) => `${(Math.round(v * 10) / 10).toLocaleString('es-CO')}%`;
+            const row = (label, amount, pctVal, color, extra = '', bold = false) => `
+                <tr class="border-b border-slate-800 ${bold ? 'font-black' : ''}">
+                    <td class="py-1.5 pr-2 ${color}">${label}</td>
+                    <td class="py-1.5 px-2 text-right font-bold text-white">${money(amount)}</td>
+                    <td class="py-1.5 pl-2 text-right font-black ${color}">${pc(pctVal)}</td>
+                    ${extra !== null ? `<td class="py-1.5 pl-2 text-right text-slate-400">${extra}</td>` : ''}
+                </tr>`;
+            const head = (cols) => `<thead><tr class="text-slate-400 border-b border-slate-700">${cols.map((c, i) => `<th class="py-1 ${i === 0 ? 'text-left pr-2' : 'text-right px-2'} font-bold">${c}</th>`).join('')}</tr></thead>`;
+
+            // ---- Tabla 1: por cada $100.000 vendidos ----
+            const f = cap.flow;
+            const costRatio = f.cash > 0 ? Math.min(1, f.cost / f.cash) : 0;
+            const base = 100000;
+            const costPart = base * costRatio;
+            const profitPart = base - costPart;
+            const reinvPart = profitPart * cap.pct;
+            const partnersPart = profitPart - reinvPart;
+            const s1Part = partnersPart * (p1Pct / 100);
+            const s2Part = partnersPart - s1Part;
+            const t1 = document.getElementById('cap-per-sale-table');
+            if (t1) {
+                t1.innerHTML = f.cash <= 0 ? '<p class="text-[11px] text-slate-500 italic">Aún no hay ventas cobradas.</p>' : `
+                    <table class="w-full text-[11px]">
+                        ${head(['Concepto', 'Valor', '% venta', '% ganancia'])}
+                        <tbody>
+                            ${row('Costo de mercancía (reposición)', costPart, costRatio * 100, 'text-blue-300', '—')}
+                            ${row('Ganancia', profitPart, (1 - costRatio) * 100, 'text-emerald-300', '100%', true)}
+                            ${row('&nbsp;&nbsp;↳ Reinversión', reinvPart, (reinvPart / base) * 100, 'text-emerald-400', pc(cap.pct * 100))}
+                            ${row('&nbsp;&nbsp;↳ Socio 1', s1Part, (s1Part / base) * 100, 'text-purple-300', pc(profitPart > 0 ? (s1Part / profitPart) * 100 : 0))}
+                            ${row('&nbsp;&nbsp;↳ Socio 2', s2Part, (s2Part / base) * 100, 'text-indigo-300', pc(profitPart > 0 ? (s2Part / profitPart) * 100 : 0))}
+                        </tbody>
+                    </table>
+                    <p class="text-[10px] text-slate-500 mt-2">Para comprar mercancía guardas <strong class="text-amber-300">${pc((costRatio + (1 - costRatio) * cap.pct) * 100)}</strong> de cada venta (costo + reinversión). Antes de repartir, la ganancia paga los insumos y gastos, y en la Fase 1 todo va a pagar las facturas de mercancía.</p>`;
+            }
+
+            // ---- Tabla 2: a dónde ha ido todo lo cobrado ----
+            const t2 = document.getElementById('cap-distribution-table');
+            if (t2) {
+                const total = f.cash;
+                const pctOf = (v) => total > 0 ? (v / total) * 100 : 0;
+                const s1 = f.partners * (p1Pct / 100);
+                const s2 = f.partners - s1;
+                t2.innerHTML = total <= 0 ? '<p class="text-[11px] text-slate-500 italic">Aún no hay ventas cobradas.</p>' : `
+                    <table class="w-full text-[11px]">
+                        ${head(['Destino', 'Valor', '%'])}
+                        <tbody>
+                            ${row('Pago de facturas de mercancía (Fase 1)', f.phase1, pctOf(f.phase1), 'text-rose-300', null)}
+                            ${row('Fondo de Reposición (costo)', f.fund, pctOf(f.fund), 'text-blue-300', null)}
+                            ${row('Insumos y gastos (de la ganancia)', f.expenses, pctOf(f.expenses), 'text-sky-300', null)}
+                            ${row('Reinversión', f.reinvest, pctOf(f.reinvest), 'text-emerald-300', null)}
+                            ${row(`Socio 1 (${pc(p1Pct)})`, s1, pctOf(s1), 'text-purple-300', null)}
+                            ${row(`Socio 2 (${pc(p2Pct)})`, s2, pctOf(s2), 'text-indigo-300', null)}
+                            ${row('TOTAL COBRADO', total, 100, 'text-amber-300', null, true)}
+                        </tbody>
+                    </table>
+                    ${cap.profitDebt > 0 ? `<p class="text-[10px] text-amber-300 mt-2">Faltan ${money(cap.profitDebt)} de insumos/gastos por cubrir con las próximas ganancias.</p>` : ''}`;
+            }
         }
 
         function updateDashboard() {
@@ -4189,6 +4273,7 @@
             const wSocio2 = withdrawals.filter(w => w.partner === 'socio2').reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
             const s1Avail = socio1Earned - wSocio1;
             const s2Avail = socio2Earned - wSocio2;
+            try { renderCapitalTables(cap, p1Pct, p2Pct); } catch (err) { console.error('Error en tablas de reparto', err); }
             if (document.getElementById('socio1-earned')) document.getElementById('socio1-earned').innerHTML = `$${socio1Earned.toLocaleString('es-CO')}<span class="block text-[9px] font-semibold text-slate-400">${Math.round(p1Pct * 10) / 10}% de $${Math.round(distributableProfit).toLocaleString('es-CO')}</span>`;
             if (document.getElementById('socio1-withdrawn')) document.getElementById('socio1-withdrawn').innerText = `$${wSocio1.toLocaleString('es-CO')}`;
             const s1AvailEl = document.getElementById('socio1-available');
