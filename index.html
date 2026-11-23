@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FRAGATTAPARFUMS | Perfumería Exclusiva</title>
+    <meta name="description" content="Perfumes árabes, de diseñador, nicho y body spray en Colombia. Ofertas, envíos a todo el país y pago contraentrega. Compra fácil por WhatsApp.">
+    <meta name="theme-color" content="#111315">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="FRAGATTAPARFUMS">
+    <meta property="og:title" content="FRAGATTAPARFUMS | Perfumería Exclusiva">
+    <meta property="og:description" content="Perfumes árabes, de diseñador y nicho con envío a toda Colombia y pago contraentrega.">
+    <meta property="og:image" content="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg">
+    <meta property="og:locale" content="es_CO">
+    <meta name="twitter:card" content="summary_large_image">
+    <link id="favicon" rel="icon" href="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
@@ -22,6 +33,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, onSnapshot, getDocs, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref as storageRef, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         // CONEXIÓN ÚNICA A LA NUEVA BASE DE DATOS (FRAGATTAWEB)
         const firebaseConfig = {
@@ -46,6 +58,16 @@
         window.updateDoc = updateDoc;
         window.deleteDoc = deleteDoc;
         window.setDoc = setDoc;
+
+        // Subir fotos a Firebase Storage (devuelve un enlace liviano en vez de guardar la foto dentro del producto)
+        window.uploadImageToStorage = async function(dataUrl, folder) {
+            const storage = getStorage(app);
+            const ext = ((String(dataUrl).match(/^data:image\/([a-z0-9+]+)/i) || [])[1] || 'jpg').replace('jpeg', 'jpg').replace('svg+xml', 'svg');
+            const name = `${folder || 'productos'}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const r = storageRef(storage, name);
+            await uploadString(r, dataUrl, 'data_url');
+            return await getDownloadURL(r);
+        };
 
         // FUNCIÓN PARA ELIMINAR REGISTROS DUPLICADOS AUTOMÁTICAMENTE
         window.limpiarProductosDuplicados = async function() {
@@ -125,12 +147,20 @@
         .gallery-img { transition: opacity .25s ease; }
         .snap-row { scroll-snap-type: x mandatory; }
         .snap-row > * { scroll-snap-align: start; }
+        #announce-text { transition: opacity .4s ease; }
+        .quiz-opt.selected { background:#111315; color:#fff; border-color:#d4af37; }
+        .star-row i { color:#d4af37; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased bg-[#f6f7f9]">
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Franja de anuncios (editable en Ajustes) -->
+    <div id="announce-bar" class="bg-gradient-to-r from-[#0b0c0d] via-[#2a2416] to-[#0b0c0d] text-luxury-gold text-[11px] sm:text-xs font-semibold text-center py-2 px-4 tracking-wide">
+        <span id="announce-text">✨ Envíos a toda Colombia ✨</span>
+    </div>
 
     <!-- Top Social & Contact Bar -->
     <div class="bg-luxury-dark border-b border-gray-800 text-gray-400 py-1.5 px-4 text-xs">
@@ -212,6 +242,40 @@
             </div>
         </section>
 
+        <!-- ICONOS DE CONFIANZA -->
+        <section class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
+            <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 shadow-sm">
+                <span class="w-9 h-9 shrink-0 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-truck-fast"></i></span>
+                <div class="leading-tight"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Envíos a toda Colombia</p><p class="text-[10px] text-gray-500">Seguimiento por WhatsApp</p></div>
+            </div>
+            <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 shadow-sm">
+                <span class="w-9 h-9 shrink-0 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-hand-holding-usd"></i></span>
+                <div class="leading-tight"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Pago contraentrega</p><p class="text-[10px] text-gray-500">Pagas al recibir</p></div>
+            </div>
+            <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 shadow-sm">
+                <span class="w-9 h-9 shrink-0 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-lock"></i></span>
+                <div class="leading-tight"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Pago seguro</p><p class="text-[10px] text-gray-500">En línea con Wompi</p></div>
+            </div>
+            <a href="https://wa.me/573105390115" target="_blank" rel="noopener" id="trust-whatsapp" class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 shadow-sm hover:border-emerald-300 transition">
+                <span class="w-9 h-9 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center"><i class="fab fa-whatsapp"></i></span>
+                <div class="leading-tight"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Te asesoramos</p><p class="text-[10px] text-gray-500">Escríbenos por WhatsApp</p></div>
+            </a>
+        </section>
+
+        <!-- TEST: ENCUENTRA TU PERFUME IDEAL -->
+        <section class="mb-4">
+            <button onclick="openQuiz()" class="w-full bg-gradient-to-r from-luxury-dark via-[#1f1b12] to-luxury-dark text-white rounded-2xl px-4 py-4 sm:py-5 flex items-center justify-between gap-3 shadow-lg border border-luxury-gold/40 hover:border-luxury-gold transition group">
+                <span class="flex items-center gap-3 text-left">
+                    <span class="w-11 h-11 shrink-0 rounded-full bg-luxury-gold text-black flex items-center justify-center text-lg"><i class="fas fa-wand-magic-sparkles"></i></span>
+                    <span>
+                        <span class="block font-cinzel font-bold text-sm sm:text-lg tracking-wide">Encuentra tu perfume ideal</span>
+                        <span class="block text-[11px] text-gray-300">Responde 4 preguntas y te recomendamos los mejores para ti</span>
+                    </span>
+                </span>
+                <span class="shrink-0 bg-luxury-gold text-black font-bold text-[11px] sm:text-xs px-3 py-2 rounded-full group-hover:scale-105 transition">Empezar <i class="fas fa-arrow-right ml-1"></i></span>
+            </button>
+        </section>
+
         <!-- CARRUSEL DE PROMOCIONES -->
         <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-4 bg-slate-900">
             <div id="promo-track" class="w-full aspect-square sm:aspect-auto sm:h-64 md:h-72 relative group">
@@ -221,10 +285,27 @@
 
         <!-- BOTÓN DE ENVÍOS & GARANTÍAS -->
         <div class="flex justify-center mb-6">
-            <button onclick="openPoliciesModal()" class="w-full sm:w-auto bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs sm:text-sm font-bold px-6 py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
-                <i class="fas fa-shield-alt text-amber-600 text-lg"></i> Políticas de Envíos & Garantías
+            <button onclick="openPoliciesModal()" class="w-full sm:w-auto bg-white hover:bg-luxury-gold-light border border-luxury-gold text-luxury-dark text-xs sm:text-sm font-bold px-6 py-2.5 rounded-xl transition shadow-sm flex items-center justify-center gap-2">
+                <i class="fas fa-shield-alt text-luxury-gold-dark text-lg"></i> Políticas de Envíos & Garantías
             </button>
         </div>
+
+        <!-- LOS MÁS VENDIDOS -->
+        <section id="bestsellers-section" class="hidden mb-6">
+            <div class="flex items-end justify-between mb-3">
+                <h2 class="font-cinzel font-bold text-lg sm:text-2xl text-gray-900 flex items-center gap-2"><i class="fas fa-crown text-luxury-gold"></i> Los más vendidos</h2>
+                <span class="text-[10px] text-gray-400 font-semibold">Desliza <i class="fas fa-arrow-right"></i></span>
+            </div>
+            <div id="bestsellers-row" class="flex gap-3 overflow-x-auto hide-scrollbar snap-row pb-2"></div>
+        </section>
+
+        <!-- IDEAS PARA REGALAR -->
+        <section id="gifts-section" class="hidden mb-6 bg-gradient-to-br from-[#fbf6ea] to-white border border-amber-100 rounded-3xl p-4 sm:p-6">
+            <div class="flex items-end justify-between mb-3">
+                <h2 class="font-cinzel font-bold text-lg sm:text-2xl text-gray-900 flex items-center gap-2"><i class="fas fa-gift text-rose-500"></i> <span id="gifts-title">Ideas para regalar</span></h2>
+            </div>
+            <div id="gifts-row" class="flex gap-3 overflow-x-auto hide-scrollbar snap-row pb-2"></div>
+        </section>
 
         <!-- Barra Admin -->
         <section id="admin-toolbar" class="hidden bg-luxury-dark text-white p-4 rounded-xl mb-6 shadow-xl border border-luxury-gold/30">
@@ -237,6 +318,9 @@
                     <!-- BOTÓN PARA ELIMINAR REGISTROS DUPLICADOS -->
                     <button onclick="limpiarProductosDuplicados()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow border border-rose-400">
                         <i class="fas fa-broom"></i> 🧹 Borrar Duplicados
+                    </button>
+                    <button onclick="migrateImagesToStorage()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
+                        <i class="fas fa-bolt"></i> Optimizar fotos (página más rápida)
                     </button>
                     <button onclick="openStoreSettings()" class="bg-amber-500 hover:bg-amber-600 text-black text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
                         <i class="fas fa-sliders-h"></i> Ajustes Página Producto
@@ -282,8 +366,8 @@
                 <button onclick="setCategoryFilter('Nicho', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Nicho</button>
                 <button onclick="setCategoryFilter('Body Spray', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Body Spray</button>
                 <button onclick="setCategoryFilter('Kids', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Kids</button>
-                <button onclick="setCategoryFilter('Emprendedores', this)" class="cat-btn bg-amber-100 border border-amber-300 hover:bg-amber-200 text-amber-900 font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Emprendedores 🚀</button>
-                <button onclick="setCategoryFilter('Promociones', this)" class="cat-btn bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Promociones 🏷️</button>
+                <button onclick="setCategoryFilter('Emprendedores', this)" class="cat-btn bg-luxury-gold-light border border-luxury-gold hover:bg-amber-100 text-luxury-dark font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Emprendedores 🚀</button>
+                <button onclick="setCategoryFilter('Promociones', this)" class="cat-btn bg-luxury-gold-light border border-luxury-gold hover:bg-amber-100 text-luxury-dark font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Promociones 🏷️</button>
             </div>
 
             <div class="pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -322,6 +406,16 @@
             <h3 class="font-cinzel text-lg font-bold text-gray-700">No se encontraron fragancias</h3>
             <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Restablecer Filtros</button>
         </div>
+
+        <!-- OPINIONES DE CLIENTES -->
+        <section id="reviews-section" class="mt-10">
+            <div class="text-center mb-5">
+                <h2 class="font-cinzel font-bold text-xl sm:text-2xl text-gray-900 flex items-center justify-center gap-3"><span class="h-px w-10 bg-luxury-gold"></span> Lo que dicen nuestros clientes <span class="h-px w-10 bg-luxury-gold"></span></h2>
+                <div id="reviews-summary" class="mt-2 text-sm text-gray-600"></div>
+                <button id="btn-add-review" onclick="openReviewModal()" class="hidden mt-3 bg-luxury-dark text-white text-xs font-bold px-4 py-2 rounded-lg"><i class="fas fa-plus mr-1"></i> Agregar opinión (Admin)</button>
+            </div>
+            <div id="reviews-row" class="flex gap-3 overflow-x-auto hide-scrollbar snap-row pb-2"></div>
+        </section>
 
     </main>
 
@@ -532,6 +626,7 @@
             </div>
             <div class="p-5 space-y-5">
                 <div id="cod-items" class="space-y-3"></div>
+                <div id="cod-free-ship"></div>
                 <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-2 text-sm">
                     <div class="flex justify-between"><span class="text-gray-500">Subtotal</span><span id="cod-subtotal" class="font-bold">$0</span></div>
                     <div class="flex justify-between"><span class="text-gray-500">Envío</span><span id="cod-shipping" class="font-bold">Selecciona tu ciudad</span></div>
@@ -620,6 +715,59 @@
         </div>
     </div>
 
+    <!-- TEST: ENCUENTRA TU PERFUME IDEAL -->
+    <div id="quiz-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center sm:p-4 hidden">
+        <div class="bg-white w-full sm:max-w-2xl h-[100dvh] sm:h-auto sm:max-h-[94vh] overflow-y-auto sm:rounded-3xl shadow-2xl text-gray-800">
+            <div class="sticky top-0 z-10 bg-luxury-dark text-white px-5 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="font-cinzel font-bold text-base tracking-wide">Encuentra tu perfume ideal</h3>
+                    <p id="quiz-progress" class="text-[11px] text-luxury-gold">Pregunta 1 de 4</p>
+                </div>
+                <button onclick="closeQuiz()" class="text-gray-300 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="quiz-body" class="p-5 sm:p-7"></div>
+        </div>
+    </div>
+
+    <!-- AGREGAR OPINIÓN (ADMIN) -->
+    <div id="review-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative text-gray-800">
+            <button onclick="closeReviewModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="font-cinzel text-lg font-bold text-gray-900 mb-4 border-b pb-2 flex items-center gap-2"><i class="fas fa-star text-amber-500"></i> Agregar Opinión de Cliente</h3>
+            <form onsubmit="saveReview(event)" class="space-y-3 text-xs">
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block font-semibold mb-1">Nombre del cliente *</label><input id="rev-name" required placeholder="Ana M." class="w-full p-2 border rounded-lg"></div>
+                    <div><label class="block font-semibold mb-1">Ciudad</label><input id="rev-city" placeholder="Medellín" class="w-full p-2 border rounded-lg"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Calificación *</label>
+                        <select id="rev-rating" class="w-full p-2 border rounded-lg bg-white">
+                            <option value="5">★★★★★ (5)</option><option value="4">★★★★ (4)</option><option value="3">★★★ (3)</option><option value="2">★★ (2)</option><option value="1">★ (1)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Perfume (opcional)</label>
+                        <select id="rev-product" class="w-full p-2 border rounded-lg bg-white"></select>
+                    </div>
+                </div>
+                <div><label class="block font-semibold mb-1">Comentario *</label><textarea id="rev-text" required rows="3" placeholder="Me encantó, huele delicioso y dura todo el día." class="w-full p-2 border rounded-lg"></textarea></div>
+                <div>
+                    <label class="block font-semibold mb-1">Foto o captura de WhatsApp (opcional)</label>
+                    <label class="cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold p-2 rounded-lg text-center block transition">
+                        <i class="fas fa-camera mr-1"></i> Subir foto
+                        <input type="file" accept="image/*" onchange="uploadReviewImage(event)" class="hidden">
+                    </label>
+                    <img id="rev-image-preview" class="hidden mt-2 max-h-32 rounded-lg border" alt="">
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeReviewModal()" class="px-4 py-2 bg-gray-200 rounded-lg font-semibold">Cancelar</button>
+                    <button type="submit" id="rev-save-btn" class="px-5 py-2 bg-luxury-dark text-white rounded-lg font-bold hover:bg-black transition">Publicar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- AJUSTES DE LA PÁGINA DE PRODUCTO (ADMIN) -->
     <div id="store-settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative text-gray-800">
@@ -639,6 +787,20 @@
                         <label class="block font-semibold mb-1">Recargo Contraentrega Nacional (%)</label>
                         <input type="number" id="set-cod-fee" min="0" max="30" step="0.5" class="w-full p-2 border rounded-lg">
                     </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Envío GRATIS desde ($) <span class="font-normal text-gray-500">(0 = desactivado)</span></label>
+                        <input type="number" id="set-free-ship" min="0" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Título sección de regalos</label>
+                        <input type="text" id="set-gift-title" placeholder="Ideas para regalar en Navidad" class="w-full p-2 border rounded-lg">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Franja de anuncios <span class="font-normal text-gray-500">(un mensaje por línea, van rotando)</span></label>
+                    <textarea id="set-announcements" rows="3" class="w-full p-2 border rounded-lg"></textarea>
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">Texto de "Envíos"</label>
@@ -806,6 +968,15 @@
                     </div>
                 </div>
 
+                <div class="grid grid-cols-3 gap-3 items-end">
+                    <div>
+                        <label class="block font-semibold mb-1">Unidades disponibles <span class="font-normal text-gray-500">(opcional)</span></label>
+                        <input type="number" id="prod-stock" min="0" placeholder="Vacío = no mostrar" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer bg-white"><input type="checkbox" id="prod-bestseller" class="w-4 h-4"> <span class="font-semibold">👑 Más vendido</span></label>
+                    <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer bg-white"><input type="checkbox" id="prod-gift" class="w-4 h-4"> <span class="font-semibold">🎁 Para regalar</span></label>
+                </div>
+
                 <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
                     <div class="flex items-center justify-between">
                         <label class="font-bold text-amber-900">Fotos del producto <span class="font-normal text-amber-800">(la primera es la principal)</span></label>
@@ -868,6 +1039,7 @@
                 </div>
 
                 <div class="pt-4 border-t border-gray-200 bg-gray-50 p-4 rounded-xl space-y-2 mt-4">
+                    <div id="cart-free-ship"></div>
                     <div class="flex justify-between text-xs text-gray-500">
                         <span>Total sin descuento:</span>
                         <span id="step1-original-total" class="line-through font-medium text-gray-400">$0</span>
@@ -1030,10 +1202,12 @@
                     initFirebaseListener();
                     initAppConfigListener();
                     initPromoSlidesListener();
+                    initReviewsListener();
                 }
             }, 200);
 
             updateCartUI();
+            startAnnouncements();
         });
 
         async function generateWompiSignature(reference, amountInCents, currency) {
@@ -1067,10 +1241,14 @@
                         size: data.size || '',
                         concentration: data.concentration || '',
                         longevity: data.longevity || '',
+                        stock: (data.webStock !== undefined && data.webStock !== null && data.webStock !== '' && !isNaN(Number(data.webStock))) ? Number(data.webStock) : null,
+                        bestSeller: data.bestSeller === true,
+                        isGift: data.isGift === true,
                         isActive: data.isActive !== false
                     };
                 });
                 renderProducts();
+                refreshHomeExtras();
                 openProductFromHash();
                 if (currentDetailId && !document.getElementById('detail-modal').classList.contains('hidden')) {
                     renderDetail(currentDetailId, true);
@@ -1087,11 +1265,14 @@
                     if (data.bannerUrl) applyCustomBannerBlur(data.bannerUrl);
                     if (data.whatsappNumber) {
                         WHATSAPP_NUMBER = data.whatsappNumber;
+                        const tw = document.getElementById('trust-whatsapp');
+                        if (tw) tw.href = `https://wa.me/${data.whatsappNumber}`;
                         document.getElementById('link-whatsapp').href = `https://wa.me/${data.whatsappNumber}`;
                     }
                     if (data.instagramUrl) document.getElementById('link-instagram').href = data.instagramUrl;
                     if (data.tiktokUrl) document.getElementById('link-tiktok').href = data.tiktokUrl;
                     storeSettings = { ...storeSettings, ...pickStoreSettings(data) };
+                    refreshHomeExtras();
                 }
             });
         }
@@ -1333,11 +1514,13 @@
                             ${badgeHTML ? `<div class="absolute top-2 left-2 z-10">${badgeHTML}</div>` : ''}
                             ${discountPct(p) > 0 ? `<div class="absolute top-2 right-2 z-10 bg-luxury-dark text-luxury-gold font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow">-${discountPct(p)}%</div>` : ''}
                             ${getImages(p).length > 1 ? `<div class="absolute bottom-2 right-2 z-10 bg-white/90 text-gray-700 font-bold text-[9px] px-1.5 py-0.5 rounded-full shadow"><i class="fas fa-images mr-0.5"></i>${getImages(p).length}</div>` : ''}
-                            <img src="${p.image}" alt="${p.title}" class="object-cover h-full w-full group-hover:scale-105 transition duration-500">
+                            ${stockBadgeHTML(p)}
+                            <img src="${p.image}" alt="${p.title}" loading="lazy" decoding="async" class="object-cover h-full w-full group-hover:scale-105 transition duration-500">
                         </div>
 
                         <span class="text-[10px] font-bold text-amber-600 block uppercase tracking-wider mb-0.5">${p.brand}</span>
                         <h3 class="font-cinzel font-bold text-xs sm:text-sm text-gray-900 tracking-tight uppercase group-hover:text-amber-600 transition leading-tight mb-1 line-clamp-1">${p.title}</h3>
+                        ${productStarsHTML(p.id, true)}
 
                         <div class="flex flex-wrap items-center mb-1.5 min-h-[20px]">${notesList}</div>
                         <p class="text-[10px] sm:text-[11px] text-gray-400 line-clamp-1 mb-2 font-normal">${p.description || 'Fragancia exclusiva.'}</p>
@@ -1349,7 +1532,7 @@
                     </div>
 
                     <div class="space-y-1.5 pt-2 border-t border-gray-100">
-                        <button onclick="addToCart('${p.id}')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-semibold py-2 rounded-xl transition">+ Carrito</button>
+                        ${isSoldOut(p) ? `<a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, ¿cuándo vuelve a llegar ' + p.brand + ' ' + p.title + '?')}" target="_blank" rel="noopener" class="block text-center w-full bg-gray-100 text-gray-500 text-xs font-semibold py-2 rounded-xl">Agotado · Avísame</a>` : `<button onclick="addToCart('${p.id}')" class="w-full bg-luxury-dark hover:bg-black text-white text-xs font-semibold py-2 rounded-xl transition"><i class="fas fa-cart-plus text-luxury-gold mr-1"></i> Añadir</button>`}
 
                         ${isAdmin ? `
                         <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-gray-100">
@@ -1442,6 +1625,8 @@
             document.getElementById('step1-original-total').innerText = formatPrice(originalTotal);
             document.getElementById('step1-discount-total').innerText = `-${formatPrice(discount)}`;
             document.getElementById('step1-final-subtotal').innerText = formatPrice(finalSubtotal);
+            const fs = document.getElementById('cart-free-ship');
+            if (fs) fs.innerHTML = freeShipBarHTML(finalSubtotal);
         }
 
         function updateCartQuantity(id, change) {
@@ -1473,9 +1658,9 @@
             if (chk.checked) {
                 cityInput.value = "Medellín";
                 cityInput.disabled = true;
-                calculatedShippingCost = 12000;
-                document.getElementById('shipping-carrier-text').innerText = "Envío Fijo Medellín ($12.000)";
-                document.getElementById('shipping-cost-text').innerText = formatPrice(12000);
+                calculatedShippingCost = storeSettings.shipMedellin;
+                document.getElementById('shipping-carrier-text').innerText = `Envío Fijo Medellín (${formatPrice(storeSettings.shipMedellin)})`;
+                document.getElementById('shipping-cost-text').innerText = formatPrice(storeSettings.shipMedellin);
             } else {
                 cityInput.disabled = false;
                 cityInput.value = "";
@@ -1499,9 +1684,9 @@
                 return;
             }
 
-            calculatedShippingCost = 14500;
+            calculatedShippingCost = storeSettings.shipNational;
             document.getElementById('shipping-carrier-text').innerText = `Envía.com Express a ${city}`;
-            document.getElementById('shipping-cost-text').innerText = formatPrice(14500);
+            document.getElementById('shipping-cost-text').innerText = formatPrice(storeSettings.shipNational);
             updatePaymentCalculations();
         }
 
@@ -1514,17 +1699,17 @@
             const codRow = document.getElementById('cod-fee-row');
 
             if (method === 'cod' && !isMedellin) {
-                codFee = Math.round((subtotal + calculatedShippingCost) * 0.05);
+                codFee = Math.round((subtotal + effectiveShipping(subtotal)) * (storeSettings.codFeePct / 100));
                 codRow.classList.remove('hidden');
                 document.getElementById('final-cod-fee').innerText = formatPrice(codFee);
             } else {
                 codRow.classList.add('hidden');
             }
 
-            const grandTotal = subtotal + calculatedShippingCost + codFee;
+            const grandTotal = subtotal + effectiveShipping(subtotal) + codFee;
 
             document.getElementById('final-subtotal').innerText = formatPrice(subtotal);
-            document.getElementById('final-shipping').innerText = formatPrice(calculatedShippingCost);
+            document.getElementById('final-shipping').innerText = isFreeShipping(subtotal) ? 'GRATIS' : formatPrice(calculatedShippingCost);
             document.getElementById('final-grand-total').innerText = formatPrice(grandTotal);
 
             const btnText = document.getElementById('btn-submit-text');
@@ -1547,8 +1732,8 @@
             }
 
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-            const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + calculatedShippingCost) * 0.05) : 0;
-            const grandTotal = subtotal + calculatedShippingCost + codFee;
+            const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + effectiveShipping(subtotal)) * (storeSettings.codFeePct / 100)) : 0;
+            const grandTotal = subtotal + effectiveShipping(subtotal) + codFee;
 
             let msg = `*NUEVO PEDIDO - FRAGATTAPARFUMS*\n\n`;
             msg += `*DATOS DE ENVÍO:*\n`;
@@ -1557,7 +1742,7 @@
             cart.forEach(i => { msg += `• ${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
             msg += `\n*RESUMEN DE PAGO:*\n`;
             msg += `• Subtotal: ${formatPrice(subtotal)}\n`;
-            msg += `• Envío: ${formatPrice(calculatedShippingCost)}\n`;
+            msg += `• Envío: ${isFreeShipping(subtotal) ? 'GRATIS' : formatPrice(calculatedShippingCost)}\n`;
             if (codFee > 0) msg += `• Recargo Contra Entrega: ${formatPrice(codFee)}\n`;
             msg += `*TOTAL:* ${formatPrice(grandTotal)}\n\n`;
             msg += `*MÉTODO DE PAGO:* ${method === 'wompi' ? 'Wompi En Línea' : (method === 'cod' ? 'Pago Contra Entrega' : 'Transferencia Bancaria')}`;
@@ -1600,6 +1785,8 @@
             }
             renderProducts();
             renderPromos();
+            refreshHomeExtras();
+            renderReviews();
             if (currentDetailId) renderDetail(currentDetailId, true);
         }
 
@@ -1741,6 +1928,9 @@
             document.getElementById('prod-longevity').value = p.longevity || '';
             editingImages = getImages(p).slice();
             renderImagesEditor();
+            document.getElementById('prod-stock').value = (p.stock === null || p.stock === undefined) ? '' : p.stock;
+            document.getElementById('prod-bestseller').checked = !!p.bestSeller;
+            document.getElementById('prod-gift').checked = !!p.isGift;
             document.getElementById('upload-status').innerText = '';
             document.getElementById('admin-modal').classList.remove('hidden');
         }
@@ -1834,8 +2024,14 @@
             let added = 0, skipped = 0;
             for (const file of files) {
                 try {
-                    let data = await compressImage(file);
-                    if (imagesBytes([...editingImages, data]) > MAX_DOC_IMAGES_BYTES) data = await compressImage(file, 800, 0.7);
+                    // 1) Calidad máxima: se sube la foto original (o casi original si es enorme) a Firebase Storage
+                    const hq = file.size <= 3 * 1024 * 1024 ? await readFileAsDataURL(file) : await compressImage(file, 2400, 0.92);
+                    const url = await tryUploadToStorage(hq, 'productos');
+                    if (url) { editingImages.push(url); added++; continue; }
+                    // 2) Sin Storage: Firebase solo deja ~1 MB por producto, así que se reduce lo mínimo necesario
+                    let data = await compressImage(file, 1600, 0.9);
+                    if (imagesBytes([...editingImages, data]) > MAX_DOC_IMAGES_BYTES) data = await compressImage(file, 1200, 0.85);
+                    if (imagesBytes([...editingImages, data]) > MAX_DOC_IMAGES_BYTES) data = await compressImage(file, 900, 0.8);
                     if (imagesBytes([...editingImages, data]) > MAX_DOC_IMAGES_BYTES) { skipped++; continue; }
                     editingImages.push(data);
                     added++;
@@ -1869,7 +2065,10 @@
                 description: document.getElementById('prod-desc').value,
                 size: document.getElementById('prod-size').value.trim().toUpperCase(),
                 concentration: document.getElementById('prod-concentration').value,
-                longevity: document.getElementById('prod-longevity').value.trim()
+                longevity: document.getElementById('prod-longevity').value.trim(),
+                webStock: document.getElementById('prod-stock').value === '' ? null : Math.max(0, Number(document.getElementById('prod-stock').value) || 0),
+                bestSeller: document.getElementById('prod-bestseller').checked,
+                isGift: document.getElementById('prod-gift').checked
             };
             if (imagesBytes(payload.images) > MAX_DOC_IMAGES_BYTES) {
                 btnSave.innerText = "Guardar en Firebase";
@@ -2041,6 +2240,8 @@
         function applyCustomLogo(url) { 
             document.getElementById('buyer-logo-img').src = url; 
             document.getElementById('admin-logo-img').src = url; 
+            const fav = document.getElementById('favicon');
+            if (fav && url) fav.href = url;
         }
 
         function promptBannerUrl() { 
@@ -2077,7 +2278,10 @@
             codFeePct: 5,
             shippingInfo: 'Medellín y área metropolitana: entrega de 1 a 2 días hábiles.\nResto del país: de 2 a 5 días hábiles con transportadora.\nTe enviamos la guía de seguimiento por WhatsApp.',
             returnsInfo: 'Todos nuestros perfumes se entregan sellados.\nAceptamos cambios dentro de los 5 días siguientes a la entrega si el producto llega averiado o no corresponde a tu pedido, siempre que esté sellado y en su empaque original.\nEscríbenos por WhatsApp para gestionarlo.',
-            trustText: 'Envíos a toda Colombia · Pago seguro con Wompi'
+            trustText: 'Envíos a toda Colombia · Pago seguro con Wompi',
+            freeShippingMin: 0,
+            giftTitle: 'Ideas para regalar',
+            announcements: '✨ Envíos a toda Colombia ✨\n💵 Paga contraentrega al recibir tu pedido\n💬 Te asesoramos por WhatsApp'
         };
 
         function pickStoreSettings(data) {
@@ -2088,6 +2292,9 @@
             if (typeof data.shippingInfo === 'string' && data.shippingInfo.trim()) out.shippingInfo = data.shippingInfo;
             if (typeof data.returnsInfo === 'string' && data.returnsInfo.trim()) out.returnsInfo = data.returnsInfo;
             if (typeof data.trustText === 'string' && data.trustText.trim()) out.trustText = data.trustText;
+            if (data.freeShippingMin !== undefined && !isNaN(Number(data.freeShippingMin))) out.freeShippingMin = Number(data.freeShippingMin);
+            if (typeof data.giftTitle === 'string' && data.giftTitle.trim()) out.giftTitle = data.giftTitle;
+            if (typeof data.announcements === 'string' && data.announcements.trim()) out.announcements = data.announcements;
             return out;
         }
 
@@ -2099,6 +2306,9 @@
             document.getElementById('set-shipping-info').value = storeSettings.shippingInfo;
             document.getElementById('set-returns-info').value = storeSettings.returnsInfo;
             document.getElementById('set-trust-text').value = storeSettings.trustText;
+            document.getElementById('set-free-ship').value = storeSettings.freeShippingMin;
+            document.getElementById('set-gift-title').value = storeSettings.giftTitle;
+            document.getElementById('set-announcements').value = storeSettings.announcements;
             document.getElementById('store-settings-modal').classList.remove('hidden');
         }
 
@@ -2112,12 +2322,16 @@
                 codFeePct: Number(document.getElementById('set-cod-fee').value) || 0,
                 shippingInfo: document.getElementById('set-shipping-info').value.trim(),
                 returnsInfo: document.getElementById('set-returns-info').value.trim(),
-                trustText: document.getElementById('set-trust-text').value.trim()
+                trustText: document.getElementById('set-trust-text').value.trim(),
+                freeShippingMin: Number(document.getElementById('set-free-ship').value) || 0,
+                giftTitle: document.getElementById('set-gift-title').value.trim(),
+                announcements: document.getElementById('set-announcements').value.trim()
             };
             try {
                 await window.setDoc(window.doc(window.db, "settings", "app_config"), data, { merge: true });
-                storeSettings = { ...storeSettings, ...pickStoreSettings(data) };
+                storeSettings = { ...storeSettings, ...pickStoreSettings(data), freeShippingMin: data.freeShippingMin };
                 closeStoreSettings();
+                refreshHomeExtras();
                 if (currentDetailId) renderDetail(currentDetailId, true);
                 showToast('Ajustes guardados');
             } catch (err) {
@@ -2154,6 +2368,7 @@
             renderDetail(id);
             document.getElementById('detail-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
+            document.title = `${p.brand} ${p.title} | FRAGATTAPARFUMS`;
             const sc = document.getElementById('detail-scroll');
             if (sc) sc.scrollTop = 0;
             const hash = '#producto=' + encodeURIComponent(id);
@@ -2213,6 +2428,7 @@
                             <span class="text-xs font-bold text-luxury-gold-dark uppercase tracking-[0.2em]">${esc(p.brand)}</span>
                             <h1 class="font-cinzel font-bold text-2xl sm:text-3xl text-gray-900 uppercase leading-tight mt-1">${esc(p.title)}</h1>
                             ${chips ? `<div class="flex flex-wrap gap-1.5 mt-3">${chips}</div>` : ''}
+                            ${productStarsHTML(p.id, false)}
                         </div>
 
                         <div class="space-y-1">
@@ -2230,6 +2446,8 @@
                         </div>` : ''}
 
                         ${p.longevity ? `<p class="text-sm text-gray-700"><i class="fas fa-hourglass-half text-luxury-gold-dark mr-1.5"></i> <strong>Duración:</strong> ${esc(p.longevity)}</p>` : ''}
+                        ${p.stock !== null && p.stock !== undefined && p.stock > 0 && p.stock <= 3 ? `<p class="text-sm font-bold text-rose-600 animate-pulse"><i class="fas fa-fire mr-1"></i> ¡Solo quedan ${p.stock} unidad${p.stock === 1 ? '' : 'es'}!</p>` : ''}
+                        ${freeShipBarHTML(cart.reduce((a, i) => a + i.price * i.quantity, 0) + (cart.some(i => i.id === p.id) ? 0 : p.price))}
 
                         <div class="flex items-center gap-3">
                             <div class="flex items-center border-2 border-gray-200 rounded-full overflow-hidden">
@@ -2240,7 +2458,8 @@
                             <a href="https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}" target="_blank" rel="noopener" class="flex-1 h-11 border-2 border-emerald-500 text-emerald-700 rounded-full font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-50"><i class="fab fa-whatsapp text-base"></i> ¿Dudas? Escríbenos</a>
                         </div>
 
-                        <div class="space-y-2.5">
+                        ${isSoldOut(p) ? `<a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, ¿cuándo vuelve a llegar ' + p.brand + ' ' + p.title + '?')}" target="_blank" rel="noopener" class="block w-full text-center bg-gray-100 border border-gray-300 text-gray-700 font-bold py-3.5 rounded-full">Agotado · Avísame cuando llegue</a>` : ''}
+                        <div class="space-y-2.5 ${isSoldOut(p) ? 'hidden' : ''}">
                             <button onclick="addDetailToCart()" class="w-full bg-luxury-gold-light hover:bg-amber-100 border border-luxury-gold text-luxury-dark font-bold py-3.5 rounded-full transition tracking-wide text-sm">
                                 <i class="fas fa-shopping-bag mr-1.5"></i> AÑADIR AL CARRITO
                             </button>
@@ -2271,6 +2490,7 @@
                                 <summary class="flex items-center justify-between py-3 font-bold text-gray-900"><span>Notas olfativas</span><span class="acc-icon w-8 h-8 rounded-lg bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-plus"></i></span></summary>
                                 <div class="pb-4 flex flex-wrap gap-1.5">${notes.map(n => `<span class="text-[11px] text-gray-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100"><i class="fas fa-leaf text-amber-500 mr-1"></i>${esc(n)}</span>`).join('')}</div>
                             </details>` : ''}
+                            ${productReviewsAccordionHTML(p.id)}
                             <details class="detail-accordion py-1">
                                 <summary class="flex items-center justify-between py-3 font-bold text-gray-900"><span>Envíos</span><span class="acc-icon w-8 h-8 rounded-lg bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-plus"></i></span></summary>
                                 <div class="pb-4 text-sm text-gray-600 leading-relaxed space-y-2">
@@ -2293,7 +2513,7 @@
                         ${related.map(r => `
                         <div class="shrink-0 w-40 sm:w-48 bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
                             <div class="relative aspect-square bg-gray-50 cursor-pointer" onclick="openDetailModal('${r.id}')">
-                                <img src="${getImages(r)[0]}" alt="${esc(r.title)}" class="w-full h-full object-cover">
+                                <img src="${getImages(r)[0]}" alt="${esc(r.title)}" loading="lazy" decoding="async" class="w-full h-full object-cover">
                                 ${discountPct(r) > 0 ? `<span class="absolute top-2 right-2 bg-luxury-dark text-luxury-gold font-extrabold text-[10px] px-1.5 py-0.5 rounded-full">-${discountPct(r)}%</span>` : ''}
                             </div>
                             <div class="p-2.5 text-center">
@@ -2357,10 +2577,397 @@
             showToast(`${detailQty} unidad(es) añadidas al carrito`);
         }
 
+        // ===================== ENVÍO GRATIS =====================
+        function isFreeShipping(subtotal) {
+            const min = Number(storeSettings.freeShippingMin) || 0;
+            return min > 0 && subtotal >= min;
+        }
+        function effectiveShipping(subtotal) {
+            return isFreeShipping(subtotal) ? 0 : calculatedShippingCost;
+        }
+        function freeShipBarHTML(subtotal) {
+            const min = Number(storeSettings.freeShippingMin) || 0;
+            if (min <= 0) return '';
+            const pct = Math.min(100, Math.round((subtotal / min) * 100));
+            const missing = Math.max(0, min - subtotal);
+            return `
+                <div class="bg-luxury-gold-light border border-luxury-gold/60 rounded-xl p-3 text-xs">
+                    <p class="font-bold text-luxury-dark mb-1.5">${missing > 0 ? `<i class="fas fa-truck text-luxury-gold-dark mr-1"></i> Te faltan <span class="text-rose-600">${formatPrice(missing)}</span> para tener <span class="underline">ENVÍO GRATIS</span>` : '<i class="fas fa-check-circle text-emerald-600 mr-1"></i> ¡Tu pedido tiene ENVÍO GRATIS!'}</p>
+                    <div class="w-full h-2 bg-white rounded-full overflow-hidden border border-luxury-gold/40"><div class="h-full rounded-full ${missing > 0 ? 'bg-luxury-gold' : 'bg-emerald-500'}" style="width:${pct}%"></div></div>
+                </div>`;
+        }
+
+        // ===================== FRANJA DE ANUNCIOS =====================
+        let announceTimer = null;
+        let announceIndex = 0;
+        function startAnnouncements() {
+            const el = document.getElementById('announce-text');
+            if (!el) return;
+            const msgs = () => String(storeSettings.announcements || '').split('\n').map(x => x.trim()).filter(Boolean);
+            const show = () => {
+                const list = msgs();
+                const bar = document.getElementById('announce-bar');
+                if (bar) bar.classList.toggle('hidden', list.length === 0);
+                if (list.length === 0) return;
+                announceIndex = announceIndex % list.length;
+                el.style.opacity = 0;
+                setTimeout(() => { el.textContent = list[announceIndex]; el.style.opacity = 1; announceIndex++; }, 350);
+            };
+            show();
+            if (announceTimer) clearInterval(announceTimer);
+            announceTimer = setInterval(show, 4500);
+        }
+
+        // ===================== STOCK BAJO / AGOTADO =====================
+        function isSoldOut(p) { return p.stock !== null && p.stock !== undefined && p.stock <= 0; }
+        function stockBadgeHTML(p) {
+            if (p.stock === null || p.stock === undefined) return '';
+            if (p.stock <= 0) return '<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center"><span class="bg-gray-800 text-white font-bold text-[10px] px-2.5 py-1 rounded-full">AGOTADO</span></div>';
+            if (p.stock <= 3) return `<div class="absolute bottom-2 left-2 z-10 bg-rose-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full shadow animate-pulse">¡Últimas ${p.stock}!</div>`;
+            return '';
+        }
+
+        // ===================== MÁS VENDIDOS E IDEAS PARA REGALAR =====================
+        function miniCardHTML(p) {
+            return `
+                <div class="shrink-0 w-40 sm:w-52 bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition">
+                    <div class="relative aspect-square bg-gray-50 cursor-pointer" onclick="openDetailModal('${p.id}')">
+                        <img src="${getImages(p)[0]}" alt="${esc(p.title)}" loading="lazy" decoding="async" class="w-full h-full object-cover">
+                        ${discountPct(p) > 0 ? `<span class="absolute top-2 right-2 bg-luxury-dark text-luxury-gold font-extrabold text-[10px] px-1.5 py-0.5 rounded-full">-${discountPct(p)}%</span>` : ''}
+                        ${stockBadgeHTML(p)}
+                    </div>
+                    <div class="p-2.5 text-center">
+                        <p class="text-[10px] font-bold text-luxury-gold-dark uppercase truncate">${esc(p.brand)}</p>
+                        <p class="font-cinzel text-xs font-bold text-gray-900 uppercase line-clamp-2 min-h-[2rem] cursor-pointer" onclick="openDetailModal('${p.id}')">${esc(p.title)}</p>
+                        ${productStarsHTML(p.id, true)}
+                        <div class="flex items-baseline justify-center gap-1.5 mt-1">
+                            ${p.oldPrice && p.oldPrice > p.price ? `<span class="text-[10px] text-gray-400 line-through">${formatPrice(p.oldPrice)}</span>` : ''}
+                            <span class="text-sm font-extrabold text-rose-600">${formatPrice(p.price)}</span>
+                        </div>
+                        ${isSoldOut(p) ? '<p class="mt-2 text-[11px] font-bold text-gray-400 py-1.5">Agotado</p>' : `<button onclick="addToCart('${p.id}')" class="mt-2 w-full bg-luxury-dark text-white text-[11px] font-bold py-1.5 rounded-lg hover:bg-black"><i class="fas fa-cart-plus text-luxury-gold mr-1"></i> Añadir</button>`}
+                    </div>
+                </div>`;
+        }
+
+        function refreshHomeExtras() {
+            const visible = products.filter(p => p.isActive);
+            let best = visible.filter(p => p.bestSeller);
+            if (best.length === 0) best = visible.filter(p => p.priority === 'TOP VIRAL');
+            const bs = document.getElementById('bestsellers-section');
+            if (bs) {
+                bs.classList.toggle('hidden', best.length === 0);
+                document.getElementById('bestsellers-row').innerHTML = best.slice(0, 12).map(miniCardHTML).join('');
+            }
+            const gifts = visible.filter(p => p.isGift);
+            const gs = document.getElementById('gifts-section');
+            if (gs) {
+                gs.classList.toggle('hidden', gifts.length === 0);
+                document.getElementById('gifts-title').innerText = storeSettings.giftTitle || 'Ideas para regalar';
+                document.getElementById('gifts-row').innerHTML = gifts.slice(0, 12).map(miniCardHTML).join('');
+            }
+        }
+
+        // ===================== OPINIONES DE CLIENTES =====================
+        let reviews = [];
+        let reviewImageData = '';
+
+        function initReviewsListener() {
+            try {
+                window.onSnapshot(window.collection(window.db, "reviews"), (snap) => {
+                    reviews = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                        .filter(r => r.isActive !== false)
+                        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    renderReviews();
+                    renderProducts();
+                    refreshHomeExtras();
+                    if (currentDetailId) renderDetail(currentDetailId, true);
+                }, () => { renderReviews(); });
+            } catch (err) { renderReviews(); }
+        }
+
+        function starsHTML(rating, size) {
+            const r = Math.round(rating * 2) / 2;
+            let h = '';
+            for (let i = 1; i <= 5; i++) h += `<i class="${r >= i ? 'fas fa-star' : (r >= i - 0.5 ? 'fas fa-star-half-alt' : 'far fa-star')}"></i>`;
+            return `<span class="star-row ${size || 'text-xs'} inline-flex gap-0.5">${h}</span>`;
+        }
+
+        function productReviews(productId) { return reviews.filter(r => r.productId === productId); }
+
+        function productStarsHTML(productId, compact) {
+            const list = productReviews(productId);
+            if (list.length === 0) return '';
+            const avg = list.reduce((a, r) => a + (Number(r.rating) || 0), 0) / list.length;
+            return compact
+                ? `<div class="flex items-center justify-start gap-1 mb-1 text-[10px] text-gray-500">${starsHTML(avg, 'text-[10px]')} <span>(${list.length})</span></div>`
+                : `<div class="flex items-center gap-2 mt-3 text-sm text-gray-600">${starsHTML(avg, 'text-sm')} <span class="font-bold">${avg.toFixed(1)}</span> <span>· ${list.length} opinión${list.length === 1 ? '' : 'es'}</span></div>`;
+        }
+
+        function reviewCardHTML(r, wide) {
+            const prod = r.productId ? products.find(p => p.id === r.productId) : null;
+            return `
+                <div class="shrink-0 ${wide ? 'w-full' : 'w-72 sm:w-80'} bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2 relative">
+                    ${isAdmin ? `<button onclick="deleteReview('${r.id}')" class="absolute top-2 right-2 text-rose-500 hover:text-rose-700 text-xs" title="Eliminar opinión"><i class="fas fa-trash"></i></button>` : ''}
+                    <div class="flex items-center gap-2">
+                        <span class="w-9 h-9 rounded-full bg-luxury-dark text-luxury-gold font-bold flex items-center justify-center">${esc(String(r.name || '?').charAt(0).toUpperCase())}</span>
+                        <div class="leading-tight">
+                            <p class="font-bold text-sm text-gray-900">${esc(r.name)} <i class="fas fa-circle-check text-emerald-500 text-[10px]" title="Compra verificada"></i></p>
+                            <p class="text-[10px] text-gray-500">${esc(r.city || '')}${r.city ? ' · ' : ''}Compra verificada</p>
+                        </div>
+                    </div>
+                    ${starsHTML(Number(r.rating) || 5, 'text-sm')}
+                    <p class="text-sm text-gray-700 leading-relaxed">"${esc(r.text)}"</p>
+                    ${r.image ? `<img src="${r.image}" loading="lazy" alt="" class="rounded-xl max-h-48 w-full object-cover border border-gray-100">` : ''}
+                    ${prod && !wide ? `<button onclick="openDetailModal('${prod.id}')" class="text-[11px] font-bold text-luxury-gold-dark hover:underline"><i class="fas fa-spray-can-sparkles mr-1"></i> ${esc(prod.brand + ' ' + prod.title)}</button>` : ''}
+                </div>`;
+        }
+
+        function renderReviews() {
+            const row = document.getElementById('reviews-row');
+            const section = document.getElementById('reviews-section');
+            const btn = document.getElementById('btn-add-review');
+            if (btn) btn.classList.toggle('hidden', !isAdmin);
+            if (!row || !section) return;
+            section.classList.toggle('hidden', reviews.length === 0 && !isAdmin);
+            const summary = document.getElementById('reviews-summary');
+            if (reviews.length) {
+                const avg = reviews.reduce((a, r) => a + (Number(r.rating) || 0), 0) / reviews.length;
+                summary.innerHTML = `${starsHTML(avg, 'text-base')} <span class="font-bold ml-1">${avg.toFixed(1)} de 5</span> · ${reviews.length} opinión${reviews.length === 1 ? '' : 'es'}`;
+            } else {
+                summary.innerHTML = isAdmin ? '<span class="text-gray-400">Aún no hay opiniones. Agrega las de tus clientes felices.</span>' : '';
+            }
+            row.innerHTML = reviews.slice(0, 20).map(r => reviewCardHTML(r, false)).join('');
+        }
+
+        function productReviewsAccordionHTML(productId) {
+            const list = productReviews(productId);
+            if (list.length === 0) return '';
+            return `
+                <details class="detail-accordion py-1">
+                    <summary class="flex items-center justify-between py-3 font-bold text-gray-900"><span>Opiniones (${list.length})</span><span class="acc-icon w-8 h-8 rounded-lg bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-plus"></i></span></summary>
+                    <div class="pb-4 space-y-3">${list.map(r => reviewCardHTML(r, true)).join('')}</div>
+                </details>`;
+        }
+
+        function openReviewModal(productId) {
+            if (!isAdmin) return;
+            const sel = document.getElementById('rev-product');
+            sel.innerHTML = '<option value="">General (sin perfume)</option>' + products.slice().sort((a, b) => (a.brand + a.title).localeCompare(b.brand + b.title))
+                .map(p => `<option value="${p.id}">${esc(p.brand + ' ' + p.title)}</option>`).join('');
+            sel.value = productId || '';
+            ['rev-name', 'rev-city', 'rev-text'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('rev-rating').value = '5';
+            reviewImageData = '';
+            const prev = document.getElementById('rev-image-preview');
+            prev.classList.add('hidden'); prev.src = '';
+            document.getElementById('review-modal').classList.remove('hidden');
+        }
+        function closeReviewModal() { document.getElementById('review-modal').classList.add('hidden'); }
+
+        async function uploadReviewImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const hq = file.size <= 3 * 1024 * 1024 ? await readFileAsDataURL(file) : await compressImage(file, 2000, 0.92);
+            reviewImageData = (await tryUploadToStorage(hq, 'opiniones')) || await compressImage(file, 1100, 0.85);
+            const prev = document.getElementById('rev-image-preview');
+            prev.src = reviewImageData; prev.classList.remove('hidden');
+            event.target.value = '';
+        }
+
+        async function saveReview(e) {
+            e.preventDefault();
+            const btn = document.getElementById('rev-save-btn');
+            btn.disabled = true; btn.innerText = 'Publicando...';
+            const payload = {
+                name: document.getElementById('rev-name').value.trim(),
+                city: document.getElementById('rev-city').value.trim(),
+                rating: Number(document.getElementById('rev-rating').value) || 5,
+                text: document.getElementById('rev-text').value.trim(),
+                productId: document.getElementById('rev-product').value || '',
+                image: reviewImageData || '',
+                isActive: true,
+                createdAt: Date.now()
+            };
+            try {
+                await window.addDoc(window.collection(window.db, "reviews"), payload);
+                closeReviewModal();
+                showToast('Opinión publicada');
+            } catch (err) {
+                alert('No se pudo guardar la opinión: ' + err.message);
+            } finally {
+                btn.disabled = false; btn.innerText = 'Publicar';
+            }
+        }
+
+        async function deleteReview(id) {
+            if (!isAdmin || !confirm('¿Eliminar esta opinión?')) return;
+            try { await window.deleteDoc(window.doc(window.db, "reviews", id)); showToast('Opinión eliminada'); }
+            catch (err) { alert('No se pudo eliminar: ' + err.message); }
+        }
+
+        // ===================== TEST: ENCUENTRA TU PERFUME IDEAL =====================
+        const QUIZ_AROMAS = {
+            'Dulce': ['dulce', 'vainilla', 'avainillado', 'caramelo', 'gourmand', 'chocolate', 'miel', 'tonka', 'praliné', 'praline', 'azúcar', 'azucar', 'algodón de azúcar', 'cacao', 'café', 'cafe', 'almendra', 'malvavisco'],
+            'Fresco': ['fresco', 'cítrico', 'citrico', 'limón', 'limon', 'bergamota', 'marino', 'acuático', 'acuatico', 'menta', 'verde', 'lavanda', 'pomelo', 'toronja', 'naranja', 'mandarina', 'jengibre', 'ozónico', 'ozonico'],
+            'Amaderado': ['madera', 'amaderado', 'sándalo', 'sandalo', 'cedro', 'oud', 'vetiver', 'pachulí', 'pachuli', 'abedul', 'cuero', 'musgo', 'tabaco'],
+            'Floral': ['floral', 'flor', 'rosa', 'jazmín', 'jazmin', 'azahar', 'tuberosa', 'peonía', 'peonia', 'lirio', 'gardenia', 'violeta', 'magnolia', 'iris', 'floral blanco'],
+            'Frutal': ['frutal', 'afrutado', 'fruta', 'fresa', 'manzana', 'pera', 'durazno', 'melocotón', 'piña', 'pina', 'frutos rojos', 'frambuesa', 'tropical', 'coco', 'mango', 'cereza', 'grosella', 'lichi', 'maracuyá'],
+            'Especiado': ['especiado', 'especias', 'canela', 'pimienta', 'cardamomo', 'azafrán', 'azafran', 'clavo', 'ámbar', 'ambar', 'incienso', 'nuez moscada', 'dátil', 'datil']
+        };
+        const QUIZ_NIGHT = ['Dulce', 'Amaderado', 'Especiado'];
+        const QUIZ_DAY = ['Fresco', 'Floral', 'Frutal'];
+        const QUIZ_STEPS = [
+            { key: 'gender', title: '¿Para quién es el perfume?', multi: false, options: [['Mujer', '👩 Para mujer'], ['Hombre', '👨 Para hombre'], ['Unisex', '✨ Unisex'], ['', '🤷 Me da igual']] },
+            { key: 'aromas', title: '¿Qué aromas te gustan?', hint: 'Puedes elegir varios', multi: true, options: Object.keys(QUIZ_AROMAS).map(a => [a, { Dulce: '🍯 Dulce', Fresco: '🍋 Fresco', Amaderado: '🌲 Amaderado', Floral: '🌸 Floral', Frutal: '🍓 Frutal', Especiado: '🌶️ Especiado' }[a]]) },
+            { key: 'moment', title: '¿Para qué momento?', multi: false, options: [['dia', '☀️ Día / oficina'], ['noche', '🌙 Noche / salidas'], ['', '🔁 Para todo']] },
+            { key: 'budget', title: '¿Cuál es tu presupuesto?', multi: false, options: [['0-100000', 'Hasta $100.000'], ['100000-200000', '$100.000 a $200.000'], ['200000-99999999', 'Más de $200.000'], ['', 'No importa']] }
+        ];
+        let quizStep = 0;
+        let quizAnswers = { gender: null, aromas: [], moment: null, budget: null };
+
+        function openQuiz() {
+            quizStep = 0;
+            quizAnswers = { gender: null, aromas: [], moment: null, budget: null };
+            renderQuizStep();
+            document.getElementById('quiz-modal').classList.remove('hidden');
+        }
+        function closeQuiz() { document.getElementById('quiz-modal').classList.add('hidden'); }
+
+        function renderQuizStep() {
+            const step = QUIZ_STEPS[quizStep];
+            document.getElementById('quiz-progress').innerText = `Pregunta ${quizStep + 1} de ${QUIZ_STEPS.length}`;
+            const val = quizAnswers[step.key];
+            const isSel = (v) => step.multi ? (val || []).includes(v) : val === v;
+            const canNext = step.multi ? (val || []).length > 0 : val !== null;
+            document.getElementById('quiz-body').innerHTML = `
+                <div class="w-full h-1.5 bg-gray-100 rounded-full mb-5 overflow-hidden"><div class="h-full bg-luxury-gold rounded-full" style="width:${((quizStep) / QUIZ_STEPS.length) * 100}%"></div></div>
+                <h4 class="font-cinzel font-bold text-xl text-gray-900 text-center">${step.title}</h4>
+                ${step.hint ? `<p class="text-center text-xs text-gray-500 mt-1">${step.hint}</p>` : ''}
+                <div class="grid grid-cols-2 gap-3 mt-5">
+                    ${step.options.map(([v, label]) => `<button onclick="selectQuizOption('${v}')" class="quiz-opt ${isSel(v) ? 'selected' : ''} border-2 border-gray-200 rounded-2xl py-4 px-3 font-bold text-sm text-gray-800 hover:border-luxury-gold transition">${label}</button>`).join('')}
+                </div>
+                <div class="flex items-center justify-between mt-6">
+                    <button onclick="quizBack()" class="text-xs font-bold text-gray-500 ${quizStep === 0 ? 'invisible' : ''}"><i class="fas fa-arrow-left mr-1"></i> Atrás</button>
+                    ${step.multi ? `<button onclick="quizNext()" ${canNext ? '' : 'disabled'} class="bg-luxury-dark disabled:opacity-40 text-white font-bold text-sm px-6 py-3 rounded-full">Siguiente <i class="fas fa-arrow-right ml-1"></i></button>` : ''}
+                </div>`;
+        }
+
+        function selectQuizOption(v) {
+            const step = QUIZ_STEPS[quizStep];
+            if (step.multi) {
+                const list = quizAnswers[step.key];
+                quizAnswers[step.key] = list.includes(v) ? list.filter(x => x !== v) : [...list, v];
+                renderQuizStep();
+            } else {
+                quizAnswers[step.key] = v;
+                quizNext();
+            }
+        }
+        function quizBack() { if (quizStep > 0) { quizStep--; renderQuizStep(); } }
+        function quizNext() {
+            if (quizStep < QUIZ_STEPS.length - 1) { quizStep++; renderQuizStep(); }
+            else renderQuizResults();
+        }
+
+        function computeQuizResults() {
+            const norm = (t) => normalizeTxt(t);
+            const [minB, maxB] = quizAnswers.budget ? quizAnswers.budget.split('-').map(Number) : [0, Infinity];
+            const wanted = quizAnswers.aromas.length ? quizAnswers.aromas : [];
+            return products.filter(p => p.isActive && !isSoldOut(p) && normalizeTxt(p.category) !== 'emprendedores').map(p => {
+                let score = 0;
+                const text = norm(`${p.notes} ${p.description} ${p.title}`);
+                if (quizAnswers.gender) {
+                    if (p.gender === quizAnswers.gender) score += 4;
+                    else if (p.gender === 'Unisex') score += 2;
+                    else score -= 6;
+                }
+                const matched = [];
+                wanted.forEach(a => { if (QUIZ_AROMAS[a].some(k => text.includes(norm(k)))) { score += 3; matched.push(a); } });
+                if (quizAnswers.moment === 'noche' && matched.some(a => QUIZ_NIGHT.includes(a))) score += 1;
+                if (quizAnswers.moment === 'dia' && matched.some(a => QUIZ_DAY.includes(a))) score += 1;
+                if (p.price < minB || p.price > maxB) score -= 5;
+                if (p.bestSeller || p.priority === 'TOP VIRAL') score += 1;
+                return { p, score, matched };
+            }).filter(x => x.score > 0).sort((a, b) => b.score - a.score || a.p.price - b.p.price).slice(0, 6);
+        }
+
+        function renderQuizResults() {
+            const results = computeQuizResults();
+            document.getElementById('quiz-progress').innerText = 'Tus resultados';
+            document.getElementById('quiz-body').innerHTML = `
+                <div class="text-center mb-5">
+                    <span class="inline-block w-12 h-12 rounded-full bg-luxury-gold text-black text-xl leading-[3rem]"><i class="fas fa-wand-magic-sparkles"></i></span>
+                    <h4 class="font-cinzel font-bold text-xl text-gray-900 mt-2">${results.length ? 'Estos perfumes son para ti' : 'No encontramos una coincidencia exacta'}</h4>
+                    <p class="text-xs text-gray-500 mt-1">${results.length ? 'Elegidos según tus respuestas' : 'Escríbenos por WhatsApp y te asesoramos personalmente'}</p>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    ${results.map(({ p, matched }) => `
+                        <div class="border border-gray-100 rounded-2xl overflow-hidden shadow-sm bg-white">
+                            <div class="aspect-square bg-gray-50 cursor-pointer" onclick="closeQuiz(); openDetailModal('${p.id}')"><img src="${getImages(p)[0]}" alt="" loading="lazy" class="w-full h-full object-cover"></div>
+                            <div class="p-2.5 text-center">
+                                <p class="text-[10px] font-bold text-luxury-gold-dark uppercase truncate">${esc(p.brand)}</p>
+                                <p class="font-cinzel text-xs font-bold uppercase line-clamp-2 min-h-[2rem]">${esc(p.title)}</p>
+                                ${matched.length ? `<p class="text-[10px] text-gray-500">${matched.join(' · ')}</p>` : ''}
+                                <p class="text-sm font-extrabold text-rose-600 mt-1">${formatPrice(p.price)}</p>
+                                <button onclick="addToCart('${p.id}')" class="mt-2 w-full bg-luxury-dark text-white text-[11px] font-bold py-1.5 rounded-lg"><i class="fas fa-cart-plus text-luxury-gold mr-1"></i> Añadir</button>
+                            </div>
+                        </div>`).join('')}
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 mt-6">
+                    <button onclick="openQuiz()" class="flex-1 border-2 border-gray-200 font-bold text-sm py-3 rounded-full"><i class="fas fa-rotate-left mr-1"></i> Volver a empezar</button>
+                    <a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, hice el test de perfume ideal y quiero asesoría.')}" target="_blank" rel="noopener" class="flex-1 text-center bg-emerald-500 text-white font-bold text-sm py-3 rounded-full"><i class="fab fa-whatsapp mr-1"></i> Quiero asesoría</a>
+                </div>`;
+        }
+
+        // ===================== FOTOS EN FIREBASE STORAGE (PÁGINA MÁS RÁPIDA) =====================
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const r = new FileReader();
+                r.onload = (e) => resolve(e.target.result);
+                r.onerror = reject;
+                r.readAsDataURL(file);
+            });
+        }
+        async function tryUploadToStorage(dataUrl, folder) {
+            if (typeof window.uploadImageToStorage !== 'function') return null;
+            try { return await window.uploadImageToStorage(dataUrl, folder); }
+            catch (err) { console.warn('Storage no disponible, se guarda dentro del producto', err); return null; }
+        }
+
+        async function migrateImagesToStorage() {
+            if (!isAdmin) return;
+            const pending = products.filter(p => getImages(p).some(src => String(src).startsWith('data:')));
+            if (pending.length === 0) return alert('Todas las fotos ya están optimizadas.');
+            if (!confirm(`Hay ${pending.length} producto(s) con fotos guardadas dentro de la base de datos, que hacen lenta la página.\n\n¿Pasarlas a Firebase Storage? Puede tardar unos minutos; no cierres la página.`)) return;
+            let done = 0, failed = 0;
+            for (const p of pending) {
+                try {
+                    const newImages = [];
+                    for (const src of getImages(p)) {
+                        if (String(src).startsWith('data:')) {
+                            const url = await tryUploadToStorage(src, 'productos');
+                            if (!url) throw new Error('Storage no disponible');
+                            newImages.push(url);
+                        } else newImages.push(src);
+                    }
+                    await window.updateDoc(window.doc(window.db, "products", p.id), { images: newImages, image: newImages[0] });
+                    done++;
+                    showToast(`Optimizando fotos: ${done} de ${pending.length}`);
+                } catch (err) {
+                    failed++;
+                    if (failed === 1 && done === 0) {
+                        return alert('No se pudo usar Firebase Storage. Actívalo en la consola de Firebase (Storage) y permite la escritura, luego intenta de nuevo.\n\nDetalle: ' + err.message);
+                    }
+                }
+            }
+            alert(`Listo: ${done} producto(s) optimizados${failed ? `, ${failed} con error` : ''}.`);
+        }
+
         function closeDetailModal(fromPop) {
             document.getElementById('detail-modal').classList.add('hidden');
             document.body.style.overflow = '';
             currentDetailId = null;
+            document.title = 'FRAGATTAPARFUMS | Perfumería Exclusiva';
             if (!fromPop && location.hash.startsWith('#producto=')) {
                 if (history.state && history.state.detail) history.back();
                 else history.replaceState(null, '', location.pathname + location.search);
@@ -2495,9 +3102,12 @@
         function renderCodSummary() {
             const subtotal = codItems.reduce((a, i) => a + i.price * i.quantity, 0);
             const savings = codItems.reduce((a, i) => a + (i.oldPrice && i.oldPrice > i.price ? (i.oldPrice - i.price) * i.quantity : 0), 0);
-            const ship = computeCodShipping();
+            const shipRaw = computeCodShipping();
+            const ship = shipRaw && isFreeShipping(subtotal) ? { ...shipRaw, cost: 0, free: true } : shipRaw;
             const fee = ship && !ship.metro ? Math.round((subtotal + ship.cost) * (storeSettings.codFeePct / 100)) : 0;
             const total = subtotal + (ship ? ship.cost : 0) + fee;
+            const codFree = document.getElementById('cod-free-ship');
+            if (codFree) codFree.innerHTML = freeShipBarHTML(subtotal);
             document.getElementById('cod-items').innerHTML = codItems.map((i, idx) => `
                 <div class="flex items-center gap-3">
                     <div class="relative shrink-0">
@@ -2515,7 +3125,7 @@
                     <span class="font-black text-sm">${formatPrice(i.price * i.quantity)}</span>
                 </div>`).join('');
             document.getElementById('cod-subtotal').innerText = formatPrice(subtotal);
-            document.getElementById('cod-shipping').innerText = ship ? formatPrice(ship.cost) : 'Selecciona tu ciudad';
+            document.getElementById('cod-shipping').innerText = ship ? (ship.free ? 'GRATIS' : formatPrice(ship.cost)) : 'Selecciona tu ciudad';
             document.getElementById('cod-fee-line').classList.toggle('hidden', fee <= 0);
             document.getElementById('cod-fee').innerText = formatPrice(fee);
             document.getElementById('cod-savings-line').classList.toggle('hidden', savings <= 0);
@@ -2525,7 +3135,7 @@
             method.classList.toggle('hidden', !ship);
             if (ship) {
                 document.getElementById('cod-ship-label').innerText = ship.label;
-                document.getElementById('cod-ship-price').innerText = formatPrice(ship.cost);
+                document.getElementById('cod-ship-price').innerText = ship.free ? 'GRATIS' : formatPrice(ship.cost);
             }
             document.getElementById('cod-submit-btn').innerText = `COMPLETAR COMPRA - ${formatPrice(total)}`;
             return { subtotal, ship, fee, total };
@@ -2553,7 +3163,7 @@
             if (v('cod-notes')) msg += `• Notas: ${v('cod-notes')}\n`;
             msg += `\n*PRODUCTOS:*\n`;
             codItems.forEach(i => { msg += `• ${i.brand ? i.brand + ' ' : ''}${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
-            msg += `\n*RESUMEN:*\n• Subtotal: ${formatPrice(t.subtotal)}\n• Envío (${ship.label}): ${formatPrice(ship.cost)}\n`;
+            msg += `\n*RESUMEN:*\n• Subtotal: ${formatPrice(t.subtotal)}\n• Envío (${ship.label}): ${t.ship && t.ship.free ? 'GRATIS' : formatPrice(ship.cost)}\n`;
             if (t.fee > 0) msg += `• Recargo contraentrega: ${formatPrice(t.fee)}\n`;
             msg += `*TOTAL A PAGAR AL RECIBIR:* ${formatPrice(t.total)}\n\n*MÉTODO DE PAGO:* Pago Contraentrega`;
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
