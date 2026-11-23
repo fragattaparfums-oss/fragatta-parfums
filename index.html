@@ -2043,6 +2043,50 @@
             else showToast(`${added} foto(s) agregadas`);
         }
 
+        function compressDataUrl(dataUrl, maxSide, quality) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onerror = reject;
+                img.onload = () => {
+                    const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(img.width * scale);
+                    canvas.height = Math.round(img.height * scale);
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        async function prepareImagesForSave(list) {
+            let images = list.slice();
+            // 1) Intentar subir a Storage todas las fotos que estén dentro del producto
+            for (let i = 0; i < images.length; i++) {
+                if (String(images[i]).startsWith('data:')) {
+                    const url = await tryUploadToStorage(images[i], 'productos');
+                    if (url) images[i] = url;
+                }
+            }
+            if (imagesBytes(images) <= MAX_DOC_IMAGES_BYTES) return { images, reduced: false };
+            // 2) Sin Storage: reducir la foto más pesada, paso a paso, hasta que todo quepa
+            const steps = [[1600, 0.9], [1400, 0.88], [1200, 0.85], [1000, 0.82], [850, 0.8]];
+            for (const [side, q] of steps) {
+                const order = images.map((src, i) => [i, String(src).startsWith('data:') ? String(src).length : 0])
+                    .filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]);
+                for (const [i] of order) {
+                    if (imagesBytes(images) <= MAX_DOC_IMAGES_BYTES) break;
+                    const smaller = await compressDataUrl(images[i], side, q);
+                    if (smaller.length < String(images[i]).length) images[i] = smaller;
+                }
+                if (imagesBytes(images) <= MAX_DOC_IMAGES_BYTES) return { images, reduced: true };
+            }
+            return null;
+        }
+
         async function handleProductSubmit(e) {
             e.preventDefault();
             const id = document.getElementById('prod-id').value;
@@ -2059,8 +2103,8 @@
                 originalPrice: Number(document.getElementById('prod-old-price').value) || null,
                 priority: document.getElementById('prod-priority').value,
                 featured: document.getElementById('prod-priority').value === 'TOP VIRAL',
-                image: editingImages[0] || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
-                images: editingImages.slice(),
+                image: null,
+                images: [],
                 notes: document.getElementById('prod-notes').value,
                 description: document.getElementById('prod-desc').value,
                 size: document.getElementById('prod-size').value.trim().toUpperCase(),
@@ -2070,10 +2114,28 @@
                 bestSeller: document.getElementById('prod-bestseller').checked,
                 isGift: document.getElementById('prod-gift').checked
             };
-            if (imagesBytes(payload.images) > MAX_DOC_IMAGES_BYTES) {
+            // Preparar fotos: 1) pasar a Storage las que estén dentro del producto (calidad intacta)
+            //                 2) si no hay Storage y no caben en 1 MB, reducir solo lo necesario
+            try {
+                btnSave.innerText = "Preparando fotos...";
+                const ready = await prepareImagesForSave(editingImages.slice());
+                if (!ready) {
+                    btnSave.innerText = "Guardar en Firebase";
+                    btnSave.disabled = false;
+                    return alert('Las fotos siguen siendo demasiado pesadas para Firebase (máximo 1 MB por producto). Quita alguna foto o usa enlaces (URL).');
+                }
+                editingImages = ready.images;
+                renderImagesEditor();
+                payload.images = ready.images;
+                // La foto principal NO se repite si está guardada dentro del producto (antes ocupaba el doble)
+                const first = ready.images[0];
+                payload.image = !first ? 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS' : (String(first).startsWith('data:') ? null : first);
+                if (ready.reduced) showToast('Algunas fotos se ajustaron para caber en Firebase');
+                btnSave.innerText = "Guardando...";
+            } catch (err) {
                 btnSave.innerText = "Guardar en Firebase";
                 btnSave.disabled = false;
-                return alert('Las fotos pesan demasiado para guardarse en Firebase (máximo ~1 MB por producto). Quita alguna o usa enlaces (URL).');
+                return alert('No se pudieron preparar las fotos: ' + err.message);
             }
 
             try {
