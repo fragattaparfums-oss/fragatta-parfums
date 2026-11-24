@@ -70,6 +70,21 @@
         .acc-icon i { transition: transform .2s ease; }
         .snap-row { scroll-snap-type: x mandatory; }
         .snap-row > * { scroll-snap-align: start; }
+        .filter-chip.active { background:#111315; color:#fff; border-color:#111315; }
+        .cat-circle .cat-ring { background:#e5e7eb; }
+        .cat-circle .cat-face { background:#fff; }
+        .cat-circle .cat-label { color:#4b5563; font-weight:600; }
+        .cat-circle.active .cat-ring { background:linear-gradient(45deg,#d4af37,#fde68a); }
+        .cat-circle.active .cat-face { background:#111315; color:#d4af37; }
+        .cat-circle.active .cat-label { color:#111315; font-weight:800; }
+        .seg.active { background:#111315; color:#fff; }
+        @media (max-width: 1023px) {
+            .filters-panel { position:fixed; left:0; right:0; bottom:0; z-index:45; border-radius:24px 24px 0 0; box-shadow:0 -10px 30px rgba(0,0,0,.2); transform:translateY(105%); transition:transform .3s ease; }
+            .filters-panel.open { transform:translateY(0); }
+        }
+        @keyframes heartPop { 0% { transform:scale(1);} 40% { transform:scale(1.35);} 100% { transform:scale(1);} }
+        .fav-btn.pop i { animation: heartPop .35s ease; }
+        .fav-btn.is-fav i { color:#e11d48; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased bg-[#f6f7f9]">
@@ -79,12 +94,16 @@
 
     <!-- Header Minimalista: Solo Título y Carrito -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-            <h1 class="font-cinzel text-base sm:text-xl font-bold text-gray-900 tracking-wider uppercase">Catálogo de Perfumes</h1>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between">
+            <h1 class="font-cinzel text-[13px] sm:text-xl font-bold text-gray-900 tracking-wide sm:tracking-wider uppercase whitespace-nowrap">Catálogo de Perfumes</h1>
 
             <div class="flex items-center gap-3">
                 <button id="admin-lock-btn" onclick="handleAdminToggle()" title="Acceso Admin" class="text-gray-400 hover:text-amber-500 transition p-1 text-sm">
                     <i id="admin-lock-icon" class="fas fa-lock"></i>
+                </button>
+                <button onclick="openFavorites()" class="relative w-9 h-9 rounded-full bg-white border border-luxury-gold text-rose-600 flex items-center justify-center shadow-sm hover:bg-rose-50 transition" title="Mis favoritos">
+                    <i class="far fa-heart"></i>
+                    <span id="fav-badge" class="hidden absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[9px] min-w-[18px] h-[18px] px-1 rounded-full font-bold flex items-center justify-center">0</span>
                 </button>
                 <button onclick="toggleCartModal()" class="bg-luxury-dark hover:bg-black text-white px-3.5 py-1.5 rounded-full font-semibold text-xs flex items-center gap-2 border border-luxury-gold transition shadow">
                     <i class="fas fa-shopping-cart text-amber-400 text-xs"></i>
@@ -107,70 +126,120 @@
     <!-- Contenido Principal -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
 
-        <!-- Filtros -->
-        <section class="bg-white p-3.5 sm:p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 space-y-3.5">
-            <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
-                <div class="relative w-full sm:w-72 flex-shrink-0">
-                    <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                    <input type="text" id="search-input" oninput="applyFilters()" placeholder="Buscar fragancia, marca..." class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white transition">
-                </div>
-
-                <div class="flex items-center gap-1.5 text-xs font-bold ml-auto sm:ml-0 flex-shrink-0">
-                    <button onclick="setPriorityFilter('LO NUEVO', this)" id="prio-btn-nuevo" class="prio-btn bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-400 hover:text-white px-3 py-1.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap shadow-sm">
-                        <i class="fas fa-fire text-amber-500"></i> 🔥 LO NUEVO
-                    </button>
-                    <button onclick="setPriorityFilter('TOP VIRAL', this)" id="prio-btn-viral" class="prio-btn bg-yellow-50 text-yellow-900 border border-yellow-300 hover:bg-yellow-400 px-3 py-1.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap shadow-sm">
-                        <i class="fas fa-bolt text-yellow-600"></i> ⚡ TOP VIRAL
-                    </button>
-                </div>
+        <section id="shop-bar" class="mb-4 space-y-3">
+            <div class="relative">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="search" id="search-input" oninput="onSearchInput()" placeholder="Buscar perfume, marca o nota..." class="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-full text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-luxury-gold transition">
             </div>
-
-            <!-- Categorías -->
-            <div class="pt-2 border-t border-gray-100 flex items-center gap-1.5 overflow-x-auto text-xs hide-scrollbar">
-                <span class="font-bold text-gray-400 uppercase text-[10px] tracking-wider whitespace-nowrap mr-1">CATEGORÍAS:</span>
-                <button onclick="setCategoryFilter('Todas', this)" class="cat-btn ring-2 ring-offset-2 ring-luxury-dark bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Todas</button>
-                <button onclick="setCategoryFilter('Árabe', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Árabe</button>
-                <button onclick="setCategoryFilter('Diseñador', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Diseñador</button>
-                <button onclick="setCategoryFilter('Nicho', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Nicho</button>
-                <button onclick="setCategoryFilter('Body Spray', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Body Spray</button>
-                <button onclick="setCategoryFilter('Kids', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Kids</button>
-                <button onclick="setCategoryFilter('Emprendedores', this)" class="cat-btn bg-amber-100 border border-amber-300 hover:bg-amber-200 text-amber-900 font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Emprendedores 🚀</button>
-                <button onclick="setCategoryFilter('Promociones', this)" class="cat-btn bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Promociones 🏷️</button>
+            <div class="flex gap-2 sm:gap-3 overflow-x-auto hide-scrollbar pb-1 lg:justify-center">
+                <button onclick="setCategoryFilter('Todas', this)" class="cat-btn cat-circle active shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl"><i class="fas fa-star"></i></span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Todos</span>
+                </button>
+                <button onclick="setCategoryFilter('Árabe', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🕌</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Árabe</span>
+                </button>
+                <button onclick="setCategoryFilter('Diseñador', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">💎</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Diseñador</span>
+                </button>
+                <button onclick="setCategoryFilter('Nicho', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🌿</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Nicho</span>
+                </button>
+                <button onclick="setCategoryFilter('Body Spray', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🫧</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Body Spray</span>
+                </button>
+                <button onclick="setCategoryFilter('Kits', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🎁</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Kits</span>
+                </button>
+                <button onclick="setCategoryFilter('Promociones', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🏷️</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Promociones</span>
+                </button>
+                <button onclick="setCategoryFilter('Emprendedores', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🚀</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Emprendedores</span>
+                </button>
             </div>
-
-            <div class="pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div class="flex items-center gap-2">
-                    <span class="font-bold text-gray-700 uppercase text-[10px] tracking-wider">GÉNERO:</span>
-                    <div class="flex items-center gap-1">
-                        <button onclick="setGenderFilter('Todos', this)" class="gender-btn ring-2 ring-offset-2 ring-luxury-dark bg-luxury-dark text-white px-3 py-1 rounded-md font-medium transition text-xs">Todos</button>
-                        <button onclick="setGenderFilter('Hombre', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">👨 Hombre</button>
-                        <button onclick="setGenderFilter('Mujer', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">👩 Mujer</button>
-                        <button onclick="setGenderFilter('Unisex', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">✨ Unisex</button>
-                    </div>
+            <div class="flex items-center gap-2">
+                <div class="flex bg-white border border-gray-200 rounded-full p-0.5 text-[11px] sm:text-xs font-bold flex-1 lg:flex-none shadow-sm">
+                    <button onclick="setGenderFilter('Todos', this)" class="gender-btn seg active flex-1 lg:flex-none lg:px-5 py-2 rounded-full transition">Todos</button>
+                    <button onclick="setGenderFilter('Mujer', this)" class="gender-btn seg flex-1 lg:flex-none lg:px-5 py-2 rounded-full transition">Mujer</button>
+                    <button onclick="setGenderFilter('Hombre', this)" class="gender-btn seg flex-1 lg:flex-none lg:px-5 py-2 rounded-full transition">Hombre</button>
+                    <button onclick="setGenderFilter('Unisex', this)" class="gender-btn seg flex-1 lg:flex-none lg:px-5 py-2 rounded-full transition">Unisex</button>
                 </div>
-
-                <div class="flex items-center gap-2 ml-auto">
-                    <label for="sort-select" class="text-xs text-gray-500 font-medium">Ordenar por:</label>
-                    <select id="sort-select" onchange="applyFilters()" class="bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-amber-400">
-                        <option value="featured">🔥 Prioridad</option>
-                        <option value="name">Nombre (A-Z)</option>
-                    </select>
-                </div>
+                <button onclick="openFiltersSheet()" class="lg:hidden shrink-0 bg-white border-2 border-luxury-gold rounded-full px-3.5 py-2 text-xs font-black shadow-sm flex items-center gap-1.5">
+                    <i class="fas fa-sliders-h"></i> Filtros <span id="filters-count" class="hidden bg-luxury-dark text-luxury-gold rounded-full px-1.5 text-[10px]">0</span>
+                </button>
+            </div>
+            <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar text-[11px]">
+                <div id="active-filters" class="flex items-center gap-1.5"></div>
+                <span id="results-count" class="ml-auto shrink-0 text-gray-500 pl-2"></span>
             </div>
         </section>
 
-        <!-- Rejilla de Productos -->
-        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-            <div class="col-span-full text-center py-12 text-gray-500 text-sm">
-                <i class="fas fa-spinner fa-spin text-amber-500 text-2xl mb-2"></i>
-                <p>Cargando productos...</p>
-            </div>
-        </div>
+        <div id="filters-overlay" onclick="closeFiltersSheet()" class="hidden lg:hidden fixed inset-0 bg-black/50 z-40"></div>
 
-        <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-gray-300">
-            <i class="fas fa-search-minus text-4xl text-gray-300 mb-3"></i>
-            <h3 class="font-cinzel text-lg font-bold text-gray-700">No se encontraron fragancias</h3>
-            <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Restablecer Filtros</button>
+        <div class="lg:flex lg:gap-6 lg:items-start">
+            <aside id="filters-panel" class="filters-panel bg-white lg:w-60 lg:shrink-0 lg:border lg:border-gray-100 lg:rounded-2xl lg:shadow-sm lg:sticky lg:top-24 text-xs">
+                <div class="p-4 space-y-4 max-h-[80vh] lg:max-h-none overflow-y-auto">
+                    <div class="lg:hidden w-10 h-1.5 bg-gray-300 rounded-full mx-auto"></div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-cinzel font-bold text-lg">Filtros</span>
+                        <button onclick="resetFilters()" class="font-bold text-gray-500 underline">Limpiar todo</button>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 tracking-wider mb-1.5">AROMA</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setAromaFilter('Todos', this)" class="aroma-chip filter-chip active border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">Todos</button>
+                            <button onclick="setAromaFilter('Dulce', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🍯 Dulce</button>
+                            <button onclick="setAromaFilter('Fresco', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🍋 Fresco</button>
+                            <button onclick="setAromaFilter('Amaderado', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🌲 Amaderado</button>
+                            <button onclick="setAromaFilter('Floral', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🌸 Floral</button>
+                            <button onclick="setAromaFilter('Frutal', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🍓 Frutal</button>
+                            <button onclick="setAromaFilter('Especiado', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🌶️ Especiado</button>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 tracking-wider mb-1.5">DESTACADOS</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setPriorityFilter('Todas', this)" class="prio-chip filter-chip active border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">Todos</button>
+                            <button onclick="setPriorityFilter('LO NUEVO', this)" class="prio-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🔥 Lo nuevo</button>
+                            <button onclick="setPriorityFilter('TOP VIRAL', this)" class="prio-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">⚡ Top viral</button>
+                            <button onclick="setPriorityFilter('BESTSELLER', this)" class="prio-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">👑 Más pedidos</button>
+                            <button onclick="setPriorityFilter('FAVORITOS', this)" class="prio-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">❤️ Mis favoritos</button>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 tracking-wider mb-1.5">ORDENAR POR</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setSortOption('featured', this)" class="sort-chip filter-chip active border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">Destacados</button>
+                            <button onclick="setSortOption('name', this)" class="sort-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">A–Z</button>
+                        </div>
+                        <select id="sort-select" class="hidden"><option value="featured">Destacados</option><option value="name">A-Z</option></select>
+                    </div>
+                    <button onclick="closeFiltersSheet()" id="filters-apply" class="lg:hidden w-full bg-luxury-dark text-white font-bold py-3.5 rounded-2xl text-sm">Ver perfumes</button>
+                </div>
+            </aside>
+
+            <div class="flex-1 min-w-0 mt-1 lg:mt-0">
+                <div id="search-notice" class="hidden mb-3"></div>
+                <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+                    <div class="col-span-full text-center py-12 text-gray-500 text-sm">
+                        <i class="fas fa-spinner fa-spin text-amber-500 text-2xl mb-2"></i>
+                        <p>Cargando productos...</p>
+                    </div>
+                </div>
+                <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-gray-300">
+                    <i class="fas fa-search-minus text-4xl text-gray-300 mb-3"></i>
+                    <h3 class="font-cinzel text-lg font-bold text-gray-700">No se encontraron fragancias</h3>
+                    <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Restablecer Filtros</button>
+                </div>
+            </div>
         </div>
 
     </main>
@@ -188,6 +257,7 @@
                     <i class="fas fa-arrow-left"></i> Volver al catálogo
                 </button>
                 <div class="flex items-center gap-2">
+                    <button id="detail-fav-btn" onclick="toggleFavorite(currentDetailId, this)" class="fav-btn w-9 h-9 rounded-full border border-gray-200 hover:border-rose-300 text-gray-600 flex items-center justify-center transition" title="Guardar en favoritos"><i class="far fa-heart"></i></button>
                     <button onclick="shareCurrentProduct()" class="w-9 h-9 rounded-full border border-gray-200 hover:border-luxury-gold text-gray-600 flex items-center justify-center transition" title="Compartir"><i class="fas fa-share-alt"></i></button>
                     <button onclick="closeDetailModal()" class="w-9 h-9 rounded-full bg-luxury-dark text-white flex items-center justify-center hover:bg-black transition" title="Cerrar"><i class="fas fa-times"></i></button>
                 </div>
@@ -202,6 +272,22 @@
         <img id="lightbox-img" src="" alt="" class="max-w-[94vw] max-h-[86vh] object-contain">
         <button onclick="lightboxStep(1)" id="lightbox-next" class="absolute right-2 sm:right-6 text-white/80 hover:text-white text-2xl w-12 h-12 rounded-full bg-white/10"><i class="fas fa-chevron-right"></i></button>
         <span id="lightbox-counter" class="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/70 text-xs font-bold"></span>
+    </div>
+
+    <!-- MIS FAVORITOS -->
+    <div id="favorites-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex justify-end hidden" onclick="if (event.target === this) closeFavorites()">
+        <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl">
+            <div class="p-4 bg-luxury-dark text-white flex items-center justify-between">
+                <h3 class="font-cinzel font-bold text-base flex items-center gap-2"><i class="fas fa-heart text-rose-500"></i> Mis favoritos <span id="fav-count-title" class="text-luxury-gold text-sm"></span></h3>
+                <button onclick="closeFavorites()" class="text-gray-300 hover:text-white text-lg"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="favorites-list" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+            <div id="favorites-actions" class="p-4 border-t border-gray-100 space-y-2 hidden">
+                <button onclick="addAllFavoritesToCart()" class="w-full bg-luxury-dark hover:bg-black text-white font-bold py-3 rounded-xl text-sm"><i class="fas fa-cart-plus text-luxury-gold mr-1.5"></i> Añadir todos al carrito</button>
+                <button onclick="shareFavorites()" class="w-full border-2 border-emerald-500 text-emerald-700 font-bold py-2.5 rounded-xl text-xs"><i class="fab fa-whatsapp mr-1"></i> Compartir mi lista por WhatsApp</button>
+                <p class="text-[10px] text-gray-400 text-center">Tus favoritos se guardan en este celular o computador.</p>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL CARRITO & CHECKOUT (WhatsApp) -->
@@ -291,13 +377,14 @@
 
     <script>
         let products = [];
-        const CATALOG_CART_KEY = 'fragatta_catalogo_carrito';
+        const CATALOG_CART_KEY = 'catalogo_carrito';
         let cart = [];
         try { cart = JSON.parse(localStorage.getItem(CATALOG_CART_KEY)) || []; } catch (e) { cart = []; }
         let isAdmin = false;
         let currentCategory = 'Todas';
         let currentPriority = 'Todas';
         let currentGender = 'Todos';
+        let currentAroma = 'Todos';
         let showInactive = false;
 
         const ADMIN_PASSWORD = "J.p12022013";
@@ -325,19 +412,21 @@
                         brand: data.brand || 'LUXURY',
                         title: data.name || data.title || 'FRAGANCIA',
                         gender: data.gender || 'Unisex',
-                        category: data.category || 'Árabe',
+                        category: (data.category === 'Kids' ? 'Kits' : data.category) || 'Árabe',
                         priority: data.featured ? 'TOP VIRAL' : (data.priority || 'NINGUNA'),
-                        image: data.image || (Array.isArray(data.images) && data.images[0]) || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
+                        image: data.image || (Array.isArray(data.images) && data.images[0]) || 'https://placehold.co/400x400/111315/d4af37?text=PERFUME',
                         images: Array.isArray(data.images) && data.images.length ? data.images.filter(Boolean) : (data.image ? [data.image] : []),
                         size: data.size || '',
                         concentration: data.concentration || '',
                         longevity: data.longevity || '',
                         notes: data.notes || '',
                         description: data.description || '',
+                        bestSeller: data.bestSeller === true,
                         isActive: data.isActive !== false
                     };
                 });
                 renderProducts();
+                updateFavBadge();
                 openProductFromHash();
                 if (currentDetailId && !document.getElementById('detail-modal').classList.contains('hidden')) renderDetail(currentDetailId, true);
             }, (error) => {
@@ -375,39 +464,40 @@
             const searchVal = document.getElementById('search-input').value;
             const sortVal = document.getElementById('sort-select').value;
 
-            let filtered = products.filter(p => {
-                if (showInactive) {
-                    if (p.isActive) return false;
-                } else {
-                    if (!p.isActive) return false;
-                }
-
+            const query = String(searchVal || '').trim();
+            const visible = products.filter(p => showInactive ? !p.isActive : p.isActive);
+            const passesFilters = (p) => {
                 const isEmprendedores = p.category.toLowerCase() === 'emprendedores';
-                let matchesCat = (currentCategory === 'Todas') ? !isEmprendedores : (p.category.toLowerCase() === currentCategory.toLowerCase());
-                const matchesPrio = (currentPriority === 'Todas') || p.priority === currentPriority;
+                const matchesCat = (currentCategory === 'Todas') ? (query ? true : !isEmprendedores) : (p.category.toLowerCase() === currentCategory.toLowerCase());
+                const matchesPrio = (currentPriority === 'Todas') || (currentPriority === 'BESTSELLER' ? p.bestSeller : (currentPriority === 'FAVORITOS' ? isFavorite(p.id) : p.priority === currentPriority));
                 const matchesGender = (currentGender === 'Todos') || p.gender === currentGender;
-                
-                const normalize = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-                const searchTerms = normalize(searchVal).split(' ').filter(t => t);
-
-                const matchesSearch = searchTerms.length === 0 || searchTerms.every(term => 
-                    normalize(p.title).includes(term) || 
-                    normalize(p.brand).includes(term) || 
-                    normalize(p.notes).includes(term)
-                );
-
-                return matchesCat && matchesPrio && matchesGender && matchesSearch;
-            });
+                return matchesCat && matchesPrio && matchesGender && matchesAromaFilter(p);
+            };
+            let filtered;
+            let searchFallback = false;
+            const scores = new Map();
+            if (query) {
+                visible.forEach(p => { const sc = smartSearchScore(p, query); if (sc > 0) scores.set(p.id, sc); });
+                const matches = visible.filter(p => scores.has(p.id));
+                filtered = matches.filter(passesFilters);
+                if (filtered.length === 0 && matches.length > 0) { filtered = matches; searchFallback = true; }
+            } else {
+                filtered = visible.filter(passesFilters);
+            }
+            renderSearchNotice(query, filtered.length, searchFallback);
+            updateFilterSummary(filtered.length);
 
             if (sortVal === 'name') {
                 filtered.sort((a, b) => a.title.localeCompare(b.title));
+            } else if (query) {
+                filtered.sort((a, b) => (scores.get(b.id) || 0) - (scores.get(a.id) || 0));
             } else if (currentPriority === 'Todas') {
                 filtered = interleaveProducts(filtered);
             }
 
             if (filtered.length === 0) {
                 grid.innerHTML = '';
-                emptyState.classList.remove('hidden');
+                emptyState.classList.toggle('hidden', !!query);
                 return;
             }
 
@@ -428,7 +518,8 @@
                     <div class="cursor-pointer" onclick="openDetailModal('${p.id}')">
                         <div class="relative w-full h-36 sm:h-48 overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center mb-2">
                             ${badgeHTML ? `<div class="absolute top-2 left-2 z-10">${badgeHTML}</div>` : ''}
-                            ${getImages(p).length > 1 ? `<div class="absolute bottom-2 right-2 z-10 bg-white/90 text-gray-700 font-bold text-[9px] px-1.5 py-0.5 rounded-full shadow"><i class="fas fa-images mr-0.5"></i>${getImages(p).length}</div>` : ''}
+                            ${getImages(p).length > 1 ? `<div class="absolute top-2 right-2 z-10 bg-white/90 text-gray-700 font-bold text-[9px] px-1.5 py-0.5 rounded-full shadow"><i class="fas fa-images mr-0.5"></i>${getImages(p).length}</div>` : ''}
+                            ${favHeartHTML(p.id, 'absolute bottom-2 right-2 z-20')}
                             <img src="${p.image}" alt="${p.title}" class="object-cover h-full w-full group-hover:scale-105 transition duration-500">
                         </div>
 
@@ -575,7 +666,7 @@
 
             const notes = (document.getElementById('ship-notes')?.value || '').trim();
             const units = cart.reduce((s, i) => s + i.quantity, 0);
-            let msg = `*NUEVA LISTA DE PRODUCTOS - CATÁLOGO FRAGATTA*\n\n`;
+            let msg = `*NUEVA LISTA DE PRODUCTOS - CATÁLOGO*\n\n`;
             msg += `*CLIENTE:*\n`;
             msg += `• Nombre: ${name}\n• Teléfono: ${phone}\n• Ciudad: ${city}\n• Dirección: ${address}\n`;
             if (notes) msg += `• Notas: ${notes}\n`;
@@ -588,39 +679,33 @@
             cart = []; saveCart(); updateCartUI();
         }
 
-        function setCategoryFilter(cat, btn = null) { 
-            currentCategory = cat; 
-            if(btn) {
-                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark'));
-                btn.classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
-            }
-            renderProducts(); 
+        function setCategoryFilter(cat, btn = null) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b === btn || (!btn && b.getAttribute('onclick').includes(`'${cat}'`))));
+            renderProducts();
         }
 
-        function setPriorityFilter(prio, btn = null) { 
-            currentPriority = (currentPriority === prio) ? 'Todas' : prio; 
-            document.querySelectorAll('.prio-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-amber-500'));
-            if(btn && currentPriority !== 'Todas') btn.classList.add('ring-2', 'ring-offset-2', 'ring-amber-500');
-            renderProducts(); 
+        function setPriorityFilter(prio, btn = null) {
+            currentPriority = prio || 'Todas';
+            document.querySelectorAll('.prio-chip').forEach(b => b.classList.toggle('active', b.getAttribute('onclick').includes(`'${currentPriority}'`)));
+            renderProducts();
         }
 
-        function setGenderFilter(gen, btn = null) { 
-            currentGender = gen; 
-            if(btn) {
-                document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark'));
-                btn.classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
-            }
-            renderProducts(); 
+        function setGenderFilter(gen, btn = null) {
+            currentGender = gen;
+            document.querySelectorAll('.gender-btn').forEach(b => b.classList.toggle('active', b.getAttribute('onclick').includes(`'${gen}'`)));
+            renderProducts();
         }
 
-        function resetFilters() { 
-            currentCategory = 'Todas'; 
-            currentPriority = 'Todas'; 
-            currentGender = 'Todos'; 
-            showInactive = false;
-            document.getElementById('search-input').value = ''; 
-            document.querySelectorAll('.cat-btn, .prio-btn, .gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark', 'ring-amber-500'));
-            renderProducts(); 
+        function resetFilters() {
+            currentCategory = 'Todas';
+            currentPriority = 'Todas';
+            currentGender = 'Todos';
+            currentAroma = 'Todos';
+            const sortSel = document.getElementById('sort-select'); if (sortSel) sortSel.value = 'featured';
+            const markFirst = (sel) => document.querySelectorAll(sel).forEach((b, i) => b.classList.toggle('active', i === 0));
+            ['.cat-btn', '.gender-btn', '.aroma-chip', '.prio-chip', '.sort-chip'].forEach(markFirst);
+            renderProducts();
         }
 
         function applyFilters() { renderProducts(); }
@@ -659,7 +744,7 @@
         function escMultiline(str) { return esc(str).replace(/\n/g, '<br>'); }
         function getImages(p) {
             const list = Array.isArray(p.images) && p.images.length ? p.images : (p.image ? [p.image] : []);
-            return list.length ? list : ['https://placehold.co/600x600/111315/d4af37?text=FRAGATTA'];
+            return list.length ? list : ['https://placehold.co/600x600/111315/d4af37?text=PERFUME'];
         }
 
         // ===================== PÁGINA DE PRODUCTO (SIN PRECIOS) =====================
@@ -785,6 +870,7 @@
                         ${related.map(r => `
                         <div class="shrink-0 w-40 sm:w-48 bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
                             <div class="relative aspect-square bg-gray-50 cursor-pointer" onclick="openDetailModal('${r.id}')">
+                                ${favHeartHTML(r.id, 'absolute top-2 left-2 z-20')}
                                 <img src="${getImages(r)[0]}" alt="${esc(r.title)}" class="w-full h-full object-cover">
                             </div>
                             <div class="p-2.5 text-center">
@@ -802,6 +888,7 @@
                 </div>
             `;
             attachGallerySwipe();
+            syncFavButtons();
         }
 
         function setDetailImage(i) { detailImgIndex = i; renderDetail(currentDetailId, true); }
@@ -838,6 +925,319 @@
             updateCartUI();
             renderDetail(currentDetailId, true);
             showToast(`${detailQty} unidad(es) añadidas al carrito`);
+        }
+
+        // ===================== AROMAS =====================
+        const QUIZ_AROMAS = {
+            'Dulce': ['dulce', 'vainilla', 'avainillado', 'caramelo', 'gourmand', 'chocolate', 'miel', 'tonka', 'praliné', 'praline', 'azúcar', 'azucar', 'algodón de azúcar', 'cacao', 'café', 'cafe', 'almendra', 'malvavisco'],
+            'Fresco': ['fresco', 'cítrico', 'citrico', 'limón', 'limon', 'bergamota', 'marino', 'acuático', 'acuatico', 'menta', 'verde', 'lavanda', 'pomelo', 'toronja', 'naranja', 'mandarina', 'jengibre', 'ozónico', 'ozonico'],
+            'Amaderado': ['madera', 'amaderado', 'sándalo', 'sandalo', 'cedro', 'oud', 'vetiver', 'pachulí', 'pachuli', 'abedul', 'cuero', 'musgo', 'tabaco'],
+            'Floral': ['floral', 'flor', 'rosa', 'jazmín', 'jazmin', 'azahar', 'tuberosa', 'peonía', 'peonia', 'lirio', 'gardenia', 'violeta', 'magnolia', 'iris', 'floral blanco'],
+            'Frutal': ['frutal', 'afrutado', 'fruta', 'fresa', 'manzana', 'pera', 'durazno', 'melocotón', 'piña', 'pina', 'frutos rojos', 'frambuesa', 'tropical', 'coco', 'mango', 'cereza', 'grosella', 'lichi', 'maracuyá'],
+            'Especiado': ['especiado', 'especias', 'canela', 'pimienta', 'cardamomo', 'azafrán', 'azafran', 'clavo', 'ámbar', 'ambar', 'incienso', 'nuez moscada', 'dátil', 'datil']
+        };
+        function normalizeTxt(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim(); }
+        function setAromaFilter(aroma, btn) {
+            currentAroma = aroma;
+            document.querySelectorAll('.aroma-chip').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderProducts();
+        }
+        function matchesAromaFilter(p) {
+            if (!currentAroma || currentAroma === 'Todos') return true;
+            const text = normalizeTxt(`${p.notes} ${p.description} ${p.title}`);
+            return (QUIZ_AROMAS[currentAroma] || []).some(k => text.includes(normalizeTxt(k)));
+        }
+        // ===================== BUSCADOR INTELIGENTE =====================
+        // Encuentra palabras parecidas (errores de escritura), sinónimos y familias de aroma
+        const SEARCH_SYNONYMS = {
+            'mujer': ['dama', 'femenino', 'femenina', 'women', 'woman'],
+            'dama': ['mujer', 'femenino'],
+            'hombre': ['caballero', 'masculino', 'men', 'man'],
+            'caballero': ['hombre', 'masculino'],
+            'unisex': ['ambos', 'mixto'],
+            'arabe': ['arabes', 'lattafa', 'armaf', 'afnan', 'al haramain', 'rasasi', 'maison alhambra'],
+            'disenador': ['diseñador', 'designer', 'marca'],
+            'vainilla': ['vanilla', 'avainillado', 'vanila'],
+            'oud': ['oudh', 'madera'],
+            'combo': ['combos', 'set', 'kit', 'promocion'],
+            'promo': ['promocion', 'promociones', 'oferta', 'combo'],
+            'oferta': ['promocion', 'promociones', 'descuento'],
+            'barato': ['economico', 'oferta', 'promocion'],
+            'regalo': ['combo', 'set', 'kit', 'kits'],
+            'decant': ['decants', 'muestra', 'ml', 'tamaño'],
+            'muestra': ['decant', 'decants'],
+            'kit': ['kits', 'set', 'caja', 'estuche', 'coffret', 'combo'],
+            'set': ['kit', 'kits', 'estuche', 'caja'],
+            'estuche': ['kit', 'kits', 'set'],
+            'caja': ['kit', 'kits', 'set'],
+            'kids': ['kit', 'kits'],
+            'spray': ['body spray', 'mist', 'splash'],
+            'splash': ['body spray', 'mist']
+        };
+
+        function levenshtein(a, b, max) {
+            if (Math.abs(a.length - b.length) > max) return max + 1;
+            let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+            for (let i = 1; i <= a.length; i++) {
+                const cur = [i];
+                let rowMin = i;
+                for (let j = 1; j <= b.length; j++) {
+                    cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+                    if (cur[j] < rowMin) rowMin = cur[j];
+                }
+                if (rowMin > max) return max + 1;
+                prev = cur;
+            }
+            return prev[b.length];
+        }
+
+        function singular(w) { return w.length > 4 && w.endsWith('es') ? w.slice(0, -2) : (w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w); }
+
+        function searchIndexFor(p) {
+            const main = normalizeTxt(`${p.title} ${p.brand} ${p.similarTo || ''}`);
+            const extra = normalizeTxt(`${p.notes} ${p.description} ${p.category} ${p.gender} ${p.concentration || ''} ${p.size || ''} ${(p.variants || []).map(v => v.label).join(' ')}`);
+            const words = new Set(`${main} ${extra}`.split(/[^a-z0-9ñ]+/).filter(w => w.length > 1).map(singular));
+            return { main, extra, words: [...words], compact: `${main} ${extra}`.replace(/[^a-z0-9ñ]/g, '') };
+        }
+
+        function termScore(idx, term) {
+            const t = singular(term);
+            if (t.length <= 3) {
+                // Palabras cortas (oud, eau...): deben coincidir como palabra, no dentro de otra ("cloud")
+                const inMain = idx.main.split(/[^a-z0-9ñ]+/).some(w => w === t || w.startsWith(t));
+                if (inMain) return 10;
+                if (idx.words.some(w => w === t || w.startsWith(t))) return 6;
+                return 0;
+            }
+            if (idx.main.includes(t)) return 10;
+            if (idx.extra.includes(t)) return 6;
+            if (t.length >= 4 && idx.compact.includes(t)) return 6; // "goodgirl" encuentra "good girl"
+            let best = 0;
+            const tol = t.length <= 3 ? 0 : (t.length <= 6 ? 1 : 2);
+            for (const w of idx.words) {
+                if (t.length >= 3 && (w.startsWith(t) || (w.length >= 4 && t.startsWith(w)))) best = Math.max(best, 7);
+                else if (tol > 0 && levenshtein(w, t, tol) <= tol) best = Math.max(best, 5);
+                if (best >= 7) break;
+            }
+            if (best) return best;
+            // Sinónimos y familias de aroma (ej: "dulce" encuentra vainilla, caramelo...)
+            const aromaKey = Object.keys(QUIZ_AROMAS).find(k => normalizeTxt(k) === t);
+            const syns = [...(SEARCH_SYNONYMS[t] || []), ...(aromaKey ? QUIZ_AROMAS[aromaKey] : [])];
+            const padded = ' ' + `${idx.main} ${idx.extra}`.replace(/[^a-z0-9ñ]+/g, ' ') + ' ';
+            for (const sy of syns) {
+                const n = normalizeTxt(sy).replace(/[^a-z0-9ñ]+/g, ' ').trim();
+                if (n && (padded.includes(' ' + n + ' ') || (!n.includes(' ') && idx.words.includes(singular(n))))) return 4;
+            }
+            return 0;
+        }
+
+        function smartSearchScore(p, query) {
+            const terms = normalizeTxt(query).split(/[^a-z0-9ñ]+/).filter(t => t.length > 1 || /\d/.test(t));
+            if (terms.length === 0) return 1;
+            const idx = searchIndexFor(p);
+            const scores = terms.map(t => termScore(idx, t));
+            const hits = scores.filter(x => x > 0).length;
+            const total = scores.reduce((a, b) => a + b, 0);
+            if (hits === terms.length) return total + 5;
+            // Si escribió varias palabras y una no coincide, igual se muestra (con menos prioridad)
+            if (terms.length > 1 && hits >= Math.ceil(terms.length / 2)) return total * 0.5;
+            return 0;
+        }
+
+        let searchTimer = null;
+        function onSearchInput() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(renderProducts, 180);
+        }
+
+        function activeFilterLabels() {
+            const out = [];
+            if (currentCategory !== 'Todas') out.push(currentCategory);
+            if (currentGender !== 'Todos') out.push(currentGender);
+            if (currentAroma && currentAroma !== 'Todos') out.push(currentAroma);
+            if (currentPriority !== 'Todas') out.push(currentPriority);
+            return out;
+        }
+
+        function renderSearchNotice(query, count, fallback) {
+            const box = document.getElementById('search-notice');
+            if (!box) return;
+            if (!query) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+            box.classList.remove('hidden');
+            const q = esc(query);
+            if (fallback) {
+                box.innerHTML = `<div class="bg-luxury-gold-light border border-luxury-gold/60 rounded-xl px-3 py-2.5 text-xs text-gray-800 flex flex-wrap items-center justify-between gap-2">
+                    <span><i class="fas fa-circle-info text-luxury-gold-dark mr-1"></i> No hay "<strong>${q}</strong>" con los filtros (${esc(activeFilterLabels().join(', '))}). Te mostramos las coincidencias de todo el catálogo.</span>
+                    <button onclick="resetFilters()" class="font-bold underline text-luxury-dark">Quitar filtros</button></div>`;
+            } else if (count > 0) {
+                box.innerHTML = `<p class="text-xs text-gray-500 px-1"><strong class="text-gray-800">${count}</strong> resultado${count === 1 ? '' : 's'} para "<strong class="text-gray-800">${q}</strong>" <button onclick="clearSearch()" class="ml-2 font-bold text-luxury-gold-dark underline">Borrar búsqueda</button></p>`;
+            } else {
+                box.innerHTML = `<div class="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs text-gray-700 flex flex-wrap items-center justify-between gap-2">
+                    <span>No encontramos "<strong>${q}</strong>". ¿Lo buscamos por ti?</span>
+                    <a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, ¿tienen ' + query + '?')}" target="_blank" rel="noopener" class="font-bold text-emerald-700"><i class="fab fa-whatsapp mr-1"></i> Preguntar por WhatsApp</a></div>`;
+            }
+        }
+
+        function clearSearch() {
+            const el = document.getElementById('search-input');
+            if (el) el.value = '';
+            renderProducts();
+        }
+        // ===================== PANEL DE FILTROS (celular) Y RESUMEN =====================
+        function openFiltersSheet() {
+            document.getElementById('filters-panel').classList.add('open');
+            document.getElementById('filters-overlay').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeFiltersSheet() {
+            document.getElementById('filters-panel').classList.remove('open');
+            document.getElementById('filters-overlay').classList.add('hidden');
+            if (document.getElementById('detail-modal').classList.contains('hidden')) document.body.style.overflow = '';
+        }
+        function setSortOption(v, btn) {
+            const sel = document.getElementById('sort-select');
+            if (sel) sel.value = v;
+            document.querySelectorAll('.sort-chip').forEach(b => b.classList.toggle('active', b === btn));
+            renderProducts();
+        }
+        function chipLabel(sel, value) {
+            const b = document.querySelector(`${sel}[onclick*="'${value}'"]`);
+            return b ? b.innerText.trim() : value;
+        }
+        function updateFilterSummary(count) {
+            // Filtros activos como etiquetas que se quitan con ✕
+            const chips = [];
+            const add = (label, action) => chips.push(`<button onclick="${action}" class="shrink-0 bg-luxury-gold-light border border-luxury-gold/60 rounded-full px-2.5 py-1 font-semibold whitespace-nowrap">${esc(label)} <i class="fas fa-times ml-0.5 text-[9px]"></i></button>`);
+            if (currentCategory !== 'Todas') add(currentCategory, "setCategoryFilter('Todas')");
+            if (currentGender !== 'Todos') add(currentGender, "setGenderFilter('Todos')");
+            if (currentAroma && currentAroma !== 'Todos') add(chipLabel('.aroma-chip', currentAroma), "setAromaFilter('Todos', document.querySelector('.aroma-chip'))");
+            if (currentPriority !== 'Todas') add(chipLabel('.prio-chip', currentPriority), "setPriorityFilter('Todas')");
+            if (chips.length > 1) chips.push(`<button onclick="resetFilters()" class="shrink-0 text-gray-500 underline font-semibold px-1">Limpiar</button>`);
+            const box = document.getElementById('active-filters');
+            if (box) box.innerHTML = chips.join('');
+            // Número de filtros del panel (aroma, precio, destacados)
+            const panelCount = [currentAroma && currentAroma !== 'Todos', currentPriority !== 'Todas'].filter(Boolean).length;
+            const badge = document.getElementById('filters-count');
+            if (badge) { badge.innerText = panelCount; badge.classList.toggle('hidden', panelCount === 0); }
+            const rc = document.getElementById('results-count');
+            if (rc) rc.innerHTML = `<strong class="text-gray-800">${count}</strong> perfume${count === 1 ? '' : 's'}`;
+            const apply = document.getElementById('filters-apply');
+            if (apply) apply.innerText = count > 0 ? `Ver ${count} perfume${count === 1 ? '' : 's'}` : 'No hay perfumes con estos filtros';
+        }
+        // ===================== FAVORITOS (CORAZÓN) =====================
+        const FAV_KEY = 'catalogo_favoritos';
+        let favorites = [];
+        try { favorites = JSON.parse(localStorage.getItem(FAV_KEY)) || []; if (!Array.isArray(favorites)) favorites = []; } catch (e) { favorites = []; }
+
+        function saveFavorites() { try { localStorage.setItem(FAV_KEY, JSON.stringify(favorites)); } catch (e) { } }
+        function isFavorite(id) { return favorites.includes(String(id)); }
+
+        function favHeartHTML(id, posClasses) {
+            const fav = isFavorite(id);
+            return `<button type="button" data-fav-id="${esc(id)}" onclick="event.stopPropagation(); toggleFavorite('${esc(id)}', this)" class="fav-btn ${fav ? 'is-fav' : ''} ${posClasses || ''} w-8 h-8 rounded-full bg-white/95 shadow-md flex items-center justify-center text-gray-500 hover:text-rose-600 transition" title="${fav ? 'Quitar de favoritos' : 'Guardar en favoritos'}" aria-label="Favorito"><i class="${fav ? 'fas' : 'far'} fa-heart text-sm"></i></button>`;
+        }
+
+        function toggleFavorite(id, btn) {
+            if (!id) return;
+            id = String(id);
+            const adding = !isFavorite(id);
+            favorites = adding ? [id, ...favorites] : favorites.filter(x => x !== id);
+            saveFavorites();
+            syncFavButtons();
+            updateFavBadge();
+            if (btn) { btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop'); }
+            showToast(adding ? '❤️ Guardado en tus favoritos' : 'Quitado de tus favoritos');
+            if (!document.getElementById('favorites-modal').classList.contains('hidden')) renderFavorites();
+            if (currentPriority === 'FAVORITOS') renderProducts();
+        }
+
+        function syncFavButtons() {
+            document.querySelectorAll('[data-fav-id]').forEach(b => {
+                const fav = isFavorite(b.dataset.favId);
+                b.classList.toggle('is-fav', fav);
+                b.title = fav ? 'Quitar de favoritos' : 'Guardar en favoritos';
+                const i = b.querySelector('i');
+                if (i) { i.classList.toggle('fas', fav); i.classList.toggle('far', !fav); }
+            });
+            const d = document.getElementById('detail-fav-btn');
+            if (d) {
+                const fav = currentDetailId && isFavorite(currentDetailId);
+                d.classList.toggle('is-fav', !!fav);
+                d.querySelector('i').className = `${fav ? 'fas' : 'far'} fa-heart`;
+                d.title = fav ? 'Quitar de favoritos' : 'Guardar en favoritos';
+            }
+        }
+
+        function favoriteProducts() {
+            // Solo los que siguen activos en la tienda, en el orden en que se guardaron
+            return favorites.map(id => products.find(p => String(p.id) === id && p.isActive)).filter(Boolean);
+        }
+
+        function updateFavBadge() {
+            const badge = document.getElementById('fav-badge');
+            if (!badge) return;
+            const n = products.length ? favoriteProducts().length : favorites.length;
+            badge.innerText = n;
+            badge.classList.toggle('hidden', n === 0);
+        }
+
+        function openFavorites() {
+            renderFavorites();
+            document.getElementById('favorites-modal').classList.remove('hidden');
+        }
+        function closeFavorites() { document.getElementById('favorites-modal').classList.add('hidden'); }
+
+        function renderFavorites() {
+            const list = favoriteProducts();
+            document.getElementById('fav-count-title').innerText = list.length ? `(${list.length})` : '';
+            document.getElementById('favorites-actions').classList.toggle('hidden', list.length === 0);
+            const box = document.getElementById('favorites-list');
+            if (list.length === 0) {
+                box.innerHTML = `<div class="text-center py-12 text-gray-500">
+                    <i class="far fa-heart text-5xl text-rose-200"></i>
+                    <p class="font-bold text-gray-800 mt-3">Aún no tienes favoritos</p>
+                    <p class="text-xs mt-1">Toca el <i class="far fa-heart text-rose-500"></i> en cualquier perfume para guardarlo y verlo aquí después.</p>
+                    <button onclick="closeFavorites()" class="mt-4 bg-luxury-dark text-white text-xs font-bold px-4 py-2 rounded-lg">Ver perfumes</button></div>`;
+                return;
+            }
+            box.innerHTML = list.map(p => `
+                <div class="flex items-center gap-3 border border-gray-100 rounded-2xl p-2.5">
+                    <img src="${getImages(p)[0]}" alt="" loading="lazy" class="w-16 h-16 rounded-xl object-cover bg-gray-50 cursor-pointer" onclick="closeFavorites(); openDetailModal('${p.id}')">
+                    <div class="flex-1 min-w-0 cursor-pointer" onclick="closeFavorites(); openDetailModal('${p.id}')">
+                        <p class="text-[10px] font-bold text-luxury-gold-dark uppercase truncate">${esc(p.brand)}</p>
+                        <p class="font-cinzel text-xs font-bold uppercase truncate">${esc(p.title)}</p>
+                        ${p.size ? `<p class="text-[10px] text-gray-500 font-semibold">${esc(p.size)}</p>` : ''}
+                    </div>
+                    <div class="flex flex-col gap-1.5 shrink-0">
+                        <button onclick="addToCart('${p.id}')" class="w-9 h-9 rounded-lg bg-luxury-dark text-luxury-gold" title="Añadir al carrito"><i class="fas fa-cart-plus"></i></button>
+                        <button onclick="toggleFavorite('${p.id}')" class="w-9 h-9 rounded-lg bg-rose-50 text-rose-600" title="Quitar de favoritos"><i class="fas fa-heart-crack"></i></button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function addAllFavoritesToCart() {
+            const list = favoriteProducts();
+            if (list.length === 0) return showToast('No hay favoritos para añadir');
+            list.forEach(p => {
+                const existing = cart.find(i => i.id === p.id);
+                if (existing) existing.quantity += 1;
+                else cart.push(cartItemFrom(p, 1));
+            });
+            saveCart();
+            updateCartUI();
+            closeFavorites();
+            toggleCartModal();
+            showToast(`${list.length} favorito(s) añadidos al carrito`);
+        }
+
+        function shareFavorites() {
+            const list = favoriteProducts();
+            if (list.length === 0) return;
+            const base = location.origin + location.pathname;
+            let msg = `❤️ *Mis perfumes favoritos*\n\n`;
+            list.forEach((p, i) => { msg += `${i + 1}. ${p.brand} ${p.title}\n${base}#producto=${encodeURIComponent(p.id)}\n`; });
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         function closeDetailModal(fromPop) {
