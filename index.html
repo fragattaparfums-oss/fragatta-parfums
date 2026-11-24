@@ -414,9 +414,9 @@
                     <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🫧</span></span>
                     <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Body Spray</span>
                 </button>
-                <button onclick="setCategoryFilter('Kids', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
-                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">👶</span></span>
-                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Kids</span>
+                <button onclick="setCategoryFilter('Kits', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🎁</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Kits</span>
                 </button>
                 <button onclick="setCategoryFilter('Promociones', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
                     <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🏷️</span></span>
@@ -1089,7 +1089,7 @@
                         <option value="Diseñador">Diseñador</option>
                         <option value="Nicho">Nicho</option>
                         <option value="Body Spray">Body Spray</option>
-                        <option value="Kids">Kids</option>
+                        <option value="Kits">Kits (cajas de regalo)</option>
                         <option value="Emprendedores">Emprendedores 🚀</option>
                     </select>
                 </div>
@@ -1152,7 +1152,7 @@
                             <option value="Diseñador">Diseñador</option>
                             <option value="Nicho">Nicho</option>
                             <option value="Body Spray">Body Spray</option>
-                            <option value="Kids">Kids</option>
+                            <option value="Kits">Kits (cajas de regalo)</option>
                             <option value="Emprendedores">Emprendedores</option>
                             <option value="Promociones">Promociones</option>
                         </select>
@@ -1494,7 +1494,7 @@
                         brand: data.brand || 'LUXURY',
                         title: data.name || data.title || 'FRAGANCIA',
                         gender: data.gender || 'Unisex',
-                        category: data.category || 'Árabe',
+                        category: (data.category === 'Kids' ? 'Kits' : data.category) || 'Árabe',
                         price: Number(data.price) || 0,
                         oldPrice: data.originalPrice ? Number(data.originalPrice) : (data.oldPrice ? Number(data.oldPrice) : null),
                         priority: data.featured ? 'TOP VIRAL' : (data.priority || 'NINGUNA'),
@@ -1568,6 +1568,7 @@
         }
 
         function navigateFromPromo(category) {
+            if (category === 'Kids') category = 'Kits';
             let targetBtn = null;
             const buttons = document.querySelectorAll('.cat-btn');
             buttons.forEach(b => {
@@ -3677,11 +3678,14 @@
             'promo': ['promocion', 'promociones', 'oferta', 'combo'],
             'oferta': ['promocion', 'promociones', 'descuento'],
             'barato': ['economico', 'oferta', 'promocion'],
-            'regalo': ['combo', 'set', 'kit'],
+            'regalo': ['combo', 'set', 'kit', 'kits'],
             'decant': ['decants', 'muestra', 'ml', 'tamaño'],
             'muestra': ['decant', 'decants'],
-            'nino': ['niño', 'niños', 'kids', 'infantil'],
-            'kids': ['niño', 'niños', 'infantil'],
+            'kit': ['kits', 'set', 'caja', 'estuche', 'coffret', 'combo'],
+            'set': ['kit', 'kits', 'estuche', 'caja'],
+            'estuche': ['kit', 'kits', 'set'],
+            'caja': ['kit', 'kits', 'set'],
+            'kids': ['kit', 'kits'],
             'spray': ['body spray', 'mist', 'splash'],
             'splash': ['body spray', 'mist']
         };
