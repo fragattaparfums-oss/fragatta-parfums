@@ -32,7 +32,7 @@
     <!-- Firebase SDK (Solo Base Nueva FRAGATTAWEB) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, getDocs, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref as storageRef, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         // CONEXIÓN ÚNICA A LA NUEVA BASE DE DATOS (FRAGATTAWEB)
@@ -58,6 +58,7 @@
         window.updateDoc = updateDoc;
         window.deleteDoc = deleteDoc;
         window.setDoc = setDoc;
+        window.getDoc = getDoc;
 
         // Subir fotos a Firebase Storage (devuelve un enlace liviano en vez de guardar la foto dentro del producto)
         window.uploadImageToStorage = async function(dataUrl, folder) {
@@ -153,9 +154,32 @@
         #announce-text { transition: opacity .4s ease; }
         .quiz-opt.selected { background:#111315; color:#fff; border-color:#d4af37; }
         .star-row i { color:#d4af37; }
+        .filter-chip.active { background:#111315; color:#fff; border-color:#111315; }
+        .cat-circle .cat-ring { background:#e5e7eb; }
+        .cat-circle .cat-face { background:#fff; }
+        .cat-circle .cat-label { color:#4b5563; font-weight:600; }
+        .cat-circle.active .cat-ring { background:linear-gradient(45deg,#d4af37,#fde68a); }
+        .cat-circle.active .cat-face { background:#111315; color:#d4af37; }
+        .cat-circle.active .cat-label { color:#111315; font-weight:800; }
+        .seg.active { background:#111315; color:#fff; }
+        @media (max-width: 1023px) {
+            .filters-panel { position:fixed; left:0; right:0; bottom:0; z-index:45; border-radius:24px 24px 0 0; box-shadow:0 -10px 30px rgba(0,0,0,.2); transform:translateY(105%); transition:transform .3s ease; }
+            .filters-panel.open { transform:translateY(0); }
+        }
+        .size-opt.active { background:#111315; color:#fff; border-color:#d4af37; }
+        @keyframes waPulse { 0% { box-shadow:0 0 0 0 rgba(16,185,129,.55);} 70% { box-shadow:0 0 0 14px rgba(16,185,129,0);} 100% { box-shadow:0 0 0 0 rgba(16,185,129,0);} }
+        .wa-float { animation: waPulse 2.2s infinite; }
+        @keyframes heartPop { 0% { transform:scale(1);} 40% { transform:scale(1.35);} 100% { transform:scale(1);} }
+        .fav-btn.pop i { animation: heartPop .35s ease; }
+        .fav-btn.is-fav i { color:#e11d48; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased bg-[#f6f7f9]">
+
+    <!-- Botón flotante de WhatsApp -->
+    <a id="wa-float" href="https://wa.me/573105390115?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20sus%20perfumes" target="_blank" rel="noopener" class="wa-float fixed bottom-5 left-5 z-40 w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center text-3xl shadow-xl transition" title="Escríbenos por WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
@@ -206,8 +230,12 @@
                 <h1 class="font-cinzel text-lg sm:text-2xl font-bold text-gray-900 tracking-widest uppercase leading-tight">FRAGATTAPARFUMS</h1>
             </div>
 
-            <!-- CONTENEDOR SUPERIOR DERECHA: CARRITO -->
-            <div class="flex flex-col items-end gap-1.5">
+            <!-- CONTENEDOR SUPERIOR DERECHA: FAVORITOS Y CARRITO -->
+            <div class="flex items-center gap-1.5">
+                <button onclick="openFavorites()" class="relative w-9 h-9 rounded-full bg-white border border-luxury-gold text-rose-600 flex items-center justify-center shadow-sm hover:bg-rose-50 transition" title="Mis favoritos">
+                    <i class="far fa-heart"></i>
+                    <span id="fav-badge" class="hidden absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[9px] min-w-[18px] h-[18px] px-1 rounded-full font-bold flex items-center justify-center">0</span>
+                </button>
                 <button onclick="toggleCartModal()" class="bg-luxury-dark hover:bg-black text-white px-3.5 py-1.5 rounded-full font-semibold text-xs flex items-center gap-2 border border-luxury-gold transition shadow">
                     <i class="fas fa-shopping-cart text-amber-400 text-xs"></i>
                     <span id="cart-badge" class="bg-amber-500 text-black text-[10px] w-5 h-5 rounded-full font-bold flex items-center justify-center">0</span>
@@ -302,6 +330,16 @@
             <div id="bestsellers-row" class="flex gap-3 overflow-x-auto hide-scrollbar snap-row pb-2"></div>
         </section>
 
+        <!-- DECANTS Y TAMAÑOS DE PRUEBA -->
+        <section id="decants-section" class="hidden mb-6">
+            <div class="flex items-end justify-between mb-1">
+                <h2 class="font-cinzel font-bold text-lg sm:text-2xl text-gray-900 flex items-center gap-2"><i class="fas fa-flask text-luxury-gold"></i> Decants y tamaños de prueba</h2>
+                <span class="text-[10px] text-gray-400 font-semibold">Desliza <i class="fas fa-arrow-right"></i></span>
+            </div>
+            <p class="text-xs text-gray-500 mb-3">Prueba tu fragancia favorita en tamaño pequeño antes de llevar el frasco completo.</p>
+            <div id="decants-row" class="flex gap-3 overflow-x-auto hide-scrollbar snap-row pb-2"></div>
+        </section>
+
         <!-- IDEAS PARA REGALAR -->
         <section id="gifts-section" class="hidden mb-6 bg-gradient-to-br from-[#fbf6ea] to-white border border-amber-100 rounded-3xl p-4 sm:p-6">
             <div class="flex items-end justify-between mb-3">
@@ -322,6 +360,9 @@
                     <button onclick="limpiarProductosDuplicados()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow border border-rose-400">
                         <i class="fas fa-broom"></i> 🧹 Borrar Duplicados
                     </button>
+                    <button onclick="openCouponsAdmin()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
+                        <i class="fas fa-ticket"></i> Cupones y Tarjetas Regalo
+                    </button>
                     <button onclick="migrateImagesToStorage()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
                         <i class="fas fa-bolt"></i> Optimizar fotos (página más rápida)
                     </button>
@@ -340,75 +381,161 @@
         </section>
 
         <!-- Filtros -->
-        <section class="bg-white p-3.5 sm:p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 space-y-3.5">
-            <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
-                <div class="relative w-full sm:w-72 flex-shrink-0">
-                    <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                    <input type="text" id="search-input" oninput="applyFilters()" placeholder="Buscar fragancia, marca..." class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white transition">
-                </div>
-
-                <div class="flex items-center gap-1.5 text-xs font-bold ml-auto sm:ml-0 flex-shrink-0">
-                    <button onclick="setPriorityFilter('LO NUEVO', this)" id="prio-btn-nuevo" class="prio-btn bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-400 hover:text-white px-3 py-1.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap shadow-sm">
-                        <i class="fas fa-fire text-amber-500"></i> 🔥 LO NUEVO
-                    </button>
-                    <button onclick="setPriorityFilter('TOP VIRAL', this)" id="prio-btn-viral" class="prio-btn bg-yellow-50 text-yellow-900 border border-yellow-300 hover:bg-yellow-400 px-3 py-1.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap shadow-sm">
-                        <i class="fas fa-bolt text-yellow-600"></i> ⚡ TOP VIRAL
-                    </button>
-                    <button onclick="toggleInactiveView(this)" id="btn-view-inactive" class="hidden prio-btn bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-800 hover:text-white px-3 py-1.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap shadow-sm">
-                        <i class="fas fa-eye-slash text-gray-500"></i> INACTIVOS
-                    </button>
-                </div>
+        <!-- ===== BUSCADOR, CATEGORÍAS Y GÉNERO (siempre visibles) ===== -->
+        <section id="shop-bar" class="mb-4 space-y-3">
+            <div class="relative">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="search" id="search-input" oninput="onSearchInput()" placeholder="Buscar perfume, marca, nota o &quot;similar a&quot;..." class="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-full text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-luxury-gold transition">
             </div>
 
-            <!-- Categorías -->
-            <div class="pt-2 border-t border-gray-100 flex items-center gap-1.5 overflow-x-auto text-xs hide-scrollbar">
-                <span class="font-bold text-gray-400 uppercase text-[10px] tracking-wider whitespace-nowrap mr-1">CATEGORÍAS:</span>
-                <button onclick="setCategoryFilter('Todas', this)" class="cat-btn ring-2 ring-offset-2 ring-luxury-dark bg-luxury-dark text-white font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Todas</button>
-                <button onclick="setCategoryFilter('Árabe', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Árabe</button>
-                <button onclick="setCategoryFilter('Diseñador', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Diseñador</button>
-                <button onclick="setCategoryFilter('Nicho', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Nicho</button>
-                <button onclick="setCategoryFilter('Body Spray', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Body Spray</button>
-                <button onclick="setCategoryFilter('Kids', this)" class="cat-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition whitespace-nowrap">Kids</button>
-                <button onclick="setCategoryFilter('Emprendedores', this)" class="cat-btn bg-luxury-gold-light border border-luxury-gold hover:bg-amber-100 text-luxury-dark font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Emprendedores 🚀</button>
-                <button onclick="setCategoryFilter('Promociones', this)" class="cat-btn bg-luxury-gold-light border border-luxury-gold hover:bg-amber-100 text-luxury-dark font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Promociones 🏷️</button>
+            <div class="flex gap-2 sm:gap-3 overflow-x-auto hide-scrollbar pb-1 lg:justify-center">
+                <button onclick="setCategoryFilter('Todas', this)" class="cat-btn cat-circle active shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl"><i class="fas fa-star"></i></span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Todos</span>
+                </button>
+                <button onclick="setCategoryFilter('Árabe', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🕌</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Árabe</span>
+                </button>
+                <button onclick="setCategoryFilter('Diseñador', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">💎</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Diseñador</span>
+                </button>
+                <button onclick="setCategoryFilter('Nicho', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🌿</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Nicho</span>
+                </button>
+                <button onclick="setCategoryFilter('Body Spray', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🫧</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Body Spray</span>
+                </button>
+                <button onclick="setCategoryFilter('Kids', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">👶</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Kids</span>
+                </button>
+                <button onclick="setCategoryFilter('Promociones', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🏷️</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Promociones</span>
+                </button>
+                <button onclick="setCategoryFilter('Emprendedores', this)" class="cat-btn cat-circle  shrink-0 text-center w-16 sm:w-20">
+                    <span class="cat-ring block mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5"><span class="cat-face w-full h-full rounded-full flex items-center justify-center text-lg sm:text-xl">🚀</span></span>
+                    <span class="cat-label block text-[10px] sm:text-[11px] mt-1 leading-tight">Emprendedores</span>
+                </button>
             </div>
 
-            <div class="pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div class="flex items-center gap-2">
-                    <span class="font-bold text-gray-700 uppercase text-[10px] tracking-wider">GÉNERO:</span>
-                    <div class="flex items-center gap-1">
-                        <button onclick="setGenderFilter('Todos', this)" class="gender-btn ring-2 ring-offset-2 ring-luxury-dark bg-luxury-dark text-white px-3 py-1 rounded-md font-medium transition text-xs">Todos</button>
-                        <button onclick="setGenderFilter('Hombre', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">👨 Hombre</button>
-                        <button onclick="setGenderFilter('Mujer', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">👩 Mujer</button>
-                        <button onclick="setGenderFilter('Unisex', this)" class="gender-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md font-medium transition text-xs">✨ Unisex</button>
-                    </div>
+            <div class="flex items-center gap-2">
+                <div class="flex bg-white border border-gray-200 rounded-full p-0.5 text-[11px] sm:text-xs font-bold flex-1 lg:flex-none shadow-sm">
+                    <button onclick="setGenderFilter('Todos', this)" class="gender-btn seg active flex-1 lg:flex-none lg:px-5 py-2 rounded-full transition">Todos</button>
+                    <button onclick="setGenderFilter('Mujer', this)" class="gender-btn seg flex-1 lg:flex-none lg:px-5 py-2 rounded-full transition">Mujer</button>
+                    <button onclick="setGenderFilter('Hombre', this)" class="gender-btn seg flex-1 lg:flex-none lg:px-5 py-2 rounded-full transition">Hombre</button>
+                    <button onclick="setGenderFilter('Unisex', this)" class="gender-btn seg flex-1 lg:flex-none lg:px-5 py-2 rounded-full transition">Unisex</button>
                 </div>
+                <button onclick="openFiltersSheet()" class="lg:hidden shrink-0 bg-white border-2 border-luxury-gold rounded-full px-3.5 py-2 text-xs font-black shadow-sm flex items-center gap-1.5">
+                    <i class="fas fa-sliders-h"></i> Filtros <span id="filters-count" class="hidden bg-luxury-dark text-luxury-gold rounded-full px-1.5 text-[10px]">0</span>
+                </button>
+                <button onclick="toggleInactiveView(this)" id="btn-view-inactive" class="hidden shrink-0 bg-gray-100 text-gray-700 border border-gray-300 px-3 py-2 rounded-full text-xs font-bold"><i class="fas fa-eye-slash"></i> <span class="hidden sm:inline">Inactivos</span></button>
+            </div>
 
-                <div class="flex items-center gap-2 ml-auto">
-                    <label for="sort-select" class="text-xs text-gray-500 font-medium">Ordenar por:</label>
-                    <select id="sort-select" onchange="applyFilters()" class="bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-amber-400">
-                        <option value="featured">🔥 Prioridad</option>
-                        <option value="price-asc">Precio: Menor a Mayor</option>
-                        <option value="price-desc">Precio: Mayor a Menor</option>
-                        <option value="name">Nombre (A-Z)</option>
-                    </select>
-                </div>
+            <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar text-[11px]">
+                <div id="active-filters" class="flex items-center gap-1.5"></div>
+                <span id="results-count" class="ml-auto shrink-0 text-gray-500 pl-2"></span>
             </div>
         </section>
 
-        <!-- Rejilla de Productos -->
-        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-            <div class="col-span-full text-center py-12 text-gray-500 text-sm">
-                <i class="fas fa-spinner fa-spin text-amber-500 text-2xl mb-2"></i>
-                <p>Cargando productos desde Firebase...</p>
+        <!-- Fondo oscuro del panel de filtros (celular) -->
+        <div id="filters-overlay" onclick="closeFiltersSheet()" class="hidden lg:hidden fixed inset-0 bg-black/50 z-40"></div>
+
+        <div class="lg:flex lg:gap-6 lg:items-start">
+            <!-- ===== PANEL DE FILTROS: hoja inferior en celular, barra lateral en computador ===== -->
+            <aside id="filters-panel" class="filters-panel bg-white lg:w-60 lg:shrink-0 lg:border lg:border-gray-100 lg:rounded-2xl lg:shadow-sm lg:sticky lg:top-24 text-xs">
+                <div class="p-4 space-y-4 max-h-[80vh] lg:max-h-none overflow-y-auto">
+                    <div class="lg:hidden w-10 h-1.5 bg-gray-300 rounded-full mx-auto"></div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-cinzel font-bold text-lg">Filtros</span>
+                        <button onclick="resetFilters()" class="font-bold text-gray-500 underline">Limpiar todo</button>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 tracking-wider mb-1.5">AROMA</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setAromaFilter('Todos', this)" class="aroma-chip filter-chip active border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">Todos</button>
+                            <button onclick="setAromaFilter('Dulce', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🍯 Dulce</button>
+                            <button onclick="setAromaFilter('Fresco', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🍋 Fresco</button>
+                            <button onclick="setAromaFilter('Amaderado', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🌲 Amaderado</button>
+                            <button onclick="setAromaFilter('Floral', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🌸 Floral</button>
+                            <button onclick="setAromaFilter('Frutal', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🍓 Frutal</button>
+                            <button onclick="setAromaFilter('Especiado', this)" class="aroma-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🌶️ Especiado</button>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 tracking-wider mb-1.5">PRECIO</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setPriceFilter('', this)" class="price-chip filter-chip active border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">Todos</button>
+                            <button onclick="setPriceFilter('0-100000', this)" class="price-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">Hasta $100.000</button>
+                            <button onclick="setPriceFilter('100000-200000', this)" class="price-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">$100.000 a $200.000</button>
+                            <button onclick="setPriceFilter('200000-999999999', this)" class="price-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">Más de $200.000</button>
+                            <button onclick="setPriceFilter('decants', this)" class="price-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🧪 Con decants</button>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 tracking-wider mb-1.5">DESTACADOS</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setPriorityFilter('Todas', this)" class="prio-chip filter-chip active border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">Todos</button>
+                            <button onclick="setPriorityFilter('LO NUEVO', this)" class="prio-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">🔥 Lo nuevo</button>
+                            <button onclick="setPriorityFilter('TOP VIRAL', this)" class="prio-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">⚡ Top viral</button>
+                            <button onclick="setPriorityFilter('FAVORITOS', this)" class="prio-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">❤️ Mis favoritos</button>
+                            <button onclick="setPriorityFilter('BESTSELLER', this)" class="prio-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">👑 Más vendidos</button>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 tracking-wider mb-1.5">ORDENAR POR</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setSortOption('featured', this)" class="sort-chip filter-chip active border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">Destacados</button>
+                            <button onclick="setSortOption('price-asc', this)" class="sort-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">Menor precio</button>
+                            <button onclick="setSortOption('price-desc', this)" class="sort-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">Mayor precio</button>
+                            <button onclick="setSortOption('name', this)" class="sort-chip filter-chip  border border-gray-200 bg-white hover:border-luxury-gold px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition">A–Z</button>
+                        </div>
+                        <select id="sort-select" class="hidden"><option value="featured">Destacados</option><option value="price-asc">Menor precio</option><option value="price-desc">Mayor precio</option><option value="name">A-Z</option></select>
+                    </div>
+                    <button onclick="closeFiltersSheet()" id="filters-apply" class="lg:hidden w-full bg-luxury-dark text-white font-bold py-3.5 rounded-2xl text-sm">Ver perfumes</button>
+                </div>
+            </aside>
+
+            <div class="flex-1 min-w-0 mt-1 lg:mt-0">
+                <!-- Aviso del buscador -->
+                <div id="search-notice" class="hidden mb-3"></div>
+
+                <!-- Rejilla de Productos -->
+                <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+                    <div class="col-span-full text-center py-12 text-gray-500 text-sm">
+                        <i class="fas fa-spinner fa-spin text-amber-500 text-2xl mb-2"></i>
+                        <p>Cargando productos...</p>
+                    </div>
+                </div>
+
+                <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-gray-300">
+                    <i class="fas fa-search-minus text-4xl text-gray-300 mb-3"></i>
+                    <h3 class="font-cinzel text-lg font-bold text-gray-700">No se encontraron fragancias</h3>
+                    <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Restablecer Filtros</button>
+                </div>
             </div>
         </div>
 
-        <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-gray-300">
-            <i class="fas fa-search-minus text-4xl text-gray-300 mb-3"></i>
-            <h3 class="font-cinzel text-lg font-bold text-gray-700">No se encontraron fragancias</h3>
-            <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Restablecer Filtros</button>
-        </div>
+        <!-- TARJETAS DE REGALO -->
+        <section id="giftcard-section" class="mt-10">
+            <div class="bg-gradient-to-br from-luxury-dark via-[#1f1b12] to-luxury-dark rounded-3xl p-5 sm:p-8 text-white grid grid-cols-1 md:grid-cols-2 gap-6 items-center border border-luxury-gold/40 shadow-xl">
+                <div class="space-y-3">
+                    <span class="inline-block bg-luxury-gold text-black text-[10px] font-black px-2.5 py-1 rounded-full tracking-wider">NUEVO</span>
+                    <h2 class="font-cinzel font-bold text-2xl sm:text-3xl">Tarjeta de regalo FRAGATTA</h2>
+                    <p class="text-sm text-gray-300">¿No sabes qué perfume elegir? Regala una tarjeta con el valor que quieras y que la persona escoja su fragancia favorita. Recibe un código personal para usar en la tienda.</p>
+                    <button onclick="openGiftCardBuy()" class="bg-luxury-gold hover:bg-amber-400 text-black font-bold text-sm px-6 py-3 rounded-full transition"><i class="fas fa-gift mr-1.5"></i> Comprar tarjeta de regalo</button>
+                </div>
+                <div class="relative mx-auto w-full max-w-sm aspect-[1.6] rounded-2xl bg-gradient-to-br from-[#d4af37] via-[#f5e29a] to-[#b89228] text-black p-5 shadow-2xl flex flex-col justify-between">
+                    <div class="flex items-center justify-between"><span class="font-cinzel font-black tracking-widest text-sm">FRAGATTAPARFUMS</span><i class="fas fa-gift text-xl"></i></div>
+                    <div><p class="text-[10px] uppercase font-bold tracking-widest opacity-70">Tarjeta de regalo</p><p class="font-black text-3xl">$100.000</p></div>
+                    <p class="font-mono text-xs tracking-widest opacity-80">REGALO-XXXX-XXXX</p>
+                </div>
+            </div>
+        </section>
 
         <!-- OPINIONES DE CLIENTES -->
         <section id="reviews-section" class="mt-10">
@@ -600,6 +727,7 @@
                     <i class="fas fa-arrow-left"></i> Volver a la tienda
                 </button>
                 <div class="flex items-center gap-2">
+                    <button id="detail-fav-btn" onclick="toggleFavorite(currentDetailId, this)" class="fav-btn w-9 h-9 rounded-full border border-gray-200 hover:border-rose-300 text-gray-600 flex items-center justify-center transition" title="Guardar en favoritos"><i class="far fa-heart"></i></button>
                     <button onclick="shareCurrentProduct()" class="w-9 h-9 rounded-full border border-gray-200 hover:border-luxury-gold text-gray-600 hover:text-luxury-gold-dark flex items-center justify-center transition" title="Compartir"><i class="fas fa-share-alt"></i></button>
                     <button onclick="closeDetailModal()" class="w-9 h-9 rounded-full bg-luxury-dark text-white flex items-center justify-center hover:bg-black transition" title="Cerrar"><i class="fas fa-times"></i></button>
                 </div>
@@ -635,9 +763,17 @@
                     <div class="flex justify-between"><span class="text-gray-500">Envío</span><span id="cod-shipping" class="font-bold">Selecciona tu ciudad</span></div>
                     <div id="cod-fee-line" class="flex justify-between hidden"><span class="text-gray-500">Recargo contraentrega</span><span id="cod-fee" class="font-bold">$0</span></div>
                     <div id="cod-savings-line" class="flex justify-between text-emerald-700 hidden"><span>Ahorras</span><span id="cod-savings" class="font-bold">$0</span></div>
+                    <div id="cod-discount-line" class="flex justify-between text-emerald-700 hidden"><span id="cod-discount-label">Descuento</span><span id="cod-discount" class="font-bold">-$0</span></div>
                     <div class="flex justify-between pt-2 border-t border-gray-200 text-base"><span class="font-bold">Total</span><span id="cod-total" class="font-black text-luxury-dark">$0</span></div>
                 </div>
 
+                <div class="space-y-1.5">
+                    <div class="flex gap-2">
+                        <input id="cod-coupon-input" placeholder="Código de descuento o tarjeta regalo" class="flex-1 p-3 border border-gray-300 rounded-xl uppercase text-sm">
+                        <button type="button" onclick="applyCouponFrom('cod-coupon-input')" class="px-4 bg-luxury-dark text-white font-bold rounded-xl text-sm">Aplicar</button>
+                    </div>
+                    <div id="cod-coupon-status"></div>
+                </div>
                 <form id="cod-form" onsubmit="submitCodOrder(event)" class="space-y-3 text-sm">
                     <h4 class="font-bold text-gray-900 text-base text-center">Ingresa los datos para el envío</h4>
                     <div>
@@ -729,6 +865,98 @@
                 <button onclick="closeQuiz()" class="text-gray-300 hover:text-white text-xl"><i class="fas fa-times"></i></button>
             </div>
             <div id="quiz-body" class="p-5 sm:p-7"></div>
+        </div>
+    </div>
+
+    <!-- MIS FAVORITOS -->
+    <div id="favorites-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex justify-end hidden" onclick="if (event.target === this) closeFavorites()">
+        <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl">
+            <div class="p-4 bg-luxury-dark text-white flex items-center justify-between">
+                <h3 class="font-cinzel font-bold text-base flex items-center gap-2"><i class="fas fa-heart text-rose-500"></i> Mis favoritos <span id="fav-count-title" class="text-luxury-gold text-sm"></span></h3>
+                <button onclick="closeFavorites()" class="text-gray-300 hover:text-white text-lg"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="favorites-list" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+            <div id="favorites-actions" class="p-4 border-t border-gray-100 space-y-2 hidden">
+                <button onclick="addAllFavoritesToCart()" class="w-full bg-luxury-dark hover:bg-black text-white font-bold py-3 rounded-xl text-sm"><i class="fas fa-cart-plus text-luxury-gold mr-1.5"></i> Añadir todos al carrito</button>
+                <button onclick="shareFavorites()" class="w-full border-2 border-emerald-500 text-emerald-700 font-bold py-2.5 rounded-xl text-xs"><i class="fab fa-whatsapp mr-1"></i> Compartir mi lista por WhatsApp</button>
+                <p class="text-[10px] text-gray-400 text-center">Tus favoritos se guardan en este celular o computador.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMPRAR TARJETA DE REGALO -->
+    <div id="giftbuy-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center sm:p-4 hidden">
+        <div class="bg-white w-full sm:max-w-md h-[100dvh] sm:h-auto sm:max-h-[94vh] overflow-y-auto sm:rounded-3xl shadow-2xl text-gray-800">
+            <div class="sticky top-0 z-10 bg-luxury-dark text-white px-5 py-4 flex items-center justify-between">
+                <h3 class="font-cinzel font-bold text-base tracking-wide"><i class="fas fa-gift text-luxury-gold mr-1"></i> Tarjeta de regalo</h3>
+                <button onclick="closeGiftCardBuy()" class="text-gray-300 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <form onsubmit="submitGiftCardBuy(event)" class="p-5 space-y-3 text-sm">
+                <label class="block font-semibold">Valor de la tarjeta</label>
+                <div class="grid grid-cols-3 gap-2" id="gift-amounts">
+                    <button type="button" onclick="setGiftAmount(50000, this)" class="gift-amt size-opt border-2 border-gray-200 rounded-xl py-2.5 font-black">$50.000</button>
+                    <button type="button" onclick="setGiftAmount(100000, this)" class="gift-amt size-opt active border-2 border-gray-200 rounded-xl py-2.5 font-black">$100.000</button>
+                    <button type="button" onclick="setGiftAmount(150000, this)" class="gift-amt size-opt border-2 border-gray-200 rounded-xl py-2.5 font-black">$150.000</button>
+                    <button type="button" onclick="setGiftAmount(200000, this)" class="gift-amt size-opt border-2 border-gray-200 rounded-xl py-2.5 font-black">$200.000</button>
+                    <button type="button" onclick="setGiftAmount(300000, this)" class="gift-amt size-opt border-2 border-gray-200 rounded-xl py-2.5 font-black">$300.000</button>
+                    <input type="number" id="gift-custom" min="20000" step="1000" placeholder="Otro valor" oninput="setGiftAmount(Number(this.value) || 0, null)" class="border-2 border-gray-200 rounded-xl px-2 text-center font-bold text-xs">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block font-semibold mb-1">Para (nombre) *</label><input id="gift-to" required class="w-full p-2.5 border border-gray-300 rounded-xl"></div>
+                    <div><label class="block font-semibold mb-1">De (tu nombre) *</label><input id="gift-from" required class="w-full p-2.5 border border-gray-300 rounded-xl"></div>
+                </div>
+                <div><label class="block font-semibold mb-1">Tu WhatsApp *</label><input id="gift-phone" type="tel" required inputmode="numeric" placeholder="300 123 4567" class="w-full p-2.5 border border-gray-300 rounded-xl"></div>
+                <div><label class="block font-semibold mb-1">Mensaje para la tarjeta (opcional)</label><textarea id="gift-msg" rows="2" placeholder="¡Feliz cumpleaños! Escoge el que más te guste." class="w-full p-2.5 border border-gray-300 rounded-xl"></textarea></div>
+                <button type="submit" id="gift-submit" class="w-full bg-luxury-dark hover:bg-black text-white font-bold py-3.5 rounded-2xl">Solicitar tarjeta de $100.000</button>
+                <p class="text-[11px] text-gray-500 text-center">Te escribimos por WhatsApp para el pago. Al confirmarlo te enviamos el código de la tarjeta para regalar.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- CUPONES Y TARJETAS DE REGALO (ADMIN) -->
+    <div id="coupons-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl p-5 sm:p-6 relative text-gray-800">
+            <button onclick="closeCouponsAdmin()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="font-cinzel text-lg font-bold text-gray-900 mb-4 border-b pb-2 flex items-center gap-2"><i class="fas fa-ticket text-amber-600"></i> Cupones y Tarjetas de Regalo</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <form onsubmit="createDiscountCoupon(event)" class="p-3 border border-gray-200 rounded-xl space-y-2 bg-gray-50">
+                    <h4 class="font-bold text-sm"><i class="fas fa-percent text-rose-500 mr-1"></i> Código de descuento</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block font-semibold mb-0.5">Código *</label><input id="cp-code" required placeholder="BIENVENIDA10" class="w-full p-2 border rounded-lg uppercase"></div>
+                        <div><label class="block font-semibold mb-0.5">% descuento *</label><input id="cp-pct" type="number" min="1" max="90" required placeholder="10" class="w-full p-2 border rounded-lg"></div>
+                        <div><label class="block font-semibold mb-0.5">Válido desde</label><input id="cp-from" type="date" class="w-full p-2 border rounded-lg"></div>
+                        <div><label class="block font-semibold mb-0.5">Válido hasta *</label><input id="cp-to" type="date" required class="w-full p-2 border rounded-lg"></div>
+                        <div><label class="block font-semibold mb-0.5">Máximo de usos</label><input id="cp-max" type="number" min="1" placeholder="Ilimitado" class="w-full p-2 border rounded-lg"></div>
+                        <div><label class="block font-semibold mb-0.5">Compra mínima ($)</label><input id="cp-min" type="number" min="0" placeholder="0" class="w-full p-2 border rounded-lg"></div>
+                    </div>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="cp-single" class="w-4 h-4"> Para una sola persona (1 solo uso)</label>
+                    <button type="submit" class="w-full bg-luxury-dark text-white font-bold py-2 rounded-lg">Crear código</button>
+                </form>
+                <form onsubmit="createGiftCard(event)" class="p-3 border border-luxury-gold/60 rounded-xl space-y-2 bg-luxury-gold-light">
+                    <h4 class="font-bold text-sm"><i class="fas fa-gift text-luxury-gold-dark mr-1"></i> Tarjeta de regalo</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block font-semibold mb-0.5">Valor ($) *</label><input id="gc-amount" type="number" min="1000" required placeholder="100000" class="w-full p-2 border rounded-lg"></div>
+                        <div><label class="block font-semibold mb-0.5">Vence *</label><input id="gc-to" type="date" required class="w-full p-2 border rounded-lg"></div>
+                        <div><label class="block font-semibold mb-0.5">Para (nombre)</label><input id="gc-recipient" class="w-full p-2 border rounded-lg"></div>
+                        <div><label class="block font-semibold mb-0.5">WhatsApp comprador</label><input id="gc-phone" inputmode="numeric" class="w-full p-2 border rounded-lg"></div>
+                        <div class="col-span-2"><label class="block font-semibold mb-0.5">Código (se crea solo si lo dejas vacío)</label><input id="gc-code" placeholder="REGALO-XXXX-XXXX" class="w-full p-2 border rounded-lg uppercase font-mono"></div>
+                    </div>
+                    <p class="text-[10px] text-gray-600">El cliente la usa como código: se descuenta del total y el saldo que sobre queda para otra compra.</p>
+                    <button type="submit" class="w-full bg-luxury-dark text-white font-bold py-2 rounded-lg">Crear tarjeta</button>
+                </form>
+            </div>
+            <div class="mt-5">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-bold text-sm">Códigos creados</h4>
+                    <button onclick="loadCouponsAdmin()" class="text-xs font-bold text-luxury-gold-dark"><i class="fas fa-rotate mr-1"></i> Actualizar</button>
+                </div>
+                <div class="overflow-x-auto border border-gray-100 rounded-xl">
+                    <table class="w-full text-xs text-left whitespace-nowrap">
+                        <thead class="bg-gray-50 text-[10px] uppercase text-gray-500"><tr><th class="p-2">Código</th><th class="p-2">Tipo</th><th class="p-2">Valor</th><th class="p-2">Vigencia</th><th class="p-2">Usos</th><th class="p-2">Estado</th><th class="p-2"></th></tr></thead>
+                        <tbody id="coupons-list" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -971,6 +1199,19 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="block font-semibold mb-1">Huele similar a <span class="font-normal text-gray-500">(opcional, ej: Good Girl de Carolina Herrera)</span></label>
+                    <input type="text" id="prod-similar" placeholder="Perfume de diseñador al que se parece" class="w-full p-2 border rounded-lg">
+                </div>
+
+                <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="font-bold text-gray-800">🧪 Otros tamaños / decants <span class="font-normal text-gray-500">(el precio de arriba es el del frasco principal)</span></label>
+                        <button type="button" onclick="addVariantRow()" class="px-2.5 py-1 bg-luxury-dark text-white rounded-lg font-bold">+ Tamaño</button>
+                    </div>
+                    <div id="prod-variants" class="space-y-1.5"></div>
+                </div>
+
                 <div class="grid grid-cols-3 gap-3 items-end">
                     <div>
                         <label class="block font-semibold mb-1">Unidades disponibles <span class="font-normal text-gray-500">(opcional)</span></label>
@@ -1148,6 +1389,14 @@
                     </form>
                 </div>
 
+                <div class="mt-4 space-y-1.5">
+                    <label class="block text-xs font-bold text-gray-700"><i class="fas fa-ticket text-luxury-gold-dark mr-1"></i> Código de descuento o tarjeta de regalo</label>
+                    <div class="flex gap-2">
+                        <input id="cart-coupon-input" placeholder="Escribe tu código" class="flex-1 p-2 border border-gray-300 rounded-lg uppercase text-xs">
+                        <button type="button" onclick="applyCouponFrom('cart-coupon-input')" class="px-4 bg-luxury-dark text-white font-bold rounded-lg text-xs">Aplicar</button>
+                    </div>
+                    <div id="cart-coupon-status"></div>
+                </div>
                 <div class="bg-slate-900 text-white p-4 rounded-xl space-y-2 text-xs mt-4">
                     <div class="flex justify-between text-slate-300">
                         <span>Subtotal productos:</span>
@@ -1156,6 +1405,10 @@
                     <div class="flex justify-between text-slate-300">
                         <span>Costo de Envío:</span>
                         <span id="final-shipping" class="font-medium">$0</span>
+                    </div>
+                    <div id="cart-discount-row" class="flex justify-between text-emerald-400 hidden">
+                        <span id="cart-discount-label">Descuento:</span>
+                        <span id="cart-discount-val" class="font-bold">-$0</span>
                     </div>
                     <div id="cod-fee-row" class="flex justify-between text-amber-400 hidden">
                         <span>Recargo Contra Entrega (5%):</span>
@@ -1188,6 +1441,8 @@
         let currentCategory = 'Todas';
         let currentPriority = 'Todas';
         let currentGender = 'Todos';
+        let currentAroma = 'Todos';
+        let currentPriceRange = '';
         let showInactive = false;
 
         let calculatedShippingCost = 0;
@@ -1211,6 +1466,7 @@
 
             updateCartUI();
             startAnnouncements();
+            updateFavBadge();
         });
 
         async function generateWompiSignature(reference, amountInCents, currency) {
@@ -1246,12 +1502,15 @@
                         longevity: data.longevity || '',
                         stock: (data.webStock !== undefined && data.webStock !== null && data.webStock !== '' && !isNaN(Number(data.webStock))) ? Number(data.webStock) : null,
                         bestSeller: data.bestSeller === true,
+                        similarTo: data.similarTo || '',
+                        variants: Array.isArray(data.variants) ? data.variants.filter(v => v && v.label && Number(v.price) > 0).map(v => ({ label: String(v.label), price: Number(v.price), oldPrice: Number(v.oldPrice) || null })) : [],
                         isGift: data.isGift === true,
                         isActive: data.isActive !== false
                     };
                 });
                 renderProducts();
                 refreshHomeExtras();
+                updateFavBadge();
                 openProductFromHash();
                 if (currentDetailId && !document.getElementById('detail-modal').classList.contains('hidden')) {
                     renderDetail(currentDetailId, true);
@@ -1270,6 +1529,8 @@
                         WHATSAPP_NUMBER = data.whatsappNumber;
                         const tw = document.getElementById('trust-whatsapp');
                         if (tw) tw.href = `https://wa.me/${data.whatsappNumber}`;
+                        const wf = document.getElementById('wa-float');
+                        if (wf) wf.href = `https://wa.me/${data.whatsappNumber}?text=${encodeURIComponent('Hola, quiero información sobre sus perfumes')}`;
                         document.getElementById('link-whatsapp').href = `https://wa.me/${data.whatsappNumber}`;
                     }
                     if (data.instagramUrl) document.getElementById('link-instagram').href = data.instagramUrl;
@@ -1456,29 +1717,31 @@
             const searchVal = document.getElementById('search-input').value;
             const sortVal = document.getElementById('sort-select').value;
 
-            let filtered = products.filter(p => {
-                if (showInactive) {
-                    if (p.isActive) return false;
-                } else {
-                    if (!p.isActive) return false;
-                }
-
+            const query = String(searchVal || '').trim();
+            const visible = products.filter(p => showInactive ? !p.isActive : p.isActive);
+            const passesFilters = (p) => {
                 const isEmprendedores = p.category.toLowerCase() === 'emprendedores';
-                let matchesCat = (currentCategory === 'Todas') ? !isEmprendedores : (p.category.toLowerCase() === currentCategory.toLowerCase());
-                const matchesPrio = (currentPriority === 'Todas') || p.priority === currentPriority;
+                // Al buscar, también se buscan los productos de Emprendedores
+                const matchesCat = (currentCategory === 'Todas') ? (query ? true : !isEmprendedores) : (p.category.toLowerCase() === currentCategory.toLowerCase());
+                const matchesPrio = (currentPriority === 'Todas') || (currentPriority === 'BESTSELLER' ? p.bestSeller : (currentPriority === 'FAVORITOS' ? isFavorite(p.id) : p.priority === currentPriority));
                 const matchesGender = (currentGender === 'Todos') || p.gender === currentGender;
-                
-                const normalize = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-                const searchTerms = normalize(searchVal).split(' ').filter(t => t);
+                return matchesCat && matchesPrio && matchesGender && matchesAromaFilter(p) && matchesPriceFilter(p);
+            };
 
-                const matchesSearch = searchTerms.length === 0 || searchTerms.every(term => 
-                    normalize(p.title).includes(term) || 
-                    normalize(p.brand).includes(term) || 
-                    normalize(p.notes).includes(term)
-                );
-
-                return matchesCat && matchesPrio && matchesGender && matchesSearch;
-            });
+            let filtered;
+            let searchFallback = false;
+            const scores = new Map();
+            if (query) {
+                visible.forEach(p => { const sc = smartSearchScore(p, query); if (sc > 0) scores.set(p.id, sc); });
+                const matches = visible.filter(p => scores.has(p.id));
+                filtered = matches.filter(passesFilters);
+                // Si los filtros dejan la búsqueda vacía, se muestran las coincidencias de toda la tienda (sin tener que limpiar filtros)
+                if (filtered.length === 0 && matches.length > 0) { filtered = matches; searchFallback = true; }
+            } else {
+                filtered = visible.filter(passesFilters);
+            }
+            renderSearchNotice(query, filtered.length, searchFallback);
+            updateFilterSummary(filtered.length);
 
             if (sortVal === 'price-asc') {
                 filtered.sort((a, b) => a.price - b.price);
@@ -1486,13 +1749,16 @@
                 filtered.sort((a, b) => b.price - a.price);
             } else if (sortVal === 'name') {
                 filtered.sort((a, b) => a.title.localeCompare(b.title));
+            } else if (query) {
+                filtered.sort((a, b) => (scores.get(b.id) || 0) - (scores.get(a.id) || 0));
             } else if (currentPriority === 'Todas') {
                 filtered = interleaveProducts(filtered);
             }
 
             if (filtered.length === 0) {
                 grid.innerHTML = '';
-                emptyState.classList.remove('hidden');
+                // Con búsqueda, el aviso de arriba ya explica qué pasó
+                emptyState.classList.toggle('hidden', !!query);
                 return;
             }
 
@@ -1516,7 +1782,8 @@
                         <div class="relative w-full h-36 sm:h-48 overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center mb-2">
                             ${badgeHTML ? `<div class="absolute top-2 left-2 z-10">${badgeHTML}</div>` : ''}
                             ${discountPct(p) > 0 ? `<div class="absolute top-2 right-2 z-10 bg-luxury-dark text-luxury-gold font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow">-${discountPct(p)}%</div>` : ''}
-                            ${getImages(p).length > 1 ? `<div class="absolute bottom-2 right-2 z-10 bg-white/90 text-gray-700 font-bold text-[9px] px-1.5 py-0.5 rounded-full shadow"><i class="fas fa-images mr-0.5"></i>${getImages(p).length}</div>` : ''}
+                            ${getImages(p).length > 1 ? `<div class="absolute ${discountPct(p) > 0 ? 'top-8' : 'top-2'} right-2 z-10 bg-white/90 text-gray-700 font-bold text-[9px] px-1.5 py-0.5 rounded-full shadow"><i class="fas fa-images mr-0.5"></i>${getImages(p).length}</div>` : ''}
+                            ${favHeartHTML(p.id, 'absolute bottom-2 right-2 z-20')}
                             ${stockBadgeHTML(p)}
                             <img src="${p.image}" alt="${p.title}" loading="lazy" decoding="async" class="object-cover h-full w-full group-hover:scale-105 transition duration-500">
                         </div>
@@ -1528,10 +1795,12 @@
                         <div class="flex flex-wrap items-center mb-1.5 min-h-[20px]">${notesList}</div>
                         <p class="text-[10px] sm:text-[11px] text-gray-400 line-clamp-1 mb-2 font-normal">${p.description || 'Fragancia exclusiva.'}</p>
 
+                        ${p.similarTo ? `<p class="text-[10px] text-gray-500 mb-1 line-clamp-1"><span class="font-bold text-luxury-gold-dark">≈ Similar a</span> ${esc(p.similarTo)}</p>` : ''}
                         <div class="flex items-baseline gap-1.5 mb-2">
                             ${p.oldPrice ? `<span class="text-[10px] sm:text-xs text-gray-400 line-through font-normal">${formatPrice(p.oldPrice)}</span>` : ''}
                             <span class="text-sm sm:text-base font-extrabold text-rose-600">${formatPrice(p.price)}</span>
                         </div>
+                        ${(p.variants || []).length ? `<p class="text-[10px] font-semibold text-gray-600 mb-2"><i class="fas fa-flask text-luxury-gold-dark mr-1"></i>También en ${p.variants.map(v => esc(v.label)).join(' · ')}</p>` : ''}
                     </div>
 
                     <div class="space-y-1.5 pt-2 border-t border-gray-100">
@@ -1709,7 +1978,16 @@
                 codRow.classList.add('hidden');
             }
 
-            const grandTotal = subtotal + effectiveShipping(subtotal) + codFee;
+            const preTotal = subtotal + effectiveShipping(subtotal) + codFee;
+            const disc = couponDiscount(subtotal, preTotal);
+            const grandTotal = Math.max(0, preTotal - disc);
+            const dRow = document.getElementById('cart-discount-row');
+            if (dRow) {
+                dRow.classList.toggle('hidden', disc <= 0);
+                document.getElementById('cart-discount-label').innerText = appliedCoupon ? `${appliedCoupon.type === 'giftcard' ? 'Tarjeta regalo' : 'Cupón'} ${appliedCoupon.code}:` : 'Descuento:';
+                document.getElementById('cart-discount-val').innerText = `-${formatPrice(disc)}`;
+            }
+            renderCouponStatus('cart-coupon-status');
 
             document.getElementById('final-subtotal').innerText = formatPrice(subtotal);
             document.getElementById('final-shipping').innerText = isFreeShipping(subtotal) ? 'GRATIS' : formatPrice(calculatedShippingCost);
@@ -1736,7 +2014,9 @@
 
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             const codFee = (method === 'cod' && !isMedellin) ? Math.round((subtotal + effectiveShipping(subtotal)) * (storeSettings.codFeePct / 100)) : 0;
-            const grandTotal = subtotal + effectiveShipping(subtotal) + codFee;
+            const preTotal = subtotal + effectiveShipping(subtotal) + codFee;
+            const disc = couponDiscount(subtotal, preTotal);
+            const grandTotal = Math.max(0, preTotal - disc);
 
             let msg = `*NUEVO PEDIDO - FRAGATTAPARFUMS*\n\n`;
             msg += `*DATOS DE ENVÍO:*\n`;
@@ -1747,10 +2027,12 @@
             msg += `• Subtotal: ${formatPrice(subtotal)}\n`;
             msg += `• Envío: ${isFreeShipping(subtotal) ? 'GRATIS' : formatPrice(calculatedShippingCost)}\n`;
             if (codFee > 0) msg += `• Recargo Contra Entrega: ${formatPrice(codFee)}\n`;
+            if (disc > 0) msg += couponMessageLine(disc);
             msg += `*TOTAL:* ${formatPrice(grandTotal)}\n\n`;
             msg += `*MÉTODO DE PAGO:* ${method === 'wompi' ? 'Wompi En Línea' : (method === 'cod' ? 'Pago Contra Entrega' : 'Transferencia Bancaria')}`;
 
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+            await registerCouponUse(disc);
             toggleCartModal();
             cart = []; saveCart(); updateCartUI();
         }
@@ -1847,45 +2129,34 @@
             reader.readAsArrayBuffer(file);
         }
 
-        function setCategoryFilter(cat, btn = null) { 
-            currentCategory = cat; 
-            if(btn) {
-                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark'));
-                btn.classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
-            }
-            renderProducts(); 
+        function setCategoryFilter(cat, btn = null) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b === btn || (!btn && b.getAttribute('onclick').includes(`'${cat}'`))));
+            renderProducts();
         }
 
-        function setPriorityFilter(prio, btn = null) { 
-            currentPriority = (currentPriority === prio) ? 'Todas' : prio; 
-            document.querySelectorAll('.prio-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-amber-500'));
-            if(btn && currentPriority !== 'Todas') btn.classList.add('ring-2', 'ring-offset-2', 'ring-amber-500');
-            renderProducts(); 
+        function setPriorityFilter(prio, btn = null) {
+            currentPriority = prio || 'Todas';
+            document.querySelectorAll('.prio-chip').forEach(b => b.classList.toggle('active', b.getAttribute('onclick').includes(`'${currentPriority}'`)));
+            renderProducts();
         }
 
-        function setGenderFilter(gen, btn = null) { 
-            currentGender = gen; 
-            if(btn) {
-                document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark'));
-                btn.classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
-            }
-            renderProducts(); 
+        function setGenderFilter(gen, btn = null) {
+            currentGender = gen;
+            document.querySelectorAll('.gender-btn').forEach(b => b.classList.toggle('active', b.getAttribute('onclick').includes(`'${gen}'`)));
+            renderProducts();
         }
 
-        function resetFilters() { 
-            currentCategory = 'Todas'; 
-            currentPriority = 'Todas'; 
-            currentGender = 'Todos'; 
-            showInactive = false;
-            document.getElementById('search-input').value = ''; 
-            
-            document.querySelectorAll('.cat-btn, .prio-btn, .gender-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-2', 'ring-luxury-dark', 'ring-amber-500', 'ring-gray-800', 'bg-gray-800', 'text-white'));
-            
-            document.querySelector('.cat-btn').classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
-            document.querySelector('.gender-btn').classList.add('ring-2', 'ring-offset-2', 'ring-luxury-dark');
-            document.getElementById('btn-view-inactive').classList.add('bg-gray-100', 'text-gray-700');
-            
-            renderProducts(); 
+        function resetFilters() {
+            currentCategory = 'Todas';
+            currentPriority = 'Todas';
+            currentGender = 'Todos';
+            currentAroma = 'Todos';
+            currentPriceRange = '';
+            const sortSel = document.getElementById('sort-select'); if (sortSel) sortSel.value = 'featured';
+            const markFirst = (sel) => document.querySelectorAll(sel).forEach((b, i) => b.classList.toggle('active', i === 0));
+            ['.cat-btn', '.gender-btn', '.aroma-chip', '.price-chip', '.prio-chip', '.sort-chip'].forEach(markFirst);
+            renderProducts();
         }
 
         function applyFilters() { renderProducts(); }
@@ -1906,6 +2177,8 @@
             document.getElementById('upload-status').innerText = '';
             editingImages = [];
             renderImagesEditor();
+            editingVariants = [];
+            renderVariantRows();
             document.getElementById('admin-modal').classList.remove('hidden');
         }
 
@@ -1934,6 +2207,9 @@
             document.getElementById('prod-stock').value = (p.stock === null || p.stock === undefined) ? '' : p.stock;
             document.getElementById('prod-bestseller').checked = !!p.bestSeller;
             document.getElementById('prod-gift').checked = !!p.isGift;
+            document.getElementById('prod-similar').value = p.similarTo || '';
+            editingVariants = (p.variants || []).map(v => ({ ...v }));
+            renderVariantRows();
             document.getElementById('upload-status').innerText = '';
             document.getElementById('admin-modal').classList.remove('hidden');
         }
@@ -2115,7 +2391,9 @@
                 longevity: document.getElementById('prod-longevity').value.trim(),
                 webStock: document.getElementById('prod-stock').value === '' ? null : Math.max(0, Number(document.getElementById('prod-stock').value) || 0),
                 bestSeller: document.getElementById('prod-bestseller').checked,
-                isGift: document.getElementById('prod-gift').checked
+                isGift: document.getElementById('prod-gift').checked,
+                similarTo: document.getElementById('prod-similar').value.trim(),
+                variants: collectVariants()
             };
             // Preparar fotos: 1) pasar a Storage las que estén dentro del producto (calidad intacta)
             //                 2) si no hay Storage y no caben en 1 MB, reducir solo lo necesario
@@ -2430,6 +2708,7 @@
             currentDetailId = id;
             detailImgIndex = 0;
             detailQty = 1;
+            detailVariant = 0;
             renderDetail(id);
             document.getElementById('detail-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -2441,8 +2720,12 @@
         }
 
         function renderDetail(id, keepState) {
-            const p = products.find(prod => prod.id === id);
-            if (!p) return;
+            const p0 = products.find(prod => prod.id === id);
+            if (!p0) return;
+            const sizeOptions = getProductOptions(p0);
+            if (!keepState || detailVariant >= sizeOptions.length) detailVariant = keepState ? Math.min(detailVariant, sizeOptions.length - 1) : 0;
+            const opt = sizeOptions[detailVariant] || sizeOptions[0];
+            const p = { ...p0, price: opt.price, oldPrice: opt.oldPrice || null };
             const images = getImages(p);
             if (!keepState) { detailImgIndex = 0; }
             if (detailImgIndex >= images.length) detailImgIndex = 0;
@@ -2503,6 +2786,16 @@
                             </div>
                             ${savings > 0 ? `<span class="inline-block text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full"><i class="fas fa-tag mr-1"></i> Ahorras ${formatPrice(savings)} (${pct}%)</span>` : ''}
                         </div>
+
+                        ${sizeOptions.length > 1 ? `
+                        <div>
+                            <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Elige el tamaño</p>
+                            <div class="flex flex-wrap gap-2">
+                                ${sizeOptions.map((o, i) => `<button onclick="selectDetailSize(${i})" class="size-opt ${i === detailVariant ? 'active' : ''} border-2 border-gray-200 rounded-xl px-3.5 py-2 text-left hover:border-luxury-gold transition"><span class="block text-xs font-black">${esc(o.label)}</span><span class="block text-[11px] font-semibold ${i === detailVariant ? 'text-luxury-gold' : 'text-gray-500'}">${formatPrice(o.price)}</span></button>`).join('')}
+                            </div>
+                        </div>` : ''}
+
+                        ${p.similarTo ? `<div class="flex items-center gap-2 bg-luxury-gold-light border border-luxury-gold/50 rounded-xl px-3 py-2.5 text-sm"><i class="fas fa-wand-magic-sparkles text-luxury-gold-dark"></i><span><strong>Huele similar a:</strong> ${esc(p.similarTo)}</span></div>` : ''}
 
                         ${accords ? `
                         <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4">
@@ -2578,6 +2871,7 @@
                         ${related.map(r => `
                         <div class="shrink-0 w-40 sm:w-48 bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
                             <div class="relative aspect-square bg-gray-50 cursor-pointer" onclick="openDetailModal('${r.id}')">
+                                ${favHeartHTML(r.id, 'absolute top-2 left-2 z-20')}
                                 <img src="${getImages(r)[0]}" alt="${esc(r.title)}" loading="lazy" decoding="async" class="w-full h-full object-cover">
                                 ${discountPct(r) > 0 ? `<span class="absolute top-2 right-2 bg-luxury-dark text-luxury-gold font-extrabold text-[10px] px-1.5 py-0.5 rounded-full">-${discountPct(r)}%</span>` : ''}
                             </div>
@@ -2602,6 +2896,7 @@
                 </div>
             `;
             attachGallerySwipe();
+            syncFavButtons();
         }
 
         function setDetailImage(i) {
@@ -2634,9 +2929,10 @@
         function addDetailToCart() {
             const prod = products.find(p => p.id === currentDetailId);
             if (!prod) return;
-            const existing = cart.find(i => i.id === prod.id);
+            const item = cartItemForOption(prod, detailVariant, detailQty);
+            const existing = cart.find(i => i.id === item.id);
             if (existing) existing.quantity += detailQty;
-            else cart.push({ ...prod, images: undefined, quantity: detailQty });
+            else cart.push(item);
             saveCart();
             updateCartUI();
             showToast(`${detailQty} unidad(es) añadidas al carrito`);
@@ -2700,6 +2996,7 @@
                         <img src="${getImages(p)[0]}" alt="${esc(p.title)}" loading="lazy" decoding="async" class="w-full h-full object-cover">
                         ${discountPct(p) > 0 ? `<span class="absolute top-2 right-2 bg-luxury-dark text-luxury-gold font-extrabold text-[10px] px-1.5 py-0.5 rounded-full">-${discountPct(p)}%</span>` : ''}
                         ${stockBadgeHTML(p)}
+                        ${favHeartHTML(p.id, 'absolute top-2 left-2 z-20')}
                     </div>
                     <div class="p-2.5 text-center">
                         <p class="text-[10px] font-bold text-luxury-gold-dark uppercase truncate">${esc(p.brand)}</p>
@@ -2709,7 +3006,8 @@
                             ${p.oldPrice && p.oldPrice > p.price ? `<span class="text-[10px] text-gray-400 line-through">${formatPrice(p.oldPrice)}</span>` : ''}
                             <span class="text-sm font-extrabold text-rose-600">${formatPrice(p.price)}</span>
                         </div>
-                        ${isSoldOut(p) ? '<p class="mt-2 text-[11px] font-bold text-gray-400 py-1.5">Agotado</p>' : `<button onclick="addToCart('${p.id}')" class="mt-2 w-full bg-luxury-dark text-white text-[11px] font-bold py-1.5 rounded-lg hover:bg-black"><i class="fas fa-cart-plus text-luxury-gold mr-1"></i> Añadir</button>`}
+                        ${(p.variants || []).length ? `<p class="text-[10px] font-bold text-luxury-gold-dark mt-0.5">Decant desde ${formatPrice(Math.min(...p.variants.map(v => v.price)))}</p>` : ''}
+                        ${isSoldOut(p) ? '<p class="mt-2 text-[11px] font-bold text-gray-400 py-1.5">Agotado</p>' : ((p.variants || []).length ? `<button onclick="openDetailModal('${p.id}')" class="mt-2 w-full bg-luxury-dark text-white text-[11px] font-bold py-1.5 rounded-lg hover:bg-black"><i class="fas fa-flask text-luxury-gold mr-1"></i> Elegir tamaño</button>` : `<button onclick="addToCart('${p.id}')" class="mt-2 w-full bg-luxury-dark text-white text-[11px] font-bold py-1.5 rounded-lg hover:bg-black"><i class="fas fa-cart-plus text-luxury-gold mr-1"></i> Añadir</button>`)}
                     </div>
                 </div>`;
         }
@@ -2722,6 +3020,12 @@
             if (bs) {
                 bs.classList.toggle('hidden', best.length === 0);
                 document.getElementById('bestsellers-row').innerHTML = best.slice(0, 12).map(miniCardHTML).join('');
+            }
+            const decants = visible.filter(p => (p.variants || []).length > 0);
+            const ds = document.getElementById('decants-section');
+            if (ds) {
+                ds.classList.toggle('hidden', decants.length === 0);
+                document.getElementById('decants-row').innerHTML = decants.slice(0, 12).map(miniCardHTML).join('');
             }
             const gifts = visible.filter(p => p.isGift);
             const gs = document.getElementById('gifts-section');
@@ -2940,7 +3244,7 @@
             const wanted = quizAnswers.aromas.length ? quizAnswers.aromas : [];
             return products.filter(p => p.isActive && !isSoldOut(p) && normalizeTxt(p.category) !== 'emprendedores').map(p => {
                 let score = 0;
-                const text = norm(`${p.notes} ${p.description} ${p.title}`);
+                const text = norm(`${p.notes} ${p.description} ${p.title} ${p.similarTo || ''}`);
                 if (quizAnswers.gender) {
                     if (p.gender === quizAnswers.gender) score += 4;
                     else if (p.gender === 'Unisex') score += 2;
@@ -3035,6 +3339,614 @@
                 }
             }
             alert(`Listo: ${done} producto(s) optimizados${failed ? `, ${failed} con error` : ''}.`);
+        }
+
+        // ===================== TAMAÑOS Y DECANTS =====================
+        let detailVariant = 0;
+        let editingVariants = [];
+
+        function getProductOptions(p) {
+            const main = { label: p.size || 'Frasco completo', price: p.price, oldPrice: p.oldPrice || null, main: true };
+            return [main, ...(p.variants || [])];
+        }
+        function cartItemForOption(p, idx, qty) {
+            const opts = getProductOptions(p);
+            const o = opts[idx] || opts[0];
+            const hasVariants = opts.length > 1;
+            return {
+                ...p,
+                images: undefined,
+                variants: undefined,
+                id: hasVariants ? `${p.id}::${o.label}` : p.id,
+                productId: p.id,
+                title: hasVariants ? `${p.title} (${o.label})` : p.title,
+                price: o.price,
+                oldPrice: o.oldPrice || null,
+                quantity: qty
+            };
+        }
+        function selectDetailSize(i) {
+            detailVariant = i;
+            renderDetail(currentDetailId, true);
+        }
+        function renderVariantRows() {
+            const box = document.getElementById('prod-variants');
+            if (!box) return;
+            if (editingVariants.length === 0) {
+                box.innerHTML = '<p class="text-[11px] text-gray-500 italic">Sin tamaños extra. Agrega por ejemplo: 5 ML, 10 ML, decant 3 ML…</p>';
+                return;
+            }
+            box.innerHTML = editingVariants.map((v, i) => `
+                <div class="grid grid-cols-12 gap-1.5 items-center">
+                    <input data-var="${i}" data-field="label" value="${esc(v.label || '')}" placeholder="Tamaño (ej: 10 ML)" class="col-span-4 p-1.5 border rounded-lg">
+                    <input data-var="${i}" data-field="price" type="number" min="0" value="${v.price || ''}" placeholder="Precio venta" class="col-span-4 p-1.5 border rounded-lg">
+                    <input data-var="${i}" data-field="oldPrice" type="number" min="0" value="${v.oldPrice || ''}" placeholder="Precio antes" class="col-span-3 p-1.5 border rounded-lg">
+                    <button type="button" onclick="removeVariantRow(${i})" class="col-span-1 text-rose-500" title="Quitar"><i class="fas fa-trash"></i></button>
+                </div>`).join('');
+        }
+        function syncVariantInputs() {
+            document.querySelectorAll('#prod-variants [data-var]').forEach(inp => {
+                const v = editingVariants[Number(inp.dataset.var)];
+                if (v) v[inp.dataset.field] = inp.value;
+            });
+        }
+        function addVariantRow() { syncVariantInputs(); editingVariants.push({ label: '', price: '', oldPrice: '' }); renderVariantRows(); }
+        function removeVariantRow(i) { syncVariantInputs(); editingVariants.splice(i, 1); renderVariantRows(); }
+        function collectVariants() {
+            syncVariantInputs();
+            return editingVariants
+                .map(v => ({ label: String(v.label || '').trim().toUpperCase(), price: Number(v.price) || 0, oldPrice: Number(v.oldPrice) || null }))
+                .filter(v => v.label && v.price > 0);
+        }
+
+        // ===================== FILTROS DE AROMA Y PRECIO =====================
+        function setAromaFilter(aroma, btn) {
+            currentAroma = aroma;
+            document.querySelectorAll('.aroma-chip').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderProducts();
+        }
+        function setPriceFilter(range, btn) {
+            currentPriceRange = range;
+            document.querySelectorAll('.price-chip').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderProducts();
+        }
+        function matchesAromaFilter(p) {
+            if (!currentAroma || currentAroma === 'Todos') return true;
+            const text = normalizeTxt(`${p.notes} ${p.description} ${p.title} ${p.similarTo || ''}`);
+            return (QUIZ_AROMAS[currentAroma] || []).some(k => text.includes(normalizeTxt(k)));
+        }
+        function matchesPriceFilter(p) {
+            if (!currentPriceRange) return true;
+            if (currentPriceRange === 'decants') return (p.variants || []).length > 0;
+            const [min, max] = currentPriceRange.split('-').map(Number);
+            const prices = getProductOptions(p).map(o => o.price);
+            return prices.some(pr => pr >= min && pr <= max);
+        }
+
+        // ===================== CUPONES Y TARJETAS DE REGALO =====================
+        let appliedCoupon = null;
+        let couponMessage = '';
+
+        function normalizeCode(c) { return String(c || '').trim().toUpperCase().replace(/\s+/g, ''); }
+        function dayStart(str) { if (!str) return null; const [y, m, d] = str.split('-').map(Number); return new Date(y, m - 1, d, 0, 0, 0, 0).getTime(); }
+        function dayEnd(str) { if (!str) return null; const [y, m, d] = str.split('-').map(Number); return new Date(y, m - 1, d, 23, 59, 59, 999).getTime(); }
+        function fmtDate(ms) { return ms ? new Date(ms).toLocaleDateString('es-CO') : '—'; }
+        function dateInputValue(ms) { const d = new Date(ms); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+
+        function couponProblem(c) {
+            const now = Date.now();
+            if (!c || c.active === false) return 'Este código no existe o no está activo.';
+            if (c.startsAt && now < c.startsAt) return `Este código es válido desde el ${fmtDate(c.startsAt)}.`;
+            if (c.expiresAt && now > c.expiresAt) return 'Este código ya venció.';
+            if (c.maxUses && (c.uses || 0) >= c.maxUses) return 'Este código ya fue utilizado.';
+            if (c.type === 'giftcard' && !(Number(c.balance) > 0)) return 'Esta tarjeta de regalo ya no tiene saldo.';
+            return '';
+        }
+
+        async function applyCouponFrom(inputId) {
+            const code = normalizeCode(document.getElementById(inputId)?.value);
+            if (!code) return;
+            try {
+                const snap = await window.getDoc(window.doc(window.db, "coupons", code));
+                const c = snap.exists() ? { ...snap.data(), code } : null;
+                const problem = couponProblem(c);
+                if (problem) { appliedCoupon = null; couponMessage = problem; }
+                else { appliedCoupon = c; couponMessage = ''; showToast(c.type === 'giftcard' ? 'Tarjeta de regalo aplicada' : `Descuento del ${c.percent}% aplicado`); }
+            } catch (err) {
+                appliedCoupon = null;
+                couponMessage = 'No pudimos validar el código. Intenta de nuevo.';
+            }
+            ['cart-coupon-input', 'cod-coupon-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = appliedCoupon ? appliedCoupon.code : code; });
+            refreshTotalsAfterCoupon();
+        }
+
+        function removeCoupon() {
+            appliedCoupon = null;
+            couponMessage = '';
+            ['cart-coupon-input', 'cod-coupon-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            refreshTotalsAfterCoupon();
+        }
+
+        function refreshTotalsAfterCoupon() {
+            try { updatePaymentCalculations(); } catch (e) { }
+            if (codItems && codItems.length) renderCodSummary();
+            renderCouponStatus('cart-coupon-status');
+            renderCouponStatus('cod-coupon-status');
+        }
+
+        function couponDiscount(subtotal, preTotal) {
+            const c = appliedCoupon;
+            if (!c) return 0;
+            if (c.type === 'giftcard') return Math.min(Number(c.balance) || 0, preTotal);
+            if (c.minPurchase && subtotal < c.minPurchase) return 0;
+            return Math.round(subtotal * ((Number(c.percent) || 0) / 100));
+        }
+
+        function renderCouponStatus(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (appliedCoupon) {
+                const c = appliedCoupon;
+                const minNote = c.type !== 'giftcard' && c.minPurchase ? ` · compra mínima ${formatPrice(c.minPurchase)}` : '';
+                el.innerHTML = `<div class="flex items-center justify-between gap-2 text-[11px] bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg px-2.5 py-1.5">
+                    <span><i class="fas fa-check-circle mr-1"></i><strong>${esc(c.code)}</strong>: ${c.type === 'giftcard' ? `tarjeta de regalo con saldo ${formatPrice(c.balance)}` : `${c.percent}% de descuento${minNote}`}</span>
+                    <button type="button" onclick="removeCoupon()" class="text-emerald-900 font-bold underline">Quitar</button></div>`;
+            } else if (couponMessage) {
+                el.innerHTML = `<p class="text-[11px] text-rose-600 font-semibold"><i class="fas fa-circle-exclamation mr-1"></i>${esc(couponMessage)}</p>`;
+            } else el.innerHTML = '';
+        }
+
+        function couponMessageLine(disc) {
+            const c = appliedCoupon;
+            if (!c || disc <= 0) return '';
+            if (c.type === 'giftcard') return `• Tarjeta de regalo ${c.code}: -${formatPrice(disc)} (saldo restante ${formatPrice(Math.max(0, (Number(c.balance) || 0) - disc))})\n`;
+            return `• Cupón ${c.code} (${c.percent}%): -${formatPrice(disc)}\n`;
+        }
+
+        async function registerCouponUse(disc) {
+            const c = appliedCoupon;
+            if (!c || !(disc > 0)) return;
+            const update = { uses: (Number(c.uses) || 0) + 1, lastUsedAt: Date.now() };
+            if (c.type === 'giftcard') update.balance = Math.max(0, (Number(c.balance) || 0) - disc);
+            try { await window.updateDoc(window.doc(window.db, "coupons", c.code), update); } catch (err) { console.warn('No se pudo registrar el uso del código', err); }
+            removeCoupon();
+        }
+
+        // ----- Panel admin -----
+        function randomCode() {
+            const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            const part = () => Array.from({ length: 4 }, () => abc[Math.floor(Math.random() * abc.length)]).join('');
+            return `REGALO-${part()}-${part()}`;
+        }
+        function openCouponsAdmin() {
+            if (!isAdmin) return;
+            document.getElementById('cp-from').value = dateInputValue(Date.now());
+            document.getElementById('cp-to').value = dateInputValue(Date.now() + 30 * 86400000);
+            document.getElementById('gc-to').value = dateInputValue(Date.now() + 365 * 86400000);
+            document.getElementById('coupons-modal').classList.remove('hidden');
+            loadCouponsAdmin();
+        }
+        function closeCouponsAdmin() { document.getElementById('coupons-modal').classList.add('hidden'); }
+
+        let adminCoupons = [];
+        async function loadCouponsAdmin() {
+            const tbody = document.getElementById('coupons-list');
+            tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-gray-400">Cargando...</td></tr>';
+            try {
+                const snap = await window.getDocs(window.collection(window.db, "coupons"));
+                adminCoupons = snap.docs.map(d => ({ ...d.data(), code: d.id })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-3 text-center text-rose-500">No se pudieron cargar: ${esc(err.message)}</td></tr>`;
+                return;
+            }
+            if (adminCoupons.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-gray-400">Aún no hay códigos.</td></tr>'; return; }
+            tbody.innerHTML = adminCoupons.map(c => {
+                const problem = couponProblem(c);
+                const isGift = c.type === 'giftcard';
+                return `<tr>
+                    <td class="p-2 font-mono font-bold">${esc(c.code)}${c.recipient ? `<span class="block font-sans font-normal text-[10px] text-gray-500">Para: ${esc(c.recipient)}</span>` : ''}</td>
+                    <td class="p-2">${isGift ? '🎁 Tarjeta' : '% Descuento'}</td>
+                    <td class="p-2 font-bold">${isGift ? `${formatPrice(c.balance)} <span class="font-normal text-gray-400">de ${formatPrice(c.amount)}</span>` : `${c.percent}%${c.minPurchase ? ` <span class="font-normal text-gray-400">desde ${formatPrice(c.minPurchase)}</span>` : ''}`}</td>
+                    <td class="p-2">${fmtDate(c.startsAt)} → ${fmtDate(c.expiresAt)}</td>
+                    <td class="p-2">${c.uses || 0}${c.maxUses ? ` / ${c.maxUses}` : ''}</td>
+                    <td class="p-2">${problem ? `<span class="text-rose-600 font-bold">${c.active === false ? 'Desactivado' : 'No válido'}</span>` : '<span class="text-emerald-600 font-bold">Activo</span>'}</td>
+                    <td class="p-2 space-x-1">
+                        ${isGift ? `<button onclick="sendGiftCardWhatsApp('${esc(c.code)}')" class="text-emerald-600" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>` : ''}
+                        <button onclick="toggleCouponActive('${esc(c.code)}', ${c.active !== false})" class="text-amber-600" title="${c.active === false ? 'Activar' : 'Desactivar'}"><i class="fas ${c.active === false ? 'fa-toggle-off' : 'fa-toggle-on'}"></i></button>
+                        <button onclick="deleteCoupon('${esc(c.code)}')" class="text-rose-500" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </td></tr>`;
+            }).join('');
+        }
+
+        async function createDiscountCoupon(e) {
+            e.preventDefault();
+            const code = normalizeCode(document.getElementById('cp-code').value);
+            if (!/^[A-Z0-9-]{3,30}$/.test(code)) return alert('El código solo puede tener letras, números y guiones (3 a 30 caracteres).');
+            const single = document.getElementById('cp-single').checked;
+            const data = {
+                type: 'percent',
+                percent: Math.max(1, Math.min(90, Number(document.getElementById('cp-pct').value) || 0)),
+                startsAt: dayStart(document.getElementById('cp-from').value),
+                expiresAt: dayEnd(document.getElementById('cp-to').value),
+                maxUses: single ? 1 : (Number(document.getElementById('cp-max').value) || null),
+                minPurchase: Number(document.getElementById('cp-min').value) || 0,
+                uses: 0, active: true, createdAt: Date.now()
+            };
+            try {
+                const exists = await window.getDoc(window.doc(window.db, "coupons", code));
+                if (exists.exists() && !confirm(`El código ${code} ya existe. ¿Reemplazarlo?`)) return;
+                await window.setDoc(window.doc(window.db, "coupons", code), data);
+                e.target.reset();
+                document.getElementById('cp-from').value = dateInputValue(Date.now());
+                document.getElementById('cp-to').value = dateInputValue(Date.now() + 30 * 86400000);
+                showToast(`Código ${code} creado`);
+                loadCouponsAdmin();
+            } catch (err) { alert('No se pudo crear el código: ' + err.message); }
+        }
+
+        async function createGiftCard(e) {
+            e.preventDefault();
+            const amount = Number(document.getElementById('gc-amount').value) || 0;
+            if (amount < 1000) return alert('Escribe el valor de la tarjeta.');
+            let code = normalizeCode(document.getElementById('gc-code').value) || randomCode();
+            if (!/^[A-Z0-9-]{3,30}$/.test(code)) return alert('El código solo puede tener letras, números y guiones.');
+            const data = {
+                type: 'giftcard', amount, balance: amount,
+                startsAt: Date.now(),
+                expiresAt: dayEnd(document.getElementById('gc-to').value),
+                recipient: document.getElementById('gc-recipient').value.trim(),
+                buyerPhone: document.getElementById('gc-phone').value.replace(/\D/g, ''),
+                maxUses: null, uses: 0, active: true, createdAt: Date.now()
+            };
+            try {
+                const exists = await window.getDoc(window.doc(window.db, "coupons", code));
+                if (exists.exists()) return alert(`El código ${code} ya existe. Usa otro.`);
+                await window.setDoc(window.doc(window.db, "coupons", code), data);
+                e.target.reset();
+                document.getElementById('gc-to').value = dateInputValue(Date.now() + 365 * 86400000);
+                await loadCouponsAdmin();
+                if (confirm(`Tarjeta ${code} creada por ${formatPrice(amount)}.\n\n¿Enviarla ahora por WhatsApp?`)) sendGiftCardWhatsApp(code);
+            } catch (err) { alert('No se pudo crear la tarjeta: ' + err.message); }
+        }
+
+        function sendGiftCardWhatsApp(code) {
+            const c = adminCoupons.find(x => x.code === code);
+            if (!c) return;
+            const url = location.origin + location.pathname;
+            const msg = `🎁 *TARJETA DE REGALO FRAGATTAPARFUMS*\n\n${c.recipient ? `Para: *${c.recipient}*\n` : ''}Valor: *${formatPrice(c.balance)}*\nCódigo: *${c.code}*\nVálida hasta: ${fmtDate(c.expiresAt)}\n\nEscoge tus perfumes en ${url} y escribe el código al pagar. ¡Disfrútala!`;
+            const phone = c.buyerPhone ? (c.buyerPhone.length === 10 ? '57' + c.buyerPhone : c.buyerPhone) : '';
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        async function toggleCouponActive(code, isActive) {
+            try { await window.updateDoc(window.doc(window.db, "coupons", code), { active: !isActive }); loadCouponsAdmin(); }
+            catch (err) { alert('No se pudo cambiar: ' + err.message); }
+        }
+        async function deleteCoupon(code) {
+            if (!confirm(`¿Eliminar el código ${code}?`)) return;
+            try { await window.deleteDoc(window.doc(window.db, "coupons", code)); loadCouponsAdmin(); }
+            catch (err) { alert('No se pudo eliminar: ' + err.message); }
+        }
+
+        // ----- Comprar tarjeta de regalo (cliente) -----
+        let giftBuyAmount = 100000;
+        function openGiftCardBuy() { setGiftAmount(100000, document.querySelectorAll('.gift-amt')[1]); document.getElementById('giftbuy-modal').classList.remove('hidden'); }
+        function closeGiftCardBuy() { document.getElementById('giftbuy-modal').classList.add('hidden'); }
+        function setGiftAmount(v, btn) {
+            giftBuyAmount = v;
+            document.querySelectorAll('.gift-amt').forEach(b => b.classList.remove('active'));
+            if (btn) { btn.classList.add('active'); const c = document.getElementById('gift-custom'); if (c) c.value = ''; }
+            document.getElementById('gift-submit').innerText = v >= 20000 ? `Solicitar tarjeta de ${formatPrice(v)}` : 'Elige un valor (mínimo $20.000)';
+        }
+        function submitGiftCardBuy(e) {
+            e.preventDefault();
+            if (!(giftBuyAmount >= 20000)) return alert('El valor mínimo de la tarjeta es $20.000.');
+            const v = (id) => document.getElementById(id).value.trim();
+            const phone = v('gift-phone').replace(/\D/g, '');
+            if (phone.length < 10) return alert('Escribe un número de WhatsApp válido.');
+            let msg = `🎁 *QUIERO COMPRAR UNA TARJETA DE REGALO*\n\n• Valor: *${formatPrice(giftBuyAmount)}*\n• Para: ${v('gift-to')}\n• De: ${v('gift-from')}\n• Mi WhatsApp: ${phone}\n`;
+            if (v('gift-msg')) msg += `• Mensaje: "${v('gift-msg')}"\n`;
+            msg += `\nQuedo atento(a) a los datos para el pago.`;
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+            closeGiftCardBuy();
+            e.target.reset();
+            showToast('¡Solicitud enviada! Te contactamos por WhatsApp');
+        }
+
+        // ===================== BUSCADOR INTELIGENTE =====================
+        // Encuentra palabras parecidas (errores de escritura), sinónimos y familias de aroma
+        const SEARCH_SYNONYMS = {
+            'mujer': ['dama', 'femenino', 'femenina', 'women', 'woman'],
+            'dama': ['mujer', 'femenino'],
+            'hombre': ['caballero', 'masculino', 'men', 'man'],
+            'caballero': ['hombre', 'masculino'],
+            'unisex': ['ambos', 'mixto'],
+            'arabe': ['arabes', 'lattafa', 'armaf', 'afnan', 'al haramain', 'rasasi', 'maison alhambra'],
+            'disenador': ['diseñador', 'designer', 'marca'],
+            'vainilla': ['vanilla', 'avainillado', 'vanila'],
+            'oud': ['oudh', 'madera'],
+            'combo': ['combos', 'set', 'kit', 'promocion'],
+            'promo': ['promocion', 'promociones', 'oferta', 'combo'],
+            'oferta': ['promocion', 'promociones', 'descuento'],
+            'barato': ['economico', 'oferta', 'promocion'],
+            'regalo': ['combo', 'set', 'kit'],
+            'decant': ['decants', 'muestra', 'ml', 'tamaño'],
+            'muestra': ['decant', 'decants'],
+            'nino': ['niño', 'niños', 'kids', 'infantil'],
+            'kids': ['niño', 'niños', 'infantil'],
+            'spray': ['body spray', 'mist', 'splash'],
+            'splash': ['body spray', 'mist']
+        };
+
+        function levenshtein(a, b, max) {
+            if (Math.abs(a.length - b.length) > max) return max + 1;
+            let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+            for (let i = 1; i <= a.length; i++) {
+                const cur = [i];
+                let rowMin = i;
+                for (let j = 1; j <= b.length; j++) {
+                    cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+                    if (cur[j] < rowMin) rowMin = cur[j];
+                }
+                if (rowMin > max) return max + 1;
+                prev = cur;
+            }
+            return prev[b.length];
+        }
+
+        function singular(w) { return w.length > 4 && w.endsWith('es') ? w.slice(0, -2) : (w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w); }
+
+        function searchIndexFor(p) {
+            const main = normalizeTxt(`${p.title} ${p.brand} ${p.similarTo || ''}`);
+            const extra = normalizeTxt(`${p.notes} ${p.description} ${p.category} ${p.gender} ${p.concentration || ''} ${p.size || ''} ${(p.variants || []).map(v => v.label).join(' ')}`);
+            const words = new Set(`${main} ${extra}`.split(/[^a-z0-9ñ]+/).filter(w => w.length > 1).map(singular));
+            return { main, extra, words: [...words], compact: `${main} ${extra}`.replace(/[^a-z0-9ñ]/g, '') };
+        }
+
+        function termScore(idx, term) {
+            const t = singular(term);
+            if (t.length <= 3) {
+                // Palabras cortas (oud, eau...): deben coincidir como palabra, no dentro de otra ("cloud")
+                const inMain = idx.main.split(/[^a-z0-9ñ]+/).some(w => w === t || w.startsWith(t));
+                if (inMain) return 10;
+                if (idx.words.some(w => w === t || w.startsWith(t))) return 6;
+                return 0;
+            }
+            if (idx.main.includes(t)) return 10;
+            if (idx.extra.includes(t)) return 6;
+            if (t.length >= 4 && idx.compact.includes(t)) return 6; // "goodgirl" encuentra "good girl"
+            let best = 0;
+            const tol = t.length <= 3 ? 0 : (t.length <= 6 ? 1 : 2);
+            for (const w of idx.words) {
+                if (t.length >= 3 && (w.startsWith(t) || (w.length >= 4 && t.startsWith(w)))) best = Math.max(best, 7);
+                else if (tol > 0 && levenshtein(w, t, tol) <= tol) best = Math.max(best, 5);
+                if (best >= 7) break;
+            }
+            if (best) return best;
+            // Sinónimos y familias de aroma (ej: "dulce" encuentra vainilla, caramelo...)
+            const aromaKey = Object.keys(QUIZ_AROMAS).find(k => normalizeTxt(k) === t);
+            const syns = [...(SEARCH_SYNONYMS[t] || []), ...(aromaKey ? QUIZ_AROMAS[aromaKey] : [])];
+            const padded = ' ' + `${idx.main} ${idx.extra}`.replace(/[^a-z0-9ñ]+/g, ' ') + ' ';
+            for (const sy of syns) {
+                const n = normalizeTxt(sy).replace(/[^a-z0-9ñ]+/g, ' ').trim();
+                if (n && (padded.includes(' ' + n + ' ') || (!n.includes(' ') && idx.words.includes(singular(n))))) return 4;
+            }
+            return 0;
+        }
+
+        function smartSearchScore(p, query) {
+            const terms = normalizeTxt(query).split(/[^a-z0-9ñ]+/).filter(t => t.length > 1 || /\d/.test(t));
+            if (terms.length === 0) return 1;
+            const idx = searchIndexFor(p);
+            const scores = terms.map(t => termScore(idx, t));
+            const hits = scores.filter(x => x > 0).length;
+            const total = scores.reduce((a, b) => a + b, 0);
+            if (hits === terms.length) return total + 5;
+            // Si escribió varias palabras y una no coincide, igual se muestra (con menos prioridad)
+            if (terms.length > 1 && hits >= Math.ceil(terms.length / 2)) return total * 0.5;
+            return 0;
+        }
+
+        let searchTimer = null;
+        function onSearchInput() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(renderProducts, 180);
+        }
+
+        function activeFilterLabels() {
+            const out = [];
+            if (currentCategory !== 'Todas') out.push(currentCategory);
+            if (currentGender !== 'Todos') out.push(currentGender);
+            if (currentAroma && currentAroma !== 'Todos') out.push(currentAroma);
+            if (currentPriceRange) out.push(document.querySelector(`.price-chip[onclick*="'${currentPriceRange}'"]`)?.innerText || 'Precio');
+            if (currentPriority !== 'Todas') out.push(currentPriority);
+            return out;
+        }
+
+        function renderSearchNotice(query, count, fallback) {
+            const box = document.getElementById('search-notice');
+            if (!box) return;
+            if (!query) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+            box.classList.remove('hidden');
+            const q = esc(query);
+            if (fallback) {
+                box.innerHTML = `<div class="bg-luxury-gold-light border border-luxury-gold/60 rounded-xl px-3 py-2.5 text-xs text-gray-800 flex flex-wrap items-center justify-between gap-2">
+                    <span><i class="fas fa-circle-info text-luxury-gold-dark mr-1"></i> No hay "<strong>${q}</strong>" con los filtros (${esc(activeFilterLabels().join(', '))}). Te mostramos las coincidencias de toda la tienda.</span>
+                    <button onclick="resetFilters()" class="font-bold underline text-luxury-dark">Quitar filtros</button></div>`;
+            } else if (count > 0) {
+                box.innerHTML = `<p class="text-xs text-gray-500 px-1"><strong class="text-gray-800">${count}</strong> resultado${count === 1 ? '' : 's'} para "<strong class="text-gray-800">${q}</strong>" <button onclick="clearSearch()" class="ml-2 font-bold text-luxury-gold-dark underline">Borrar búsqueda</button></p>`;
+            } else {
+                box.innerHTML = `<div class="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs text-gray-700 flex flex-wrap items-center justify-between gap-2">
+                    <span>No encontramos "<strong>${q}</strong>". ¿Lo buscamos por ti?</span>
+                    <a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, ¿tienen ' + query + '?')}" target="_blank" rel="noopener" class="font-bold text-emerald-700"><i class="fab fa-whatsapp mr-1"></i> Preguntar por WhatsApp</a></div>`;
+            }
+        }
+
+        function clearSearch() {
+            const el = document.getElementById('search-input');
+            if (el) el.value = '';
+            renderProducts();
+        }
+
+        // ===================== PANEL DE FILTROS (celular) Y RESUMEN =====================
+        function openFiltersSheet() {
+            document.getElementById('filters-panel').classList.add('open');
+            document.getElementById('filters-overlay').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeFiltersSheet() {
+            document.getElementById('filters-panel').classList.remove('open');
+            document.getElementById('filters-overlay').classList.add('hidden');
+            if (document.getElementById('detail-modal').classList.contains('hidden')) document.body.style.overflow = '';
+        }
+        function setSortOption(v, btn) {
+            const sel = document.getElementById('sort-select');
+            if (sel) sel.value = v;
+            document.querySelectorAll('.sort-chip').forEach(b => b.classList.toggle('active', b === btn));
+            renderProducts();
+        }
+        function chipLabel(sel, value) {
+            const b = document.querySelector(`${sel}[onclick*="'${value}'"]`);
+            return b ? b.innerText.trim() : value;
+        }
+        function updateFilterSummary(count) {
+            // Filtros activos como etiquetas que se quitan con ✕
+            const chips = [];
+            const add = (label, action) => chips.push(`<button onclick="${action}" class="shrink-0 bg-luxury-gold-light border border-luxury-gold/60 rounded-full px-2.5 py-1 font-semibold whitespace-nowrap">${esc(label)} <i class="fas fa-times ml-0.5 text-[9px]"></i></button>`);
+            if (currentCategory !== 'Todas') add(currentCategory, "setCategoryFilter('Todas')");
+            if (currentGender !== 'Todos') add(currentGender, "setGenderFilter('Todos')");
+            if (currentAroma && currentAroma !== 'Todos') add(chipLabel('.aroma-chip', currentAroma), "setAromaFilter('Todos', document.querySelector('.aroma-chip'))");
+            if (currentPriceRange) add(chipLabel('.price-chip', currentPriceRange), "setPriceFilter('', document.querySelector('.price-chip'))");
+            if (currentPriority !== 'Todas') add(chipLabel('.prio-chip', currentPriority), "setPriorityFilter('Todas')");
+            if (chips.length > 1) chips.push(`<button onclick="resetFilters()" class="shrink-0 text-gray-500 underline font-semibold px-1">Limpiar</button>`);
+            const box = document.getElementById('active-filters');
+            if (box) box.innerHTML = chips.join('');
+            // Número de filtros del panel (aroma, precio, destacados)
+            const panelCount = [currentAroma && currentAroma !== 'Todos', !!currentPriceRange, currentPriority !== 'Todas'].filter(Boolean).length;
+            const badge = document.getElementById('filters-count');
+            if (badge) { badge.innerText = panelCount; badge.classList.toggle('hidden', panelCount === 0); }
+            const rc = document.getElementById('results-count');
+            if (rc) rc.innerHTML = `<strong class="text-gray-800">${count}</strong> perfume${count === 1 ? '' : 's'}`;
+            const apply = document.getElementById('filters-apply');
+            if (apply) apply.innerText = count > 0 ? `Ver ${count} perfume${count === 1 ? '' : 's'}` : 'No hay perfumes con estos filtros';
+        }
+
+        // ===================== FAVORITOS (CORAZÓN) =====================
+        const FAV_KEY = 'fragatta_favoritos';
+        let favorites = [];
+        try { favorites = JSON.parse(localStorage.getItem(FAV_KEY)) || []; if (!Array.isArray(favorites)) favorites = []; } catch (e) { favorites = []; }
+
+        function saveFavorites() { try { localStorage.setItem(FAV_KEY, JSON.stringify(favorites)); } catch (e) { } }
+        function isFavorite(id) { return favorites.includes(String(id)); }
+
+        function favHeartHTML(id, posClasses) {
+            const fav = isFavorite(id);
+            return `<button type="button" data-fav-id="${esc(id)}" onclick="event.stopPropagation(); toggleFavorite('${esc(id)}', this)" class="fav-btn ${fav ? 'is-fav' : ''} ${posClasses || ''} w-8 h-8 rounded-full bg-white/95 shadow-md flex items-center justify-center text-gray-500 hover:text-rose-600 transition" title="${fav ? 'Quitar de favoritos' : 'Guardar en favoritos'}" aria-label="Favorito"><i class="${fav ? 'fas' : 'far'} fa-heart text-sm"></i></button>`;
+        }
+
+        function toggleFavorite(id, btn) {
+            if (!id) return;
+            id = String(id);
+            const adding = !isFavorite(id);
+            favorites = adding ? [id, ...favorites] : favorites.filter(x => x !== id);
+            saveFavorites();
+            syncFavButtons();
+            updateFavBadge();
+            if (btn) { btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop'); }
+            showToast(adding ? '❤️ Guardado en tus favoritos' : 'Quitado de tus favoritos');
+            if (!document.getElementById('favorites-modal').classList.contains('hidden')) renderFavorites();
+            if (currentPriority === 'FAVORITOS') renderProducts();
+        }
+
+        function syncFavButtons() {
+            document.querySelectorAll('[data-fav-id]').forEach(b => {
+                const fav = isFavorite(b.dataset.favId);
+                b.classList.toggle('is-fav', fav);
+                b.title = fav ? 'Quitar de favoritos' : 'Guardar en favoritos';
+                const i = b.querySelector('i');
+                if (i) { i.classList.toggle('fas', fav); i.classList.toggle('far', !fav); }
+            });
+            const d = document.getElementById('detail-fav-btn');
+            if (d) {
+                const fav = currentDetailId && isFavorite(currentDetailId);
+                d.classList.toggle('is-fav', !!fav);
+                d.querySelector('i').className = `${fav ? 'fas' : 'far'} fa-heart`;
+                d.title = fav ? 'Quitar de favoritos' : 'Guardar en favoritos';
+            }
+        }
+
+        function favoriteProducts() {
+            // Solo los que siguen activos en la tienda, en el orden en que se guardaron
+            return favorites.map(id => products.find(p => String(p.id) === id && p.isActive)).filter(Boolean);
+        }
+
+        function updateFavBadge() {
+            const badge = document.getElementById('fav-badge');
+            if (!badge) return;
+            const n = products.length ? favoriteProducts().length : favorites.length;
+            badge.innerText = n;
+            badge.classList.toggle('hidden', n === 0);
+        }
+
+        function openFavorites() {
+            renderFavorites();
+            document.getElementById('favorites-modal').classList.remove('hidden');
+        }
+        function closeFavorites() { document.getElementById('favorites-modal').classList.add('hidden'); }
+
+        function renderFavorites() {
+            const list = favoriteProducts();
+            document.getElementById('fav-count-title').innerText = list.length ? `(${list.length})` : '';
+            document.getElementById('favorites-actions').classList.toggle('hidden', list.length === 0);
+            const box = document.getElementById('favorites-list');
+            if (list.length === 0) {
+                box.innerHTML = `<div class="text-center py-12 text-gray-500">
+                    <i class="far fa-heart text-5xl text-rose-200"></i>
+                    <p class="font-bold text-gray-800 mt-3">Aún no tienes favoritos</p>
+                    <p class="text-xs mt-1">Toca el <i class="far fa-heart text-rose-500"></i> en cualquier perfume para guardarlo y verlo aquí después.</p>
+                    <button onclick="closeFavorites()" class="mt-4 bg-luxury-dark text-white text-xs font-bold px-4 py-2 rounded-lg">Ver perfumes</button></div>`;
+                return;
+            }
+            box.innerHTML = list.map(p => `
+                <div class="flex items-center gap-3 border border-gray-100 rounded-2xl p-2.5">
+                    <img src="${getImages(p)[0]}" alt="" loading="lazy" class="w-16 h-16 rounded-xl object-cover bg-gray-50 cursor-pointer" onclick="closeFavorites(); openDetailModal('${p.id}')">
+                    <div class="flex-1 min-w-0 cursor-pointer" onclick="closeFavorites(); openDetailModal('${p.id}')">
+                        <p class="text-[10px] font-bold text-luxury-gold-dark uppercase truncate">${esc(p.brand)}</p>
+                        <p class="font-cinzel text-xs font-bold uppercase truncate">${esc(p.title)}</p>
+                        <p class="text-sm font-extrabold text-rose-600">${formatPrice(p.price)}${(p.variants || []).length ? ' <span class="text-[10px] text-gray-500 font-semibold">· varios tamaños</span>' : ''}</p>
+                        ${isSoldOut(p) ? '<p class="text-[10px] font-bold text-gray-400">Agotado</p>' : ''}
+                    </div>
+                    <div class="flex flex-col gap-1.5 shrink-0">
+                        ${isSoldOut(p) ? '' : `<button onclick="addToCart('${p.id}')" class="w-9 h-9 rounded-lg bg-luxury-dark text-luxury-gold" title="Añadir al carrito"><i class="fas fa-cart-plus"></i></button>`}
+                        <button onclick="toggleFavorite('${p.id}')" class="w-9 h-9 rounded-lg bg-rose-50 text-rose-600" title="Quitar de favoritos"><i class="fas fa-heart-crack"></i></button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function addAllFavoritesToCart() {
+            const list = favoriteProducts().filter(p => !isSoldOut(p));
+            if (list.length === 0) return showToast('No hay favoritos disponibles para añadir');
+            list.forEach(p => {
+                const existing = cart.find(i => i.id === p.id);
+                if (existing) existing.quantity += 1;
+                else cart.push({ ...p, images: undefined, variants: undefined, quantity: 1 });
+            });
+            saveCart();
+            updateCartUI();
+            closeFavorites();
+            toggleCartModal();
+            showToast(`${list.length} favorito(s) añadidos al carrito`);
+        }
+
+        function shareFavorites() {
+            const list = favoriteProducts();
+            if (list.length === 0) return;
+            const base = location.origin + location.pathname;
+            let msg = `❤️ *Mis perfumes favoritos de FRAGATTAPARFUMS*\n\n`;
+            list.forEach((p, i) => { msg += `${i + 1}. ${p.brand} ${p.title} - ${formatPrice(p.price)}\n${base}#producto=${encodeURIComponent(p.id)}\n`; });
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         function closeDetailModal(fromPop) {
@@ -3143,7 +4055,8 @@
             } else {
                 const p = products.find(x => x.id === currentDetailId);
                 if (!p) return;
-                codItems = [{ id: p.id, brand: p.brand, title: p.title, price: p.price, oldPrice: p.oldPrice, image: getImages(p)[0], quantity: detailQty }];
+                const ci = cartItemForOption(p, detailVariant, detailQty);
+                codItems = [{ id: ci.id, brand: p.brand, title: ci.title, price: ci.price, oldPrice: ci.oldPrice, image: getImages(p)[0], quantity: detailQty }];
             }
             if (codItems.length === 0) return alert('No hay productos para comprar.');
             const dept = document.getElementById('cod-dept');
@@ -3179,7 +4092,16 @@
             const shipRaw = computeCodShipping();
             const ship = shipRaw && isFreeShipping(subtotal) ? { ...shipRaw, cost: 0, free: true } : shipRaw;
             const fee = ship && !ship.metro ? Math.round((subtotal + ship.cost) * (storeSettings.codFeePct / 100)) : 0;
-            const total = subtotal + (ship ? ship.cost : 0) + fee;
+            const preTotal = subtotal + (ship ? ship.cost : 0) + fee;
+            const disc = couponDiscount(subtotal, preTotal);
+            const total = Math.max(0, preTotal - disc);
+            const dLine = document.getElementById('cod-discount-line');
+            if (dLine) {
+                dLine.classList.toggle('hidden', disc <= 0);
+                document.getElementById('cod-discount-label').innerText = appliedCoupon ? `${appliedCoupon.type === 'giftcard' ? 'Tarjeta regalo' : 'Cupón'} ${appliedCoupon.code}` : 'Descuento';
+                document.getElementById('cod-discount').innerText = `-${formatPrice(disc)}`;
+            }
+            renderCouponStatus('cod-coupon-status');
             const codFree = document.getElementById('cod-free-ship');
             if (codFree) codFree.innerHTML = freeShipBarHTML(subtotal);
             document.getElementById('cod-items').innerHTML = codItems.map((i, idx) => `
@@ -3212,7 +4134,7 @@
                 document.getElementById('cod-ship-price').innerText = ship.free ? 'GRATIS' : formatPrice(ship.cost);
             }
             document.getElementById('cod-submit-btn').innerText = `COMPLETAR COMPRA - ${formatPrice(total)}`;
-            return { subtotal, ship, fee, total };
+            return { subtotal, ship, fee, total, disc };
         }
 
         function changeCodQty(idx, d) {
@@ -3222,7 +4144,7 @@
             renderCodSummary();
         }
 
-        function submitCodOrder(e) {
+        async function submitCodOrder(e) {
             e.preventDefault();
             const v = (id) => document.getElementById(id).value.trim();
             const ship = computeCodShipping();
@@ -3239,8 +4161,10 @@
             codItems.forEach(i => { msg += `• ${i.brand ? i.brand + ' ' : ''}${i.title} x${i.quantity} = ${formatPrice(i.price * i.quantity)}\n`; });
             msg += `\n*RESUMEN:*\n• Subtotal: ${formatPrice(t.subtotal)}\n• Envío (${ship.label}): ${t.ship && t.ship.free ? 'GRATIS' : formatPrice(ship.cost)}\n`;
             if (t.fee > 0) msg += `• Recargo contraentrega: ${formatPrice(t.fee)}\n`;
+            if (t.disc > 0) msg += couponMessageLine(t.disc);
             msg += `*TOTAL A PAGAR AL RECIBIR:* ${formatPrice(t.total)}\n\n*MÉTODO DE PAGO:* Pago Contraentrega`;
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+            await registerCouponUse(t.disc);
             if (codSource === 'cart') { cart = []; saveCart(); updateCartUI(); }
             closeCodCheckout();
             document.getElementById('cod-form').reset();
@@ -3250,4 +4174,3 @@
     </script>
 </body>
 </html>
-Mostrando index.html.
