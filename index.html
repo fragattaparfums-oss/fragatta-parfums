@@ -212,22 +212,22 @@
 
     <!-- Header Principal -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-            <div class="w-8"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3 flex items-center justify-between">
+            <div class="w-8 hidden sm:block"></div>
 
-            <div class="flex flex-col items-center">
-                <div id="logo-container" class="mb-1">
-                    <div id="buyer-logo-box" class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border border-amber-200 shadow-sm bg-amber-50">
+            <div class="flex flex-row sm:flex-col items-center gap-2 sm:gap-0">
+                <div id="logo-container" class="sm:mb-1">
+                    <div id="buyer-logo-box" class="w-9 h-9 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden border border-amber-200 shadow-sm bg-amber-50">
                         <img id="buyer-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Fragatta Parfums Logo" class="w-full h-full object-contain">
                     </div>
 
-                    <div id="admin-logo-box" class="hidden w-12 h-12 border border-dashed border-amber-400 rounded-full flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para cambiar el logo">
+                    <div id="admin-logo-box" class="hidden w-9 h-9 sm:w-12 sm:h-12 border border-dashed border-amber-400 rounded-full flex-col items-center justify-center bg-amber-100/50 overflow-hidden relative group cursor-pointer shadow-sm" onclick="triggerLogoSelect()" title="Haz clic para cambiar el logo">
                         <img id="admin-logo-img" src="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg" alt="Logo Admin" class="w-full h-full object-contain">
                         <div class="absolute inset-0 bg-black/60 text-luxury-gold text-[8px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition">Cambiar</div>
                     </div>
                 </div>
                 <input type="file" id="logo-file-input" accept="image/*" onchange="handleLogoUpload(event)" class="hidden">
-                <h1 class="font-cinzel text-lg sm:text-2xl font-bold text-gray-900 tracking-widest uppercase leading-tight">FRAGATTAPARFUMS</h1>
+                <h1 class="font-cinzel text-[15px] sm:text-2xl font-bold text-gray-900 tracking-[0.12em] sm:tracking-widest uppercase leading-tight">FRAGATTAPARFUMS</h1>
             </div>
 
             <!-- CONTENEDOR SUPERIOR DERECHA: FAVORITOS Y CARRITO -->
@@ -248,16 +248,16 @@
     <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-5">
 
         <!-- Banner Principal Elegante -->
-        <section id="banner-section" class="hero-banner rounded-2xl px-4 py-4 sm:px-8 sm:py-6 mb-4 sm:mb-5 border border-amber-100 shadow-sm text-center relative">
+        <section id="banner-section" class="hero-banner rounded-2xl px-3 py-2.5 sm:px-8 sm:py-6 mb-3 sm:mb-5 border border-amber-100 shadow-sm text-center relative">
             <div id="banner-bg-blur" class="banner-bg-blur"></div>
             <div class="relative z-10">
-                <div class="inline-block bg-amber-100/80 border border-amber-300 text-amber-900 font-bold text-[10px] sm:text-[11px] tracking-wider px-3.5 py-0.5 rounded-full uppercase mb-2 shadow-sm">
+                <div class="inline-block bg-amber-100/80 border border-amber-300 text-amber-900 font-bold text-[9px] sm:text-[11px] tracking-wider px-2.5 sm:px-3.5 py-0.5 rounded-full uppercase mb-1 sm:mb-2 shadow-sm">
                     ¡SOMOS MAYORISTAS!
                 </div>
-                <h2 class="font-cinzel text-lg sm:text-3xl font-bold text-gray-900 tracking-wide uppercase mb-1.5 sm:mb-2">
+                <h2 class="font-cinzel text-[13px] sm:text-3xl font-bold text-gray-900 tracking-wide uppercase sm:mb-2">
                     EXCELENCIA Y CALIDAD GARANTIZADA
                 </h2>
-                <p class="max-w-xl mx-auto text-gray-600 text-[11px] sm:text-xs leading-relaxed font-normal">
+                <p class="hidden sm:block max-w-xl mx-auto text-gray-600 text-[11px] sm:text-xs leading-relaxed font-normal">
                     Distribución exclusiva de perfumería fina y body spray. Explora nuestras ofertas, precios competitivos y realiza tus compras seguras en línea o por WhatsApp.
                 </p>
 
@@ -274,48 +274,53 @@
         </section>
 
         <!-- ICONOS DE CONFIANZA -->
-        <section class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
-            <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 shadow-sm">
-                <span class="w-9 h-9 shrink-0 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-truck-fast"></i></span>
-                <div class="leading-tight"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Envíos a toda Colombia</p><p class="text-[10px] text-gray-500">Seguimiento por WhatsApp</p></div>
+        <section class="flex sm:grid sm:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4 overflow-x-auto hide-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0">
+            <div class="shrink-0 bg-white border border-gray-100 rounded-full sm:rounded-2xl pl-1 pr-3 py-1 sm:p-3 flex items-center gap-1.5 sm:gap-2.5 shadow-sm">
+                <span class="w-7 h-7 sm:w-9 sm:h-9 shrink-0 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center text-[11px] sm:text-base"><i class="fas fa-truck-fast"></i></span>
+                <div class="leading-tight whitespace-nowrap sm:whitespace-normal"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Envíos a toda Colombia</p><p class="hidden sm:block text-[10px] text-gray-500">Seguimiento por WhatsApp</p></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 shadow-sm">
-                <span class="w-9 h-9 shrink-0 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-hand-holding-usd"></i></span>
-                <div class="leading-tight"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Pago contraentrega</p><p class="text-[10px] text-gray-500">Pagas al recibir</p></div>
+            <div class="shrink-0 bg-white border border-gray-100 rounded-full sm:rounded-2xl pl-1 pr-3 py-1 sm:p-3 flex items-center gap-1.5 sm:gap-2.5 shadow-sm">
+                <span class="w-7 h-7 sm:w-9 sm:h-9 shrink-0 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center text-[11px] sm:text-base"><i class="fas fa-hand-holding-usd"></i></span>
+                <div class="leading-tight whitespace-nowrap sm:whitespace-normal"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Pago contraentrega</p><p class="hidden sm:block text-[10px] text-gray-500">Pagas al recibir</p></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 shadow-sm">
-                <span class="w-9 h-9 shrink-0 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center"><i class="fas fa-lock"></i></span>
-                <div class="leading-tight"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Pago seguro</p><p class="text-[10px] text-gray-500">En línea con Wompi</p></div>
+            <div class="shrink-0 bg-white border border-gray-100 rounded-full sm:rounded-2xl pl-1 pr-3 py-1 sm:p-3 flex items-center gap-1.5 sm:gap-2.5 shadow-sm">
+                <span class="w-7 h-7 sm:w-9 sm:h-9 shrink-0 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center text-[11px] sm:text-base"><i class="fas fa-lock"></i></span>
+                <div class="leading-tight whitespace-nowrap sm:whitespace-normal"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Pago seguro</p><p class="hidden sm:block text-[10px] text-gray-500">En línea con Wompi</p></div>
             </div>
-            <a href="https://wa.me/573105390115" target="_blank" rel="noopener" id="trust-whatsapp" class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 shadow-sm hover:border-emerald-300 transition">
-                <span class="w-9 h-9 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center"><i class="fab fa-whatsapp"></i></span>
-                <div class="leading-tight"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Te asesoramos</p><p class="text-[10px] text-gray-500">Escríbenos por WhatsApp</p></div>
+            <a href="https://wa.me/573105390115" target="_blank" rel="noopener" id="trust-whatsapp" class="shrink-0 bg-white border border-gray-100 rounded-full sm:rounded-2xl pl-1 pr-3 py-1 sm:p-3 flex items-center gap-1.5 sm:gap-2.5 shadow-sm hover:border-emerald-300 transition">
+                <span class="w-7 h-7 sm:w-9 sm:h-9 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[12px] sm:text-base"><i class="fab fa-whatsapp"></i></span>
+                <div class="leading-tight whitespace-nowrap sm:whitespace-normal"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Te asesoramos</p><p class="hidden sm:block text-[10px] text-gray-500">Escríbenos por WhatsApp</p></div>
             </a>
+            <button onclick="openPoliciesModal()" class="sm:hidden shrink-0 bg-luxury-gold-light border border-luxury-gold/60 rounded-full pl-1 pr-3 py-1 flex items-center gap-1.5 shadow-sm">
+                <span class="w-7 h-7 shrink-0 rounded-full bg-white text-luxury-gold-dark flex items-center justify-center text-[11px]"><i class="fas fa-shield-alt"></i></span>
+                <span class="text-[11px] font-bold text-gray-900 whitespace-nowrap">Políticas y garantías</span>
+            </button>
         </section>
 
         <!-- TEST: ENCUENTRA TU PERFUME IDEAL -->
-        <section class="mb-4">
-            <button onclick="openQuiz()" class="w-full bg-gradient-to-r from-luxury-dark via-[#1f1b12] to-luxury-dark text-white rounded-2xl px-4 py-4 sm:py-5 flex items-center justify-between gap-3 shadow-lg border border-luxury-gold/40 hover:border-luxury-gold transition group">
+        <section class="mb-3 sm:mb-4">
+            <button onclick="openQuiz()" class="w-full bg-gradient-to-r from-luxury-dark via-[#1f1b12] to-luxury-dark text-white rounded-2xl px-3 sm:px-4 py-2.5 sm:py-5 flex items-center justify-between gap-3 shadow-lg border border-luxury-gold/40 hover:border-luxury-gold transition group">
                 <span class="flex items-center gap-3 text-left">
-                    <span class="w-11 h-11 shrink-0 rounded-full bg-luxury-gold text-black flex items-center justify-center text-lg"><i class="fas fa-wand-magic-sparkles"></i></span>
+                    <span class="w-8 h-8 sm:w-11 sm:h-11 shrink-0 rounded-full bg-luxury-gold text-black flex items-center justify-center text-sm sm:text-lg"><i class="fas fa-wand-magic-sparkles"></i></span>
                     <span>
-                        <span class="block font-cinzel font-bold text-sm sm:text-lg tracking-wide">Encuentra tu perfume ideal</span>
-                        <span class="block text-[11px] text-gray-300">Responde 4 preguntas y te recomendamos los mejores para ti</span>
+                        <span class="block font-cinzel font-bold text-[13px] sm:text-lg tracking-wide">Encuentra tu perfume ideal</span>
+                        <span class="hidden sm:block text-[11px] text-gray-300">Responde 4 preguntas y te recomendamos los mejores para ti</span>
+                        <span class="sm:hidden block text-[10px] text-gray-400">4 preguntas · 1 minuto</span>
                     </span>
                 </span>
-                <span class="shrink-0 bg-luxury-gold text-black font-bold text-[11px] sm:text-xs px-3 py-2 rounded-full group-hover:scale-105 transition">Empezar <i class="fas fa-arrow-right ml-1"></i></span>
+                <span class="shrink-0 bg-luxury-gold text-black font-bold text-[10px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full group-hover:scale-105 transition">Empezar <i class="fas fa-arrow-right ml-1"></i></span>
             </button>
         </section>
 
         <!-- CARRUSEL DE PROMOCIONES -->
-        <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-4 bg-slate-900">
-            <div id="promo-track" class="w-full aspect-square sm:aspect-auto sm:h-64 md:h-72 relative group">
+        <section id="promo-carousel-section" class="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-3 sm:mb-4 bg-slate-900">
+            <div id="promo-track" class="w-full aspect-[16/10] sm:aspect-auto sm:h-64 md:h-72 relative group">
                 <!-- Promociones -->
             </div>
         </section>
 
         <!-- BOTÓN DE ENVÍOS & GARANTÍAS -->
-        <div class="flex justify-center mb-6">
+        <div class="hidden sm:flex justify-center mb-6">
             <button onclick="openPoliciesModal()" class="w-full sm:w-auto bg-white hover:bg-luxury-gold-light border border-luxury-gold text-luxury-dark text-xs sm:text-sm font-bold px-6 py-2.5 rounded-xl transition shadow-sm flex items-center justify-center gap-2">
                 <i class="fas fa-shield-alt text-luxury-gold-dark text-lg"></i> Políticas de Envíos & Garantías
             </button>
@@ -336,7 +341,7 @@
                 <h2 class="font-cinzel font-bold text-lg sm:text-2xl text-gray-900 flex items-center gap-2"><i class="fas fa-flask text-luxury-gold"></i> Decants y tamaños de prueba</h2>
                 <span class="text-[10px] text-gray-400 font-semibold">Desliza <i class="fas fa-arrow-right"></i></span>
             </div>
-            <p class="text-xs text-gray-500 mb-3">Prueba tu fragancia favorita en tamaño pequeño antes de llevar el frasco completo.</p>
+            <p class="hidden sm:block text-xs text-gray-500 mb-3">Prueba tu fragancia favorita en tamaño pequeño antes de llevar el frasco completo.</p>
             <div id="decants-row" class="flex gap-3 overflow-x-auto hide-scrollbar snap-row pb-2"></div>
         </section>
 
@@ -1591,25 +1596,26 @@
                 const isActive = index === currentPromoIndex;
                 return `
                 <div class="absolute inset-0 w-full h-full transition-opacity duration-700 ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'} cursor-pointer" onclick="navigateFromPromo('${slide.category}')">
-                    <img src="${slide.image}" alt="${slide.title}" class="w-full h-full object-cover object-center transition duration-700 scale-100 group-hover:scale-105">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-4 sm:p-6 pointer-events-none">
-                        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pointer-events-auto">
+                    <img src="${slide.image}" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover scale-110 blur-xl opacity-70">
+                    <img src="${slide.image}" alt="${slide.title}" class="relative w-full h-full object-contain object-center">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent sm:from-black/90 sm:via-black/30 flex flex-col justify-end p-2.5 sm:p-6 pointer-events-none">
+                        <div class="flex flex-row items-end justify-between gap-2 sm:gap-3 pointer-events-auto">
                             <div>
-                                <span class="text-amber-400 text-[10px] sm:text-xs font-extrabold uppercase tracking-widest block mb-1 drop-shadow-md"><i class="fas fa-tag mr-1"></i> Categoría: ${slide.category}</span>
-                                <h3 class="text-white font-cinzel text-base sm:text-2xl font-bold uppercase leading-tight drop-shadow-lg">${slide.title}</h3>
+                                <span class="hidden sm:block text-amber-400 text-[10px] sm:text-xs font-extrabold uppercase tracking-widest mb-1 drop-shadow-md"><i class="fas fa-tag mr-1"></i> Categoría: ${slide.category}</span>
+                                <h3 class="text-white font-cinzel text-[12px] sm:text-2xl font-bold uppercase leading-tight drop-shadow-lg line-clamp-2">${slide.title}</h3>
                             </div>
 
                             ${slide.hasTimer ? `
-                                <div class="bg-slate-900/95 border border-amber-500/50 backdrop-blur-md rounded-xl p-2 sm:px-4 sm:py-2.5 text-white shadow-xl inline-flex items-center gap-2 self-start sm:self-auto">
+                                <div class="shrink-0 bg-slate-900/90 border border-amber-500/50 backdrop-blur-md rounded-lg sm:rounded-xl p-1 sm:px-4 sm:py-2.5 text-white shadow-xl inline-flex items-center gap-2">
                                     <span class="text-[9px] sm:text-[10px] text-amber-400 font-extrabold uppercase leading-none hidden sm:block">OFERTA<br>TERMINA:</span>
-                                    <div class="flex items-center gap-1.5 font-mono text-xs sm:text-sm font-bold text-amber-300">
-                                        <div class="bg-black/90 px-1.5 py-1 rounded text-center shadow-inner min-w-[28px]"><span id="td-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">d</span></div>
+                                    <div class="flex items-center gap-0.5 sm:gap-1.5 font-mono text-[10px] sm:text-sm font-bold text-amber-300">
+                                        <div class="bg-black/90 px-1 py-0.5 sm:px-1.5 sm:py-1 rounded text-center shadow-inner min-w-[20px] sm:min-w-[28px]"><span id="td-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">d</span></div>
                                         <span class="text-gray-500 pb-0.5">:</span>
-                                        <div class="bg-black/90 px-1.5 py-1 rounded text-center shadow-inner min-w-[28px]"><span id="th-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">h</span></div>
+                                        <div class="bg-black/90 px-1 py-0.5 sm:px-1.5 sm:py-1 rounded text-center shadow-inner min-w-[20px] sm:min-w-[28px]"><span id="th-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">h</span></div>
                                         <span class="text-gray-500 pb-0.5">:</span>
-                                        <div class="bg-black/90 px-1.5 py-1 rounded text-center shadow-inner min-w-[28px]"><span id="tm-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">m</span></div>
+                                        <div class="bg-black/90 px-1 py-0.5 sm:px-1.5 sm:py-1 rounded text-center shadow-inner min-w-[20px] sm:min-w-[28px]"><span id="tm-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">m</span></div>
                                         <span class="text-gray-500 pb-0.5">:</span>
-                                        <div class="bg-black/90 px-1.5 py-1 rounded text-center shadow-inner min-w-[28px]"><span id="ts-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">s</span></div>
+                                        <div class="bg-black/90 px-1 py-0.5 sm:px-1.5 sm:py-1 rounded text-center shadow-inner min-w-[20px] sm:min-w-[28px]"><span id="ts-${slide.id}">00</span><span class="text-[9px] text-gray-400 font-sans ml-0.5">s</span></div>
                                     </div>
                                 </div>
                             ` : ''}
@@ -1636,9 +1642,9 @@
             ` : '';
 
             const navControls = promoSlides.length > 1 ? `
-                <button onclick="event.stopPropagation(); prevPromo()" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/80 text-white w-8 h-8 rounded-full flex items-center justify-center backdrop-blur transition"><i class="fas fa-chevron-left"></i></button>
-                <button onclick="event.stopPropagation(); nextPromo()" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/80 text-white w-8 h-8 rounded-full flex items-center justify-center backdrop-blur transition"><i class="fas fa-chevron-right"></i></button>
-                <div class="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 pointer-events-none">
+                <button onclick="event.stopPropagation(); prevPromo()" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/80 text-white w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur transition"><i class="fas fa-chevron-left"></i></button>
+                <button onclick="event.stopPropagation(); nextPromo()" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/80 text-white w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur transition"><i class="fas fa-chevron-right"></i></button>
+                <div class="absolute top-2 sm:top-auto sm:bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 pointer-events-none">
                     ${promoSlides.map((_, i) => `<div class="w-2 h-2 rounded-full transition-all shadow ${i === currentPromoIndex ? 'bg-amber-500 w-4' : 'bg-white/50'}"></div>`).join('')}
                 </div>
             ` : '';
