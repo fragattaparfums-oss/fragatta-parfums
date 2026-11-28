@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -147,6 +148,7 @@
                     <button onclick="switchTab('payables')" id="nav-payables" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all">
                         <i class="fa-solid fa-file-invoice-dollar w-4 text-center"></i>
                         <span>Facturas x Pagar (Prov.)</span>
+                        <span id="due-badge" class="hidden ml-auto bg-rose-500 text-white text-[10px] font-black px-1.5 rounded-full" title="Facturas vencidas o por vencer">0</span>
                     </button>
                     <button onclick="openCashClose()" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-emerald-700 bg-emerald-50 hover:bg-emerald-100">
                         <i class="fa-solid fa-cash-register w-4 text-center"></i>
@@ -1137,6 +1139,7 @@
 
                 <!-- 8. FACTURAS POR PAGAR -->
                 <section id="tab-payables" class="tab-content hidden space-y-6">
+                    <div id="due-alert" class="hidden bg-rose-50 border border-rose-200 rounded-3xl p-4 space-y-2"></div>
                     <div class="flex justify-between items-center bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
                         <div>
                             <h2 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
@@ -1189,7 +1192,7 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Pedidos a Proveedores</h2>
-                            <p class="text-xs text-slate-500">Arma tus pedidos con el costo de mercancía y edítalos mientras el proveedor confirma la disponibilidad. Cuando llegue la factura, confírmalo: se suma al stock y se crea la factura por pagar.</p>
+                            <p class="text-xs text-slate-500">Arma tus pedidos con el costo de mercancía. Cuando llegue la factura, confírmalo: se suma al stock y se crea la factura por pagar. Puedes <strong>editar o eliminar</strong> cualquier pedido, también los ya recibidos: el stock y la factura se corrigen solos.</p>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <button onclick="newOrder()" class="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-md"><i class="fa-solid fa-plus"></i> Nuevo pedido</button>
@@ -1219,9 +1222,12 @@
                             </div>
                             <select id="order-select" onchange="selectOrder(this.value)" class="w-full bg-purple-50 border border-purple-200 rounded-xl px-3 py-2 text-xs font-bold text-purple-900 focus:outline-none"></select>
                             <div class="grid grid-cols-2 gap-2">
-                                <input type="text" id="order-supplier" oninput="saveOrderSim()" placeholder="Proveedor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none">
+                                <input type="text" id="order-supplier" list="order-suppliers-dl" oninput="saveOrderSim()" placeholder="Proveedor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none">
+                                <datalist id="order-suppliers-dl"></datalist>
                                 <input type="text" id="order-notes" oninput="saveOrderSim()" placeholder="Notas (opcional)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none">
                             </div>
+                            <div id="order-photos"></div>
+                            <input type="file" id="order-photo-input" accept="image/*" capture="environment" onchange="onOrderPhoto(event)" class="hidden">
                             <div class="flex items-center justify-between text-[11px] font-bold text-slate-500"><span id="order-count">0 productos</span><button onclick="clearOrderSim()" class="text-rose-500 hover:underline">Vaciar</button></div>
                             <p id="order-received-info" class="hidden text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl p-2.5"></p>
                             <div id="order-items" class="space-y-2 max-h-[45vh] overflow-y-auto"></div>
@@ -1918,6 +1924,10 @@
                         <option value="INSUMOS">Insumos y envíos (papel, empaques, bolsas, etc.)</option>
                     </select>
                     <p class="text-[10px] text-slate-400 mt-1">Mercancía: se paga con el costo de lo vendido (Fondo de Reposición). Insumos: se pagan con la ganancia.</p>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Fecha límite de pago (opcional):</label>
+                    <input type="date" id="pay-due" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">Observación (opcional):</label>
@@ -4546,7 +4556,7 @@
                         <td class="p-4 font-bold text-slate-800">${p.supplier}</td>
                         <td class="p-4"><span class="${getPayableType(p) === 'INSUMOS' ? 'bg-sky-50 text-sky-700' : 'bg-purple-50 text-purple-700'} font-bold px-2.5 py-1 rounded-full text-[10px]">${getPayableType(p) === 'INSUMOS' ? 'Insumos' : 'Mercancía'}</span></td>
                         <td class="p-4 text-slate-500 whitespace-normal max-w-xs">${p.notes || ''}</td>
-                        <td class="p-4 text-slate-500 font-mono">${p.date}</td>
+                        <td class="p-4 text-slate-500 font-mono">${p.date}${dueBadge(p)}</td>
                         <td class="p-4 font-bold text-slate-800">$${totalVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 font-bold text-emerald-600">$${paidVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 font-black ${pending > 0 ? 'text-rose-600' : 'text-slate-400'}">$${pending.toLocaleString('es-CO')}</td>
@@ -4564,7 +4574,7 @@
         function openPayableModal() {
             if (document.getElementById('pay-id')) document.getElementById('pay-id').value = '';
             if (document.getElementById('pay-type')) document.getElementById('pay-type').value = 'MERCANCIA';
-            ['pay-supplier', 'pay-invoice-num', 'pay-total', 'pay-notes'].forEach(fid => { const el = document.getElementById(fid); if (el) el.value = ''; });
+            ['pay-supplier', 'pay-invoice-num', 'pay-total', 'pay-notes', 'pay-due'].forEach(fid => { const el = document.getElementById(fid); if (el) el.value = ''; });
             if (document.getElementById('pay-abono')) document.getElementById('pay-abono').value = '0';
             if (document.getElementById('payable-modal-title')) document.getElementById('payable-modal-title').innerText = "Registrar Deuda a Proveedor";
             const m = document.getElementById('payable-modal');
@@ -4587,6 +4597,7 @@
                 if (document.getElementById('pay-abono')) document.getElementById('pay-abono').value = parseFloat(p.paid) || 0;
                 if (document.getElementById('pay-type')) document.getElementById('pay-type').value = getPayableType(p);
                 if (document.getElementById('pay-notes')) document.getElementById('pay-notes').value = p.notes || '';
+                if (document.getElementById('pay-due')) document.getElementById('pay-due').value = p.dueDate || '';
                 if (document.getElementById('payable-modal-title')) document.getElementById('payable-modal-title').innerText = "Editar Deuda de Proveedor (Admin)";
                 const m = document.getElementById('payable-modal');
                 if (m) m.classList.remove('hidden');
@@ -4672,7 +4683,8 @@
         function deletePayable(id) {
             if (!isAdmin) return alert("Solo el Administrador puede eliminar deudas a proveedores.");
             const payToDelete = payables.find(p => p.id === id);
-            const linkedOrder = payToDelete && payToDelete.orderId ? purchaseOrders.find(o => o.id === payToDelete.orderId && o.status === 'RECIBIDO') : null;
+            const linkedOrder = payToDelete && payToDelete.orderId ? purchaseOrders.find(o => o.id === payToDelete.orderId && (o.status === 'RECIBIDO' || o.status === 'EDITANDO')) : null;
+            if (linkedOrder && linkedOrder.status === 'EDITANDO') { linkedOrder.items = (linkedOrder.receivedItems || linkedOrder.items).map(it => ({ ...it })); linkedOrder.status = 'RECIBIDO'; }
             const units = linkedOrder ? linkedOrder.items.reduce((a, it) => a + (parseInt(it.qty) || 0), 0) : 0;
             if (!confirm(linkedOrder ? `¿Eliminar esta factura del pedido #${linkedOrder.number}?\n\nTambién se descontarán del stock las ${units} unidades que ese pedido sumó, y el pedido quedará ANULADO.` : "¿Deseas eliminar esta factura por pagar?")) return;
             if (linkedOrder) {
@@ -6611,7 +6623,7 @@
         }
 
         function initV4() {
-            wrapProcessSale(); wrapSaveDebtPayment(); wrapDeletes(); wrapShowPrintPreview(); wrapLogout(); wrapOpenAdminModal(); wrapSaleEdit(); wrapPayMethodSaves(); wrapMarginCheck();
+            wrapProcessSale(); wrapSaveDebtPayment(); wrapDeletes(); wrapShowPrintPreview(); wrapLogout(); wrapOpenAdminModal(); wrapSaleEdit(); wrapPayMethodSaves(); wrapMarginCheck(); wrapSavePayableDue();
             fillPayMethodSelects(); fillPosClients(); renderUserBadge();
             ['pos-payment-status', 'pos-abono-amount', 'pos-shipping-cost', 'pos-discount-amount'].forEach(id => document.getElementById(id)?.addEventListener('input', updatePosFeeNote));
             document.getElementById('pos-payment-status')?.addEventListener('change', updatePosFeeNote);
@@ -6906,6 +6918,113 @@
                 <span class="block">Apartado para facturas por pagar: <strong class="text-rose-300">${moneySigned(unpaid)}</strong> (comprometido, no se reparte)</span>
                 ${cap.pending > 0.5 ? `<span class="block">Por recuperar con las próximas ventas: <strong class="text-amber-300">${moneySigned(cap.pending)}</strong></span>` : ''}
                 <span class="block">Libre para una compra nueva: <strong class="text-white">${moneySigned(free)}</strong></span>`;
+        }
+
+        // ===================== FECHA LÍMITE DE PAGO A PROVEEDORES =====================
+        function payPending(p) { return Math.max(0, (parseFloat(p.total) || 0) - (parseFloat(p.paid) || 0)); }
+        function dueDays(p) { if (!p.dueDate) return null; const d = new Date(p.dueDate + 'T00:00:00'); const t = new Date(); t.setHours(0, 0, 0, 0); return Math.round((d - t) / 86400000); }
+        function dueBadge(p) {
+            const n = dueDays(p); if (n === null) return '';
+            if (payPending(p) <= 0.5) return `<span class="block text-[10px] font-bold text-emerald-600">Vencía ${new Date(p.dueDate + 'T00:00:00').toLocaleDateString('es-CO')} · pagada</span>`;
+            return `<span class="block text-[10px] font-black ${n < 0 ? 'text-rose-600' : n <= 5 ? 'text-amber-600' : 'text-slate-500'}">${n < 0 ? `Vencida hace ${-n} día(s)` : n === 0 ? 'Vence HOY' : `Vence en ${n} día(s)`} · ${new Date(p.dueDate + 'T00:00:00').toLocaleDateString('es-CO')}</span>`;
+        }
+        function renderDueAlerts() {
+            const list = payables.filter(p => payPending(p) > 0.5 && dueDays(p) !== null && dueDays(p) <= 5).sort((a, b) => dueDays(a) - dueDays(b));
+            const badge = document.getElementById('due-badge'); if (badge) { badge.innerText = list.length; badge.classList.toggle('hidden', !list.length); }
+            const box = document.getElementById('due-alert'); if (!box) return;
+            box.classList.toggle('hidden', !list.length);
+            if (!list.length) return;
+            box.innerHTML = `<p class="font-black text-rose-800 text-sm"><i class="fa-solid fa-calendar-xmark"></i> Facturas de proveedores vencidas o por vencer</p>` + list.map(p => {
+                const n = dueDays(p);
+                return `<div class="flex flex-wrap items-center gap-2 bg-white border ${n < 0 ? 'border-rose-300' : 'border-amber-200'} rounded-xl px-3 py-2 text-xs"><span class="flex-1"><strong>${p.supplier || ''}</strong> · ${p.invoiceNum || 's/n'} · debes <strong class="text-rose-600">${moneySigned(payPending(p))}</strong></span><span class="font-black ${n < 0 ? 'text-rose-600' : 'text-amber-600'}">${n < 0 ? `Vencida hace ${-n} día(s)` : n === 0 ? 'Vence HOY' : `Vence en ${n} día(s)`}</span>${isAdmin ? `<button onclick="openPayableAbonoModal('${p.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-bold">Abonar</button>` : ''}</div>`;
+            }).join('');
+            if (!renderDueAlerts._toasted && list.some(p => dueDays(p) <= 2)) { renderDueAlerts._toasted = true; setTimeout(() => showToast(`📅 Tienes ${list.length} factura(s) de proveedor vencidas o por vencer`, 'error'), 2500); }
+        }
+        function wrapSavePayableDue() {
+            const orig = window.savePayable;
+            if (typeof orig !== 'function' || orig._v13) return;
+            const w = function (e) {
+                const id = document.getElementById('pay-id')?.value;
+                const due = document.getElementById('pay-due')?.value || '';
+                const before = payables.length;
+                const r = orig.apply(this, arguments);
+                const pp = id ? payables.find(x => x.id === id) : (payables.length > before ? payables[payables.length - 1] : null);
+                if (pp) { pp.dueDate = due; if (isFirebaseConnected && db) db.collection("payables").doc(String(pp.id)).set({ dueDate: due }, { merge: true }); saveDataLocalOnly(); renderPayablesTable(); renderDueAlerts(); }
+                return r;
+            };
+            w._v13 = true; window.savePayable = w;
+        }
+
+        // ===================== FOTO DE LA FACTURA DEL PROVEEDOR =====================
+        // Se guarda comprimida en la base de datos (colección order_files), aparte del pedido para no hacerlo pesado.
+        const orderPhotoCache = {};
+        function compressPhoto(file) {
+            return new Promise((resolve, reject) => {
+                const r = new FileReader();
+                r.onload = () => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let max = 1600, q = 0.72, out = '';
+                        for (let i = 0; i < 6; i++) {
+                            const sc = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+                            const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * sc); c.height = Math.round(img.naturalHeight * sc);
+                            const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+                            out = c.toDataURL('image/jpeg', q);
+                            if (out.length < 700000) break;
+                            max = Math.round(max * 0.8); q = Math.max(0.5, q - 0.06);
+                        }
+                        resolve(out);
+                    };
+                    img.onerror = () => reject(new Error('No se pudo leer la foto'));
+                    img.src = r.result;
+                };
+                r.onerror = () => reject(new Error('No se pudo leer el archivo'));
+                r.readAsDataURL(file);
+            });
+        }
+        function pickOrderPhoto() {
+            const o = getActiveOrder(); if (!o) return showToast('Primero crea o abre un pedido', 'error');
+            if (!isFirebaseConnected || !db) return showToast('Necesitas conexión a internet para guardar la foto', 'error');
+            document.getElementById('order-photo-input')?.click();
+        }
+        async function onOrderPhoto(ev) {
+            const file = ev.target.files && ev.target.files[0]; ev.target.value = '';
+            const o = getActiveOrder(); if (!file || !o) return;
+            try {
+                showToast('Guardando foto...');
+                const data = await compressPhoto(file);
+                const fid = `${o.id}__${Date.now()}`;
+                await db.collection("order_files").doc(fid).set({ orderId: o.id, data, createdAt: new Date().toISOString() });
+                orderPhotoCache[fid] = data;
+                o.photos = (o.photos || []).concat([fid]);
+                persistOrder(o); renderOrderPhotos();
+                showToast('Foto de la factura guardada');
+            } catch (err) { alert('No se pudo guardar la foto: ' + (err.message || err)); }
+        }
+        async function loadOrderPhoto(fid) {
+            if (orderPhotoCache[fid]) return orderPhotoCache[fid];
+            try { const d = await db.collection("order_files").doc(fid).get(); if (d.exists) { orderPhotoCache[fid] = d.data().data; return orderPhotoCache[fid]; } } catch (err) {}
+            return '';
+        }
+        async function viewOrderPhoto(fid) {
+            const data = await loadOrderPhoto(fid); if (!data) return showToast('No se pudo abrir la foto', 'error');
+            const w = window.open('', '_blank'); if (!w) return showToast('Permite las ventanas emergentes', 'error');
+            w.document.write(`<html><head><title>Factura del proveedor</title></head><body style="margin:0;background:#111;display:flex;justify-content:center"><img src="${data}" style="max-width:100%;height:auto"></body></html>`); w.document.close();
+        }
+        function deleteOrderPhoto(fid) {
+            const o = getActiveOrder(); if (!o || !confirm('¿Quitar esta foto?')) return;
+            o.photos = (o.photos || []).filter(x => x !== fid); persistOrder(o);
+            if (isFirebaseConnected && db) db.collection("order_files").doc(fid).delete();
+            renderOrderPhotos();
+        }
+        async function renderOrderPhotos() {
+            const box = document.getElementById('order-photos'); if (!box) return;
+            const o = getActiveOrder();
+            if (!o) { box.innerHTML = ''; return; }
+            const list = o.photos || [];
+            box.innerHTML = `<div class="flex flex-wrap items-center gap-2">${list.map(fid => `<span class="relative inline-block"><img data-ph="${fid}" onclick="viewOrderPhoto('${fid}')" class="w-14 h-14 object-cover rounded-lg border border-slate-200 bg-slate-100 cursor-zoom-in" alt=""><button onclick="deleteOrderPhoto('${fid}')" class="absolute -top-1.5 -right-1.5 bg-white border border-slate-200 rounded-full w-5 h-5 text-[10px] text-rose-500">×</button></span>`).join('')}
+                <button onclick="pickOrderPhoto()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl font-bold text-[11px]"><i class="fa-solid fa-camera"></i> ${list.length ? 'Otra foto' : 'Foto de la factura'}</button></div>`;
+            for (const fid of list) { const data = await loadOrderPhoto(fid); const img = box.querySelector(`[data-ph="${fid}"]`); if (img && data) img.src = data; }
         }
 
         function toggleBlock(id, btn) {
@@ -7867,7 +7986,8 @@
             } catch (err) {}
         })();
 
-        const ORDER_STATUS = { BORRADOR: ['Borrador · editable', 'bg-amber-100 text-amber-800'], RECIBIDO: ['Recibido · en stock', 'bg-emerald-100 text-emerald-800'], CANCELADO: ['Cancelado', 'bg-slate-200 text-slate-600'], ANULADO: ['Anulado (factura eliminada)', 'bg-rose-100 text-rose-700'] };
+        function orderEditable(o) { return !!o && (o.status === 'BORRADOR' || o.status === 'EDITANDO'); }
+        const ORDER_STATUS = { EDITANDO: ['Editando (ya recibido)', 'bg-sky-100 text-sky-800'], BORRADOR: ['Borrador · editable', 'bg-amber-100 text-amber-800'], RECIBIDO: ['Recibido · en stock', 'bg-emerald-100 text-emerald-800'], CANCELADO: ['Cancelado', 'bg-slate-200 text-slate-600'], ANULADO: ['Anulado (factura eliminada)', 'bg-rose-100 text-rose-700'] };
 
         function saveOrdersLocal() {
             try {
@@ -7899,7 +8019,7 @@
 
         function editableOrder() {
             const o = getActiveOrder();
-            if (o && o.status === 'BORRADOR') return o;
+            if (orderEditable(o)) return o;
             return newOrder(true);
         }
 
@@ -7911,7 +8031,7 @@
 
         function saveOrderSim() {
             const o = getActiveOrder();
-            if (!o || o.status !== 'BORRADOR') return;
+            if (!orderEditable(o)) return;
             o.supplier = document.getElementById('order-supplier')?.value || '';
             o.notes = document.getElementById('order-notes')?.value || '';
             clearTimeout(saveOrderSim._t);
@@ -7937,7 +8057,7 @@
                 ordSel.innerHTML = list.length ? list.map(x => `<option value="${x.id}">#${x.number} · ${x.supplier || 'Sin proveedor'} · ${(ORDER_STATUS[x.status] || [x.status])[0]}</option>`).join('') : '<option value="">Sin pedidos</option>';
                 ordSel.value = o ? o.id : '';
             }
-            const ro = !o || o.status !== 'BORRADOR';
+            const ro = !orderEditable(o);
             const sup = document.getElementById('order-supplier');
             if (sup && document.activeElement !== sup) { sup.value = o ? (o.supplier || '') : ''; sup.disabled = ro && !!o; }
             const notes = document.getElementById('order-notes');
@@ -7948,17 +8068,35 @@
                 badge.className = `text-[10px] font-black px-2 py-0.5 rounded-full ${st[1]}`;
                 badge.innerText = st[0];
             }
+            const sdl = document.getElementById('order-suppliers-dl');
+            if (sdl) sdl.innerHTML = [...new Set(purchaseOrders.map(x => x.supplier).concat(payables.map(x => x.supplier)).filter(Boolean))].sort().map(x => `<option value="${String(x).replace(/"/g, '&quot;')}">`).join('');
             const recBtn = document.getElementById('order-receive-btn');
-            if (recBtn) recBtn.classList.toggle('hidden', !(o && o.status === 'BORRADOR' && o.items.length));
+            if (recBtn) {
+                recBtn.classList.toggle('hidden', !(orderEditable(o) && (o.items.length || o.status === 'EDITANDO')));
+                recBtn.innerHTML = o && o.status === 'EDITANDO' ? '<i class="fa-solid fa-floppy-disk"></i> Guardar cambios del pedido (ajusta stock y factura)' : '<i class="fa-solid fa-truck-ramp-box"></i> Llegó la factura: confirmar pedido';
+            }
             const info = document.getElementById('order-received-info');
             if (info) {
-                if (o && o.status === 'RECIBIDO') { info.classList.remove('hidden'); info.innerHTML = `<i class="fa-solid fa-circle-check"></i> Recibido el ${new Date(o.receivedAt).toLocaleDateString('es-CO')} · Factura ${o.invoiceNum || 's/n'} creada en <strong>Facturas x Pagar</strong>. Este pedido ya no se puede editar (puedes duplicarlo).`; }
+                if (o && (o.status === 'RECIBIDO' || o.status === 'EDITANDO')) {
+                    const pay = payables.find(x => x.id === o.payableId);
+                    const pt = pay ? parseFloat(pay.total) || 0 : 0, pp = pay ? parseFloat(pay.paid) || 0 : 0;
+                    info.classList.remove('hidden');
+                    info.innerHTML = o.status === 'EDITANDO'
+                        ? `<i class="fa-solid fa-pen"></i> <strong>Editando el pedido recibido.</strong> Quita, agrega o cambia cantidades y costos. Al guardar se ajusta el stock y la factura por la diferencia. <button onclick="cancelOrderEdit()" class="underline ml-1">Cancelar edición</button>`
+                        : `<i class="fa-solid fa-circle-check"></i> Recibido el ${new Date(o.receivedAt).toLocaleDateString('es-CO')}${o.editedAt ? ` · editado el ${new Date(o.editedAt).toLocaleDateString('es-CO')}` : ''}.<br>${pay ? `Factura <strong>${pay.invoiceNum || 's/n'}</strong>: total ${moneySigned(pt)} · pagado ${moneySigned(pp)} · <strong>${pt - pp > 0.5 ? 'debes ' + moneySigned(pt - pp) : 'pagada ✓'}</strong>${dueBadge(pay)}` : '<span class="text-amber-700">La factura de este pedido fue eliminada.</span>'}${o.missing && o.missing.length ? `<span class="block text-amber-700 mt-1">Llegó incompleto: faltaron ${o.missing.reduce((a, x) => a + x.qty, 0)} unidad(es)${o.missingOrderId ? ` → <button onclick="selectOrder('${o.missingOrderId}')" class="underline">ver pedido de faltantes</button>` : ''}</span>` : ''}
+                           <span class="flex flex-wrap gap-2 mt-2">
+                             <button onclick="startOrderEdit('${o.id}')" class="bg-sky-600 hover:bg-sky-700 text-white px-2.5 py-1 rounded-lg"><i class="fa-solid fa-pen"></i> Editar pedido</button>
+                             ${pay && pt - pp > 0.5 ? `<button onclick="openPayableAbonoModal('${pay.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg">Abonar al proveedor</button>` : ''}
+                             <button onclick="deleteOrder('${o.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-trash"></i> Eliminar pedido</button>
+                           </span>`;
+                }
                 else info.classList.add('hidden');
             }
             closeReceivePanel();
             renderOrderCatalog();
             renderOrderItems();
             renderOrdersList();
+            try { renderOrderPhotos(); } catch (err) {}
         }
 
         function renderOrderCatalog() {
@@ -7971,7 +8109,7 @@
                 .sort((a, b) => (parseInt(a.stock) || 0) - (parseInt(b.stock) || 0) || (a.name || '').localeCompare(b.name || ''));
             if (!list.length) { tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold">No hay productos que coincidan</td></tr>'; return; }
             tb.innerHTML = list.map(p => {
-                const inOrder = o && o.status === 'BORRADOR' ? o.items.find(it => String(it.id) === String(p.id)) : null;
+                const inOrder = orderEditable(o) ? o.items.find(it => String(it.id) === String(p.id)) : null;
                 const stock = parseInt(p.stock) || 0;
                 return `<tr class="hover:bg-slate-50">
                     <td class="p-3"><div class="flex items-center gap-2">${productThumb(p, 'w-9 h-9')}<div><p class="font-bold text-slate-800 truncate max-w-[200px]">${p.name}</p><p class="text-[10px] text-slate-400">${p.sku || ''} · ${p.category || ''}</p></div></div></td>
@@ -7986,7 +8124,8 @@
             const p = products.find(x => String(x.id) === String(id));
             if (!p) return;
             const cur = getActiveOrder();
-            if (cur && cur.status !== 'BORRADOR' && !confirm(`El pedido #${cur.number} ya está ${cur.status === 'RECIBIDO' ? 'recibido' : 'cancelado'}. ¿Crear un pedido nuevo con este producto?`)) return;
+            if (cur && cur.status === 'RECIBIDO' && confirm(`El pedido #${cur.number} ya fue recibido.\n\nAceptar = AGREGARLO a este pedido (se edita el pedido recibido)\nCancelar = crear un pedido NUEVO con este producto`)) startOrderEdit(cur.id, true);
+            else if (cur && !orderEditable(cur) && cur.status !== 'RECIBIDO' && !confirm(`El pedido #${cur.number} está ${cur.status === 'CANCELADO' ? 'cancelado' : 'anulado'}. ¿Crear un pedido nuevo con este producto?`)) return;
             const o = editableOrder();
             const it = o.items.find(x => String(x.id) === String(id));
             if (it) it.qty += qty; else o.items.push({ id: p.id, qty, cost: parseFloat(p.cost) || 0 });
@@ -7995,7 +8134,7 @@
         }
 
         function setOrderQty(id, val) {
-            const o = getActiveOrder(); if (!o || o.status !== 'BORRADOR') return;
+            const o = ensureEditable(getActiveOrder()); if (!o) return;
             const it = o.items.find(x => String(x.id) === String(id)); if (!it) return;
             it.qty = Math.max(0, parseInt(val) || 0);
             if (it.qty === 0) o.items = o.items.filter(x => x !== it);
@@ -8003,7 +8142,7 @@
         }
 
         function setOrderCost(id, val) {
-            const o = getActiveOrder(); if (!o || o.status !== 'BORRADOR') return;
+            const o = ensureEditable(getActiveOrder()); if (!o) return;
             const it = o.items.find(x => String(x.id) === String(id)); if (!it) return;
             it.cost = Math.max(0, parseFloat(val) || 0);
             clearTimeout(setOrderCost._t);
@@ -8012,13 +8151,13 @@
         }
 
         function removeFromOrderSim(id) {
-            const o = getActiveOrder(); if (!o || o.status !== 'BORRADOR') return;
+            const o = ensureEditable(getActiveOrder()); if (!o) return;
             o.items = o.items.filter(x => String(x.id) !== String(id));
             persistOrder(o); renderOrderCatalog(); renderOrderItems(); renderOrdersList();
         }
 
         function clearOrderSim() {
-            const o = getActiveOrder(); if (!o || o.status !== 'BORRADOR') return;
+            const o = ensureEditable(getActiveOrder()); if (!o) return;
             if (o.items.length && !confirm(`¿Quitar todos los productos del pedido #${o.number}?`)) return;
             o.items = []; persistOrder(o); renderOrderSim();
         }
@@ -8050,12 +8189,12 @@
             set('order-available', moneySigned(available));
             const note = document.getElementById('order-available-note');
             if (note) {
-                if (!rows.length || (o && o.status !== 'BORRADOR')) { note.innerText = ''; }
+                if (!rows.length || !orderEditable(o)) { note.innerText = ''; }
                 else if (total <= available) { note.className = 'text-[11px] font-bold text-emerald-400'; note.innerText = `✓ Alcanza con el dinero del negocio. Sobran ${moneySigned(available - total)}`; }
                 else { note.className = 'text-[11px] font-bold text-rose-400'; note.innerText = `⚠ Faltan ${moneySigned(total - available)} del negocio para este pedido`; }
             }
             if (!box) return;
-            const ro = !o || o.status !== 'BORRADOR';
+            const ro = !orderEditable(o);
             if (keepInputs) {
                 rows.forEach(r => {
                     const el = document.getElementById('order-sub-' + r.id); if (el) el.innerText = moneySigned(r.subtotal);
@@ -8098,6 +8237,8 @@
             tb.innerHTML = list.map(o => {
                 const rows = orderRows(o);
                 const total = o.status === 'RECIBIDO' && o.total !== undefined ? o.total : rows.reduce((a, r) => a + r.subtotal, 0);
+                const pay = o.payableId ? payables.find(x => x.id === o.payableId) : null;
+                const payTxt = pay ? (((parseFloat(pay.total) || 0) - (parseFloat(pay.paid) || 0)) > 0.5 ? `<span class="block text-[10px] font-bold text-rose-600">Debes ${moneySigned((parseFloat(pay.total) || 0) - (parseFloat(pay.paid) || 0))}</span>` : '<span class="block text-[10px] font-bold text-emerald-600">Pagada</span>') : '';
                 const st = ORDER_STATUS[o.status] || [o.status, 'bg-slate-100 text-slate-600'];
                 const active = o.id === activeOrderId;
                 return `<tr class="${active ? 'bg-purple-50/60' : 'hover:bg-slate-50'}">
@@ -8105,13 +8246,12 @@
                     <td class="p-3 text-slate-500">${new Date(o.createdAt).toLocaleDateString('es-CO')}</td>
                     <td class="p-3 font-bold">${o.supplier || '<span class="text-slate-400">Sin proveedor</span>'}</td>
                     <td class="p-3">${rows.length} prod. · ${rows.reduce((a, r) => a + r.qty, 0)} u.</td>
-                    <td class="p-3 font-black text-purple-700">${moneySigned(total)}</td>
+                    <td class="p-3 font-black text-purple-700">${moneySigned(total)}${payTxt}</td>
                     <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-black ${st[1]}">${st[0]}</span></td>
                     <td class="p-3 text-center whitespace-nowrap">
                         <button onclick="selectOrder('${o.id}')" class="text-purple-700 font-bold text-[11px] hover:underline mr-2">${active ? 'Abierto' : 'Abrir'}</button>
-                        <button onclick="duplicateOrder('${o.id}')" class="text-slate-600 font-bold text-[11px] hover:underline mr-2">Duplicar</button>
-                        ${o.status === 'BORRADOR' ? `<button onclick="cancelOrder('${o.id}')" class="text-amber-600 font-bold text-[11px] hover:underline mr-2">Cancelar</button>` : ''}
-                        ${o.status !== 'RECIBIDO' ? `<button onclick="deleteOrder('${o.id}')" class="text-rose-600 font-bold text-[11px] hover:underline">Eliminar</button>` : ''}
+                        ${o.status === 'RECIBIDO' ? `<button onclick="startOrderEdit('${o.id}')" class="text-sky-700 font-bold text-[11px] hover:underline mr-2">Editar</button>` : ''}
+                        <button onclick="deleteOrder('${o.id}')" class="text-rose-600 font-bold text-[11px] hover:underline">Eliminar</button>
                     </td>
                 </tr>`;
             }).join('');
@@ -8133,13 +8273,109 @@
         }
 
         function deleteOrder(id) {
-            const o = purchaseOrders.find(x => x.id === id); if (!o || o.status === 'RECIBIDO') return;
-            if (!confirm(`¿Eliminar el pedido #${o.number}?`)) return;
+            const o = purchaseOrders.find(x => x.id === id); if (!o) return;
+            const received = o.status === 'RECIBIDO' || o.status === 'EDITANDO';
+            const pay = o.payableId ? payables.find(x => x.id === o.payableId) : null;
+            const items = received ? (o.receivedItems || o.items) : [];
+            const units = items.reduce((a, it) => a + (parseInt(it.qty) || 0), 0);
+            const paid = pay ? parseFloat(pay.paid) || 0 : 0;
+            const msg = received
+                ? `¿Eliminar el pedido #${o.number}?\n\n• Se descuentan del stock las ${units} unidades que sumó.\n• Se elimina su factura por pagar${pay ? ` (${pay.invoiceNum || 's/n'}, ${moneySigned(pay.total)})` : ''}.${paid > 0.5 ? `\n\n⚠ Ya le habías pagado ${moneySigned(paid)} al proveedor: esos pagos quedan en Gastos (ese dinero sí salió).` : ''}`
+                : `¿Eliminar el pedido #${o.number}?`;
+            if (!confirm(msg)) return;
+            if (received) {
+                const short = [];
+                items.forEach(it => {
+                    const prod = products.find(x => String(x.id) === String(it.id)); if (!prod) return;
+                    const q = parseInt(it.qty) || 0;
+                    const removed = removeStockLayer(prod, q, parseFloat(it.cost) || 0);
+                    if (removed < q) short.push(`${prod.name}: ${q - removed} ya vendida(s)`);
+                    pushProductStock(prod);
+                });
+                if (pay) { payables = payables.filter(x => x.id !== pay.id); if (isFirebaseConnected && db) db.collection("payables").doc(String(pay.id)).delete(); }
+                saveDataLocalOnly();
+                renderInventoryTable(); renderWholesaleTable(); renderPosProducts(); renderPayablesTable(); updateDashboard();
+                if (short.length) setTimeout(() => alert('Se descontó lo que había en stock. Algunas unidades de ese pedido ya se habían vendido:\n\n' + short.join('\n')), 300);
+            }
             purchaseOrders = purchaseOrders.filter(x => x.id !== id);
             if (activeOrderId === id) activeOrderId = '';
             saveOrdersLocal();
             if (isFirebaseConnected && db) db.collection("purchase_orders").doc(String(id)).delete();
             renderOrderSim();
+            showToast(received ? `Pedido #${o.number} eliminado: stock y factura corregidos` : `Pedido #${o.number} eliminado`);
+        }
+
+        // ===== Editar un pedido YA RECIBIDO: al guardar se ajusta el stock y la factura por la diferencia =====
+        function ensureEditable(o) {
+            if (!o) return null;
+            if (orderEditable(o)) return o;
+            if (o.status === 'RECIBIDO' && confirm(`El pedido #${o.number} ya fue recibido.\n\n¿Editarlo? Al guardar se ajustan el stock y la factura por la diferencia.`)) { startOrderEdit(o.id, true); return o; }
+            return null;
+        }
+        function startOrderEdit(id, silent) {
+            const o = purchaseOrders.find(x => x.id === id); if (!o || o.status !== 'RECIBIDO') return;
+            o.receivedItems = o.receivedItems || o.items.map(it => ({ ...it }));
+            o.status = 'EDITANDO';
+            activeOrderId = o.id;
+            persistOrder(o);
+            if (!silent) renderOrderSim();
+        }
+        function cancelOrderEdit() {
+            const o = getActiveOrder(); if (!o || o.status !== 'EDITANDO') return;
+            o.items = (o.receivedItems || []).map(it => ({ ...it }));
+            o.status = 'RECIBIDO';
+            persistOrder(o); renderOrderSim();
+        }
+        function saveOrderEdit() {
+            const o = getActiveOrder(); if (!o || o.status !== 'EDITANDO') return;
+            const before = {}; (o.receivedItems || []).forEach(it => { before[String(it.id)] = { qty: parseInt(it.qty) || 0, cost: parseFloat(it.cost) || 0 }; });
+            const after = {}; o.items.forEach(it => { if ((parseInt(it.qty) || 0) > 0) after[String(it.id)] = { qty: parseInt(it.qty) || 0, cost: parseFloat(it.cost) || 0 }; });
+            if (!Object.keys(after).length) { o.status = 'RECIBIDO'; o.items = (o.receivedItems || []).map(it => ({ ...it })); return deleteOrder(o.id); }
+            const ids = [...new Set([...Object.keys(before), ...Object.keys(after)])];
+            const changes = [];
+            ids.forEach(pid => {
+                const b = before[pid], a = after[pid];
+                if (b && a && b.qty === a.qty && Math.abs(b.cost - a.cost) < 0.5) return;
+                const prod = products.find(x => String(x.id) === pid); const name = prod ? prod.name : pid;
+                changes.push(`• ${name}: ${b ? b.qty : 0} → ${a ? a.qty : 0} u.${b && a && Math.abs(b.cost - a.cost) >= 0.5 ? ` (costo ${moneySigned(b.cost)} → ${moneySigned(a.cost)})` : ''}`);
+            });
+            const newTotal = Object.values(after).reduce((s2, x) => s2 + x.qty * x.cost, 0);
+            const pay = payables.find(x => x.id === o.payableId);
+            if (!changes.length) { o.status = 'RECIBIDO'; persistOrder(o); renderOrderSim(); return showToast('No hubo cambios'); }
+            if (!confirm(`Guardar cambios del pedido #${o.number}:\n\n${changes.join('\n')}\n\nFactura: ${moneySigned(pay ? pay.total : 0)} → ${moneySigned(newTotal)}\n\nSe ajusta el stock por la diferencia. ¿Guardar?`)) return;
+            const short = [];
+            ids.forEach(pid => {
+                const b = before[pid], a = after[pid];
+                const prod = products.find(x => String(x.id) === pid); if (!prod) return;
+                if (b && a && Math.abs(b.cost - a.cost) < 0.5) {
+                    const d = a.qty - b.qty;
+                    if (d > 0) receiveStockCost(prod, d, a.cost);
+                    else if (d < 0) { const r = removeStockLayer(prod, -d, b.cost); if (r < -d) short.push(`${prod.name}: ${-d - r} ya vendida(s)`); }
+                } else {
+                    if (b) { const r = removeStockLayer(prod, b.qty, b.cost); if (r < b.qty) short.push(`${prod.name}: ${b.qty - r} ya vendida(s)`); }
+                    if (a) receiveStockCost(prod, a.qty, a.cost);
+                }
+                pushProductStock(prod);
+            });
+            const units = Object.values(after).reduce((s2, x) => s2 + x.qty, 0);
+            if (pay) {
+                pay.total = newTotal; pay.notes = `Pedido #${o.number}: ${Object.keys(after).length} producto(s), ${units} unidades (editado)`;
+                if (isFirebaseConnected && db) db.collection("payables").doc(String(pay.id)).set(pay, { merge: true });
+            } else {
+                const now = new Date();
+                const np = { id: 'PAY-' + Date.now(), date: now.toLocaleDateString('es-CO'), rawDate: now.toISOString(), supplier: o.supplier || 'Proveedor', invoiceNum: o.invoiceNum || `Pedido #${o.number}`, total: newTotal, paid: 0, type: 'MERCANCIA', notes: `Pedido #${o.number} (editado)`, orderId: o.id };
+                payables.push(np); o.payableId = np.id;
+                if (isFirebaseConnected && db) db.collection("payables").doc(np.id).set(np);
+            }
+            o.items = o.items.filter(it => (parseInt(it.qty) || 0) > 0).map(it => { const prod = products.find(x => String(x.id) === String(it.id)); return { ...it, name: prod ? prod.name : it.name, sku: prod ? prod.sku : it.sku }; });
+            o.receivedItems = o.items.map(it => ({ ...it }));
+            o.total = newTotal; o.status = 'RECIBIDO'; o.editedAt = new Date().toISOString();
+            persistOrder(o); saveDataLocalOnly();
+            renderInventoryTable(); renderWholesaleTable(); renderPosProducts(); renderPayablesTable(); updateDashboard(); renderOrderSim();
+            const paid = pay ? parseFloat(pay.paid) || 0 : 0;
+            showToast(`Pedido #${o.number} actualizado: stock y factura ajustados`);
+            if (paid > newTotal + 0.5) setTimeout(() => alert(`Ya le habías pagado ${moneySigned(paid)} al proveedor y la factura quedó en ${moneySigned(newTotal)}: tienes ${moneySigned(paid - newTotal)} a favor con ese proveedor.`), 300);
+            if (short.length) setTimeout(() => alert('Algunas unidades ya se habían vendido y no se pudieron descontar del stock:\n\n' + short.join('\n')), 400);
         }
 
         function addSuggestedToOrder() {
@@ -8157,6 +8393,7 @@
 
         function openReceivePanel() {
             const o = getActiveOrder();
+            if (o && o.status === 'EDITANDO') return saveOrderEdit();
             if (!o || o.status !== 'BORRADOR' || !o.items.length) return showToast('El pedido está vacío', 'error');
             const rows = orderRows(o).filter(r => r.qty > 0);
             const missing = rows.filter(r => !r.exists);
@@ -8169,15 +8406,29 @@
                 <p class="text-[11px] text-slate-600">Al confirmar: se suman <strong>${rows.reduce((a, r) => a + r.qty, 0)} unidades</strong> al stock y se crea una <strong>Factura por Pagar</strong> de <strong>${moneySigned(rows.reduce((a, r) => a + r.subtotal, 0))}</strong> a ${sup || 'el proveedor'}. Revisa que solo estén los productos que sí te despacharon.</p>
                 ${changed.length ? `<p class="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200 rounded-lg p-2"><i class="fa-solid fa-layer-group"></i> ${changed.length} producto(s) con costo diferente. Primero se venderán las unidades que ya tienes al costo anterior y después las nuevas.</p>` : ''}
                 ${missing.length ? `<p class="text-[11px] font-bold text-rose-600">⚠ ${missing.length} producto(s) ya no existen en el inventario y se omitirán.</p>` : ''}
+                <p class="text-[11px] font-bold text-slate-700">¿Cuántas llegaron de cada uno? <span class="font-normal text-slate-500">(si llegó incompleto, lo que falte pasa a un pedido de faltantes)</span></p>
+                <div class="space-y-1">${rows.filter(r => r.exists).map(r => `<div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px]"><span class="flex-1 font-bold truncate">${r.name}</span><span class="text-slate-400">pedidas ${r.qty} · llegaron</span><input type="number" min="0" max="${r.qty}" value="${r.qty}" data-rcv="${r.id}" oninput="updateReceiveSummary()" class="w-14 border border-slate-200 rounded-md px-1 py-0.5 text-center font-black"></div>`).join('')}</div>
+                <p id="rcv-summary" class="text-[11px] font-bold text-emerald-800"></p>
                 <div class="grid grid-cols-2 gap-2">
                     <input type="text" id="order-invoice-num" placeholder="Nº factura del proveedor" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none">
                     <input type="text" id="order-supplier-confirm" value="${sup.replace(/"/g, '&quot;')}" placeholder="Proveedor" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none">
                 </div>
+                <label class="flex items-center gap-2 text-[11px] font-bold text-slate-700">Fecha límite para pagar la factura
+                    <input type="date" id="order-due" value="${dayKey(new Date(Date.now() + 30 * 86400000))}" class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-bold"></label>
                 <div class="flex gap-2 justify-end">
                     <button onclick="closeReceivePanel()" class="px-3 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">Seguir editando</button>
                     <button onclick="confirmReceiveOrder()" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs"><i class="fa-solid fa-check"></i> Confirmar y sumar al stock</button>
                 </div>`;
             panel.classList.remove('hidden');
+            updateReceiveSummary();
+        }
+
+        function updateReceiveSummary() {
+            const o = getActiveOrder(); const el = document.getElementById('rcv-summary'); if (!o || !el) return;
+            const rows = orderRows(o).filter(r => r.qty > 0 && r.exists);
+            let units = 0, total = 0, miss = 0;
+            rows.forEach(r => { const inp = document.querySelector(`[data-rcv="${r.id}"]`); const q = inp ? Math.max(0, Math.min(r.qty, parseInt(inp.value) || 0)) : r.qty; units += q; total += q * r.cost; miss += r.qty - q; });
+            el.innerHTML = `Se suman <strong>${units}</strong> unidad(es) al stock · factura por <strong>${moneySigned(total)}</strong>${miss ? ` · <span class="text-amber-700">${miss} faltante(s) → nuevo pedido de faltantes</span>` : ''}`;
         }
 
         function closeReceivePanel() {
@@ -8188,8 +8439,16 @@
         function confirmReceiveOrder() {
             const o = getActiveOrder();
             if (!o || o.status !== 'BORRADOR') return;
-            const rows = orderRows(o).filter(r => r.qty > 0 && r.exists);
-            if (!rows.length) return showToast('No hay productos válidos en el pedido', 'error');
+            const ordered = orderRows(o).filter(r => r.qty > 0 && r.exists);
+            const missingItems = [];
+            const rows = ordered.map(r => {
+                const inp = document.querySelector(`[data-rcv="${r.id}"]`);
+                const q = inp ? Math.max(0, Math.min(r.qty, parseInt(inp.value) || 0)) : r.qty;
+                if (q < r.qty) missingItems.push({ id: r.id, qty: r.qty - q, cost: r.cost });
+                return { ...r, qty: q, subtotal: q * r.cost };
+            }).filter(r => r.qty > 0);
+            if (!rows.length) return showToast('No llegó ningún producto: no hay nada que sumar al stock', 'error');
+            const dueDate = document.getElementById('order-due')?.value || '';
             const invoiceNum = document.getElementById('order-invoice-num')?.value.trim() || `Pedido #${o.number}`;
             const supplier = document.getElementById('order-supplier-confirm')?.value.trim() || o.supplier || 'Proveedor';
             rows.forEach(r => {
@@ -8200,16 +8459,23 @@
             });
             const total = rows.reduce((a, r) => a + r.subtotal, 0);
             const now = new Date();
-            const pay = { id: 'PAY-' + Date.now(), date: now.toLocaleDateString('es-CO'), rawDate: now.toISOString(), supplier, invoiceNum, total, paid: 0, type: 'MERCANCIA', notes: `Pedido #${o.number}: ${rows.length} producto(s), ${rows.reduce((a, r) => a + r.qty, 0)} unidades`, orderId: o.id };
+            const pay = { id: 'PAY-' + Date.now(), date: now.toLocaleDateString('es-CO'), rawDate: now.toISOString(), supplier, invoiceNum, total, paid: 0, type: 'MERCANCIA', notes: `Pedido #${o.number}: ${rows.length} producto(s), ${rows.reduce((a, r) => a + r.qty, 0)} unidades${missingItems.length ? ' (llegó incompleto)' : ''}`, orderId: o.id, dueDate };
             payables.push(pay);
             if (isFirebaseConnected && db) db.collection("payables").doc(String(pay.id)).set(pay, { merge: true });
             o.status = 'RECIBIDO'; o.supplier = supplier; o.invoiceNum = invoiceNum; o.receivedAt = now.toISOString(); o.payableId = pay.id; o.total = total;
-            o.items = o.items.filter(it => rows.some(r => String(r.id) === String(it.id))).map(it => { const r = rows.find(x => String(x.id) === String(it.id)); return { ...it, name: r.name, sku: r.sku }; });
+            o.items = o.items.filter(it => rows.some(r => String(r.id) === String(it.id))).map(it => { const r = rows.find(x => String(x.id) === String(it.id)); return { ...it, qty: r.qty, name: r.name, sku: r.sku }; });
+            o.receivedItems = o.items.map(it => ({ ...it }));
+            if (missingItems.length) {
+                o.missing = missingItems;
+                const number = purchaseOrders.reduce((m, x) => Math.max(m, parseInt(x.number) || 0), 0) + 1;
+                const mo = { id: 'PED-' + (Date.now() + 1), number, supplier, notes: `Faltantes del pedido #${o.number}`, status: 'BORRADOR', createdAt: new Date().toISOString(), items: missingItems.map(x => ({ ...x })), fromOrder: o.id };
+                purchaseOrders.push(mo); o.missingOrderId = mo.id; persistOrder(mo);
+            }
             persistOrder(o);
             saveDataLocalOnly();
             renderInventoryTable(); renderWholesaleTable(); renderPosProducts(); renderPayablesTable(); updateDashboard();
             renderOrderSim();
-            showToast(`Pedido #${o.number} recibido · stock actualizado y factura por pagar creada`);
+            showToast(missingItems.length ? `Pedido #${o.number} recibido incompleto · ${missingItems.reduce((a, x) => a + x.qty, 0)} faltante(s) quedaron en un pedido nuevo` : `Pedido #${o.number} recibido · stock actualizado y factura por pagar creada`);
             try { renderWaitlist(); waitlistReadyToast(rows.map(r => r.id)); } catch (err) {}
         }
 
@@ -8589,7 +8855,7 @@
             const expEl = document.getElementById('admin-total-expected-money');
             if (expEl) { expEl.innerText = moneySigned(totalExpected); expEl.className = `text-2xl font-black mt-1 ${totalExpected < 0 ? 'text-rose-400' : 'text-amber-400'}`; }
             try { renderBankBase(bankSavings, historicalPaidSales - totalExpenses - totalWithdrawals); renderBankMoves(); renderBackupInfo(); } catch (err) { console.error('Error en base del banco', err); }
-            try { renderPctInputs(); renderInvoicePaidSplit(); renderReminders(); renderPctHistory(); renderSalesGoal(); renderProfitSplitPanel(); renderWaitlist(); } catch (err) { console.error('Error en porcentajes', err); }
+            try { renderPctInputs(); renderInvoicePaidSplit(); renderReminders(); renderPctHistory(); renderSalesGoal(); renderProfitSplitPanel(); renderWaitlist(); renderDueAlerts(); } catch (err) { console.error('Error en porcentajes', err); }
             const baseMissing = Math.max(0, baseTarget - baseCurrent);
             if (document.getElementById('base-missing-val')) document.getElementById('base-missing-val').innerText = `$${baseMissing.toLocaleString('es-CO')}`;
             // PROTECCIÓN ANTI-DESCAPITALIZACIÓN POR FASES & REPARTO DE SOCIOS (ADMIN)
