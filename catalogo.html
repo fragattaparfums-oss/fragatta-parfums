@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -16,7 +19,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, onSnapshot, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -47,6 +50,7 @@
         window.onSnapshot = onSnapshot;
         window.doc = doc;
         window.updateDoc = updateDoc;
+        window.getDoc = getDoc;
     </script>
 
     <script>
@@ -454,7 +458,8 @@
                         category: (data.category === 'Kids' ? 'Kits' : data.category) || 'Árabe',
                         priority: data.featured ? 'TOP VIRAL' : (data.priority || 'NINGUNA'),
                         image: data.image || (Array.isArray(data.images) && data.images[0]) || 'https://placehold.co/400x400/111315/d4af37?text=PERFUME',
-                        images: Array.isArray(data.images) && data.images.length ? data.images.filter(Boolean) : (data.image ? [data.image] : []),
+                        images: fullImagesCache[docSnap.id] || (Array.isArray(data.images) && data.images.length ? data.images.filter(Boolean) : (data.image ? [data.image] : [])),
+                        hasFullImages: data.hasFullImages === true,
                         size: data.size || '',
                         concentration: data.concentration || '',
                         longevity: data.longevity || '',
@@ -861,6 +866,20 @@
         let openedFromHash = false;
         const ACCORD_COLORS = ['#d4af37', '#e8a87c', '#f3c4a2', '#c9a27e', '#e6cf8b', '#b8c99d', '#d9b8c4', '#a8c3d6', '#cfa58f', '#e2d4b7'];
 
+
+        // ===== FOTOS LIVIANAS: la lista usa una miniatura; la foto original se trae al abrir el producto =====
+        const fullImagesCache = {};
+        async function ensureFullImages(p) {
+            if (!p || !p.hasFullImages) return false;
+            if (fullImagesCache[p.id]) { p.images = fullImagesCache[p.id]; return false; }
+            try {
+                const snap = await window.getDoc(window.doc(window.db, "product_images", p.id));
+                const d = snap && snap.exists() ? snap.data() : null;
+                if (d && Array.isArray(d.images) && d.images.length) { fullImagesCache[p.id] = d.images.filter(Boolean); p.images = fullImagesCache[p.id]; return true; }
+            } catch (err) { console.warn('No se pudo cargar la foto completa', err); }
+            return false;
+        }
+
         function openDetailModal(id, fromHash) {
             const p = products.find(prod => prod.id === id);
             if (!p) return;
@@ -868,6 +887,7 @@
             detailImgIndex = 0;
             detailQty = 1;
             renderDetail(id);
+            ensureFullImages(p).then(changed => { if (changed && currentDetailId === id) renderDetail(id, true); });
             document.getElementById('detail-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             const sc = document.getElementById('detail-scroll');
