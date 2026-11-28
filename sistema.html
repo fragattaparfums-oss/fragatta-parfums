@@ -621,15 +621,14 @@
                                 </div>
                                 <select id="pos-category-filter" onchange="renderPosProducts()" class="px-3 py-2 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl focus:outline-none">
                                     <option value="">Todas las Categorías</option>
-                                    <option value="Dama">Dama</option>
-                                    <option value="Caballero">Caballero</option>
-                                    <option value="Árabes">Árabes</option>
+                                    <option value="Árabe">Árabe</option>
                                     <option value="Diseñador">Diseñador</option>
                                     <option value="Nicho">Nicho</option>
                                     <option value="Body Spray">Body Spray</option>
                                     <option value="Kits">Kits</option>
-                                    <option value="Combos">Combos</option>
                                     <option value="Promociones">Promociones</option>
+                                    <option value="Emprendedores">Emprendedores</option>
+                                    <option value="Combos">Combos</option>
                                     <option value="Por Mayor">Por Mayor</option>
                                 </select>
                             </div>
@@ -997,15 +996,14 @@
                         <input type="text" id="inv-search" oninput="renderInventoryTable()" placeholder="Buscar por SKU o Nombre..." class="flex-1 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500">
                         <select id="inv-filter-cat" onchange="renderInventoryTable()" class="bg-slate-50 border border-slate-200 text-slate-700 font-bold rounded-xl px-3 py-2 text-xs focus:outline-none">
                             <option value="all">Todas las Categorías</option>
-                            <option value="Dama">Dama</option>
-                            <option value="Caballero">Caballero</option>
-                            <option value="Árabes">Árabes</option>
+                            <option value="Árabe">Árabe</option>
                             <option value="Diseñador">Diseñador</option>
                             <option value="Nicho">Nicho</option>
                             <option value="Body Spray">Body Spray</option>
                             <option value="Kits">Kits</option>
-                            <option value="Combos">Combos</option>
                             <option value="Promociones">Promociones</option>
+                            <option value="Emprendedores">Emprendedores</option>
+                            <option value="Combos">Combos</option>
                             <option value="Por Mayor">Por Mayor</option>
                         </select>
                     </div>
@@ -1340,6 +1338,19 @@
                 </section>
 
                 <section id="tab-accounting" class="tab-content hidden space-y-6">
+                    <!-- TRANSPORTE POR MES -->
+                    <div class="admin-only hidden bg-white p-5 rounded-3xl border border-sky-200 shadow-sm space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <h3 class="font-black text-slate-900 text-sm"><i class="fa-solid fa-car text-sky-600"></i> Transporte por mes</h3>
+                            <span id="transport-month-total" class="text-xs font-black text-sky-700"></span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">Cuántas veces fuiste a la bodega, cuántos domicilios pediste desde la bodega y cuánto te costó cada mes. Regístralos con los botones <strong>Viaje a bodega</strong> y <strong>Domicilio desde bodega</strong>.</p>
+                        <div class="overflow-x-auto"><table class="w-full text-left text-xs whitespace-nowrap">
+                            <thead class="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase"><tr><th class="p-2">Mes</th><th class="p-2">Viajes a bodega</th><th class="p-2">Domicilios desde bodega</th><th class="p-2">Total transporte</th><th class="p-2">% de los gastos</th></tr></thead>
+                            <tbody id="transport-body"></tbody>
+                        </table></div>
+                    </div>
+
                     <!-- ENVÍOS: COBRADO VS REAL -->
                     <div class="admin-only hidden">
                         <button onclick="toggleBlock('ship-card', this)" class="bg-white hover:bg-sky-50 border border-sky-200 text-sky-800 px-4 py-2.5 rounded-2xl font-bold text-xs shadow-sm"><i class="fa-solid fa-truck-fast"></i> Envíos: cobrado vs. lo que pagas</button>
@@ -1412,6 +1423,8 @@
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Gastos Operativos</h2>
                             <p class="text-xs text-slate-500">Registra gastos administrativos</p>
                         </div>
+                        <button onclick="openExpenseModal('Viaje a bodega')" class="bg-sky-600 hover:bg-sky-700 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-car"></i> Viaje a bodega</button>
+                        <button onclick="openExpenseModal('Domicilio desde bodega')" class="bg-sky-500 hover:bg-sky-600 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-motorcycle"></i> Domicilio desde bodega</button>
                         <button onclick="openExpenseModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-md shadow-purple-600/20">
                             <i class="fa-solid fa-plus"></i> Registrar Gasto
                         </button>
@@ -1639,7 +1652,7 @@
 
     <!-- MODAL PRODUCTO -->
     <div id="product-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+        <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
             <h3 id="product-modal-title" class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3">Nuevo Perfume</h3>
             <form onsubmit="saveProduct(event)" class="space-y-3 text-xs">
                 <input type="hidden" id="prod-id">
@@ -1658,15 +1671,14 @@
                     <div>
                         <label class="block font-bold text-slate-600 mb-1">Categoría Web:</label>
                         <select id="prod-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none font-bold">
-                            <option value="Dama">Dama</option>
-                            <option value="Caballero">Caballero</option>
-                            <option value="Árabes">Árabes</option>
+                            <option value="Árabe">Árabe</option>
                             <option value="Diseñador">Diseñador</option>
                             <option value="Nicho">Nicho</option>
                             <option value="Body Spray">Body Spray</option>
                             <option value="Kits">Kits</option>
-                            <option value="Combos">Combos</option>
                             <option value="Promociones">Promociones</option>
+                            <option value="Emprendedores">Emprendedores</option>
+                            <option value="Combos">Combos</option>
                             <option value="Por Mayor">Por Mayor</option>
                         </select>
                     </div>
@@ -1685,6 +1697,14 @@
                         <input type="number" id="prod-price" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                     </div>
                 </div>
+                <div id="prod-decant-box" class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl space-y-1.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="font-bold text-slate-700">💧 Decants <span class="font-normal text-slate-500">(marca los que vendes)</span></label>
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-500">Frasco de <input type="number" id="prod-bottle-ml" min="1" placeholder="100" class="w-14 bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-center"> ml</span>
+                    </div>
+                    <div id="prod-decant-rows" class="space-y-1"></div>
+                    <p id="prod-decant-note" class="text-[10px] text-slate-500"></p>
+                </div>
                 <div class="pt-2 flex justify-end gap-2">
                     <button type="button" onclick="closeProductModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold">Cancelar</button>
                     <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold">Guardar Perfume</button>
@@ -1693,11 +1713,35 @@
         </div>
     </div>
 
+    <!-- MODAL: FRASCO COMPLETO O DECANT -->
+    <div id="decant-pick-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4" onclick="if(event.target===this)closeDecantPick()">
+        <div class="bg-white border border-slate-200 w-full max-w-sm rounded-3xl p-5 space-y-3 shadow-2xl">
+            <div class="flex items-start justify-between gap-2">
+                <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">¿Qué vas a vender?</p><h3 id="decant-pick-title" class="font-black text-slate-900 text-sm"></h3></div>
+                <button onclick="closeDecantPick()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-black">×</button>
+            </div>
+            <div id="decant-pick-options" class="space-y-2"></div>
+        </div>
+    </div>
+
     <!-- MODAL GASTO -->
     <div id="expense-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
             <h3 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-3">Registrar Gasto Operativo</h3>
             <form onsubmit="saveExpense(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">Tipo de gasto:</label>
+                    <select id="exp-type" onchange="onExpTypeChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-bold focus:outline-none">
+                        <option value="Viaje a bodega">🚗 Viaje a la bodega (transporte)</option>
+                        <option value="Domicilio desde bodega">🛵 Domicilio desde la bodega</option>
+                        <option value="Envío a cliente">📦 Envío a cliente</option>
+                        <option value="Arriendo">🏠 Arriendo</option>
+                        <option value="Servicios">💡 Servicios (luz, internet...)</option>
+                        <option value="Publicidad">📣 Publicidad</option>
+                        <option value="Empaques">🎁 Empaques</option>
+                        <option value="Otro" selected>Otro</option>
+                    </select>
+                </div>
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">Descripción del Gasto:</label>
                     <input type="text" id="exp-desc" required placeholder="Ej: Empaques o envíos" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
@@ -2350,7 +2394,11 @@
                         sharedStock: !!data.sharedStock,
                         webId: data.webId || '',
                         needsCost: !!data.needsCost,
-                        costQueue: Array.isArray(data.costQueue) ? data.costQueue : []
+                        costQueue: Array.isArray(data.costQueue) ? data.costQueue : [],
+                        openMl: parseFloat(data.openMl) || 0,
+                        openMlCost: parseFloat(data.openMlCost) || 0,
+                        bottleMl: parseFloat(data.bottleMl) || 0,
+                        decants: Array.isArray(data.decants) ? data.decants : []
                     });
                 });
                 if(cloudProds.length > 0) products = cloudProds;
@@ -2721,7 +2769,7 @@
                 if (tabId === 'clientes') renderClients();
                 if (tabId === 'web-orders') { renderWebOrders(); updateTitleBadge(); renderWaitlist(); }
                 if (tabId === 'equipo') renderTeam();
-                if (tabId === 'accounting') { renderPayMethodsPanel(); renderBizContact(); const mi = document.getElementById('min-margin-input'); if (mi) mi.value = minMarginPct; }
+                if (tabId === 'accounting') { renderPayMethodsPanel(); renderBizContact(); renderTransportReport(); const mi = document.getElementById('min-margin-input'); if (mi) mi.value = minMarginPct; }
                 if (tabId === 'pos') { fillPosClients(); fillPayMethodSelects(); fillSellerSelect(); }
             } catch (err) { console.error('Error al abrir la pestaña', err); }
             renderTablesViews();
@@ -2975,7 +3023,40 @@
             showToast('Reporte contable detallado descargado');
         }
 
+        function ensureCategoryOptions() {
+            const extra = [...new Set(products.map(p => String(p.category || '').trim()).filter(Boolean))];
+            ['pos-category-filter', 'inv-filter-cat', 'prod-category'].forEach(id => {
+                const sel = document.getElementById(id); if (!sel) return;
+                const cur = sel.value;
+                [...sel.querySelectorAll('option[data-extra]')].forEach(o => { if (!extra.includes(o.value)) o.remove(); });
+                const have = new Set([...sel.options].map(o => o.value));
+                extra.forEach(c => { if (!have.has(c)) { const o = document.createElement('option'); o.value = c; o.textContent = c; o.dataset.extra = '1'; sel.appendChild(o); } });
+                if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+            });
+        }
+        // Una sola vez: los nombres viejos pasan a los de la página ("Árabes" → "Árabe") y los productos
+        // que vienen de la web toman la misma categoría que tienen en la página
+        let categoriesSynced = false;
+        function syncCategoriesWithWeb() {
+            if (categoriesSynced || !isAdmin || !posProductsLoaded || !webProductsLoaded) return;
+            categoriesSynced = true;
+            const rename = { 'Árabes': 'Árabe', 'Arabes': 'Árabe', 'Arabe': 'Árabe', 'Kids': 'Kits' };
+            const changed = [];
+            products.forEach(p => {
+                if (isWholesaleCategory(p.category) || isComboProduct(p)) return;
+                let cat = rename[p.category] || p.category;
+                const w = webProducts.find(x => String(x.id) === String(p.webId || '') || String(x.id) === String(p.id));
+                if (w) { const wc = WEB_CATEGORY_MAP_V2[String(w.category || '').toLowerCase().trim()]; if (wc) cat = wc; }
+                if (cat !== p.category) { p.category = cat; changed.push(p); }
+            });
+            if (!changed.length) return;
+            saveDataLocalOnly();
+            if (isFirebaseConnected && db) { let batch = db.batch(), n = 0; changed.forEach(p => { batch.set(db.collection("pos_products").doc(String(p.id)), { category: p.category }, { merge: true }); n++; if (n % 400 === 0) { batch.commit(); batch = db.batch(); } }); if (n % 400 !== 0) batch.commit(); }
+            renderInventoryTable(); renderPosProducts();
+        }
+
         function renderPosProducts() {
+            try { ensureCategoryOptions(); } catch (err) {}
             try { syncSharedStock(); } catch (err) {}
             const searchInput = document.getElementById('pos-search');
             const categorySelect = document.getElementById('pos-category-filter');
@@ -2994,14 +3075,14 @@
             itemsToRender.forEach(p => {
                 const safePrice = parseFloat(p.price) || 0;
                 const safeStock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
-                const isCombo = ['Combos', 'Promociones'].includes(p.category);
+                const isCombo = isComboProduct(p);
                 html.push(`
                     <div onclick="addToCart('${p.id}')" class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm hover:border-purple-400 cursor-pointer transition flex flex-col justify-between">
                         <div>
                             ${productThumb(p, 'w-full h-20 mb-2')}
                             <span class="text-[9px] font-bold ${isCombo ? 'text-amber-700 bg-amber-50' : (p.category === 'Por Mayor' ? 'text-blue-700 bg-blue-50' : 'text-purple-600 bg-purple-50')} px-2 py-0.5 rounded-full">${p.category}</span>
                             <h4 class="font-bold text-slate-800 text-xs mt-1.5 line-clamp-2">${p.name}</h4>
-                            <p class="text-[10px] text-slate-400 font-mono mt-0.5">${p.sku}</p>
+                            <p class="text-[10px] text-slate-400 font-mono mt-0.5">${p.sku}${productDecants(p).length ? ' <span class="font-sans font-bold text-amber-600">· 💧 decants</span>' : ''}</p>
                         </div>
                         <div class="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2">
                             <span class="font-black text-emerald-600 text-xs">$${safePrice.toLocaleString('es-CO')}</span>
@@ -3020,15 +3101,15 @@
             const product = products.find(p => String(p.id) === String(productId));
             if (!product) return;
             const safeStock = isNaN(parseInt(product.stock)) ? 0 : parseInt(product.stock);
-            if (!['Combos', 'Promociones'].includes(product.category) && safeStock <= 0) {
+            if (!isComboProduct(product) && safeStock <= 0) {
                 return showToast('Sin existencias en stock', 'error');
             }
-            if (!['Combos', 'Promociones'].includes(product.category) && cartQtyForOwner(stockOwner(product)) + 1 > (parseInt(stockOwner(product).stock) || 0)) {
+            if (!isComboProduct(product) && cartQtyForOwner(stockOwner(product)) + 1 > (parseInt(stockOwner(product).stock) || 0)) {
                 return showToast('Excede el stock disponible (detal + por mayor)', 'error');
             }
             const existing = cart.find(item => String(item.id) === String(productId));
             if (existing) {
-                if (!['Combos', 'Promociones'].includes(product.category) && existing.qty + 1 > safeStock) {
+                if (!isComboProduct(product) && existing.qty + 1 > safeStock) {
                     return showToast('Excede el stock disponible', 'error');
                 }
                 existing.qty++;
@@ -3148,7 +3229,7 @@
             cart.forEach(cItem => {
                 const p = products.find(prod => String(prod.id) === String(cItem.id));
                 if (p) {
-                    if (['Combos', 'Promociones'].includes(p.category) && p.items && p.items.length > 0) {
+                    if (isComboProduct(p)) {
                         let comboCost = 0, allFound = true;
                         p.items.forEach(cSub => {
                             const subProd = products.find(sp => String(sp.id) === String(cSub.prodId));
@@ -3163,6 +3244,9 @@
                         if (cItem.qty > 0) cItem.cost = lotCost / cItem.qty;
                         pushProductStock(p);
                     }
+                } else if (cItem.decant) {
+                    const bp = products.find(prod => String(prod.id) === String(cItem.baseId));
+                    if (bp && cItem.qty > 0) cItem.cost = consumeDecantMl(bp, (parseFloat(cItem.decantMl) || 0) * cItem.qty) / cItem.qty;
                 }
             });
             totalCost = cart.reduce((sum, item) => sum + ((parseFloat(item.cost) || 0) * item.qty), 0);
@@ -3530,8 +3614,9 @@
             sale.items.forEach(item => {
                 const qty = parseInt(item.qty) || 0;
                 if (qty <= 0) return;
-                const subItems = isPackageCategory(item.category) && Array.isArray(item.items) && item.items.length > 0 ? item.items : null;
+                const subItems = isComboProduct(item) && Array.isArray(item.items) && item.items.length > 0 ? item.items : null;
                 if (subItems) subItems.forEach(sub => giveBack(sub.prodId, (parseInt(sub.qty) || 1) * qty));
+                else if (item.decant) { const bp = products.find(x => String(x.id) === String(item.baseId)); if (bp) { restoreDecantMl(bp, (parseFloat(item.decantMl) || 0) * qty, item.cost); touched.push(bp); } }
                 else giveBack(item.id, qty, item.cost);
             });
             touched.forEach(prod => pushProductStock(prod));
@@ -3605,7 +3690,7 @@
             }
             let updatedCount = 0;
             products.forEach(p => {
-                if (!['Combos', 'Promociones'].includes(p.category)) {
+                if (!isComboProduct(p)) {
                     p.stock = newStockVal;
                     updatedCount++;
                 }
@@ -3615,7 +3700,7 @@
                 let batch = db.batch();
                 let count = 0;
                 products.forEach(p => {
-                    if (!['Combos', 'Promociones'].includes(p.category)) {
+                    if (!isComboProduct(p)) {
                         batch.set(db.collection("pos_products").doc(String(p.id)), { stock: newStockVal }, { merge: true });
                         count++;
                         if (count % 450 === 0) {
@@ -3794,12 +3879,20 @@
         // ===== INVENTARIO: CONTEO, MÁS VENDIDOS Y SUGERENCIA DE COMPRA =====
         function sortByStockPriority(list) {
             // Primero los que tienen stock (de más a menos), luego combos, al final los agotados
-            const rank = (p) => isPackageCategory(p.category) ? 1 : ((isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock)) > 0 ? 0 : 2);
+            const rank = (p) => isComboProduct(p) ? 1 : ((isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock)) > 0 ? 0 : 2);
             return list.slice().sort((a, b) => (rank(a) - rank(b)) || ((parseInt(b.stock) || 0) - (parseInt(a.stock) || 0)) || (a.name || '').localeCompare(b.name || ''));
         }
 
         function isPackageCategory(cat) {
-            return ['Combos', 'Promociones'].includes(cat);
+            return String(cat || '').trim() === 'Combos';
+        }
+
+        // Un combo es un producto que trae otros perfumes adentro (o de categoría "Combos").
+        // Así los perfumes en "Promociones" de la página web se manejan como perfumes normales (con stock).
+        function isComboProduct(p) {
+            if (!p) return false;
+            if (String(p.category || '').trim() === 'Combos') return true;
+            return Array.isArray(p.items) && p.items.length > 0 && p.items.some(x => x && x.prodId !== undefined);
         }
 
         function isWholesaleCategory(cat) {
@@ -3814,7 +3907,7 @@
             // Devuelve el perfume base (no Por Mayor, no combo) al que corresponde un producto vendido
             const byId = products.find(x => String(x.id) === String(itemId));
             const cleanName = String(name || '').replace(/ - Por Mayor$/i, '').trim().toLowerCase();
-            const findByName = () => products.find(x => !isWholesaleCategory(x.category) && !isPackageCategory(x.category) && (x.name || '').trim().toLowerCase() === cleanName) || null;
+            const findByName = () => products.find(x => !isWholesaleCategory(x.category) && !isComboProduct(x) && (x.name || '').trim().toLowerCase() === cleanName) || null;
             if (byId && !isWholesaleCategory(byId.category)) return byId;
             if (byId && isWholesaleCategory(byId.category)) {
                 const baseKey = byId.baseId || (String(byId.id).match(/^PM-(.+?)(-\d{10,})?$/) || [])[1];
@@ -3845,7 +3938,7 @@
                     if (qty <= 0) return;
                     const revenue = (parseFloat(item.price) || 0) * qty;
                     const cost = (parseFloat(item.cost) || 0) * qty;
-                    const subItems = isPackageCategory(item.category) && Array.isArray(item.items) ? item.items : [];
+                    const subItems = isComboProduct(item) && Array.isArray(item.items) ? item.items : [];
                     if (subItems.length > 0) {
                         // Repartir ingresos y costo del combo según el costo de cada perfume que trae
                         const parts = subItems.map(sub => {
@@ -3883,7 +3976,7 @@
             const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
             let units = 0, refs = 0, wsUnits = 0, wsRefs = 0, out = 0, low = 0, costValue = 0, saleValue = 0;
             products.forEach(p => {
-                if (isPackageCategory(p.category)) return;
+                if (isComboProduct(p)) return;
                 const stock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
                 if (isWholesaleCategory(p.category)) { wsRefs++; return; }
                 units += stock; refs++;
@@ -3953,7 +4046,7 @@
         }
 
         function exportInventoryCount() {
-            const list = products.filter(p => !isPackageCategory(p.category))
+            const list = products.filter(p => !isComboProduct(p))
                 .slice().sort((a, b) => (a.category || '').localeCompare(b.category || '') || (a.name || '').localeCompare(b.name || ''));
             if (list.length === 0) return showToast('No hay productos en el inventario', 'error');
             const rows = list.map(p => {
@@ -4021,7 +4114,7 @@
                 const costVal = parseFloat(p.cost) || 0;
                 const priceVal = parseFloat(p.price) || 0;
                 const safeStock = isNaN(parseInt(p.stock)) ? 0 : parseInt(p.stock);
-                const isCombo = ['Combos', 'Promociones'].includes(p.category);
+                const isCombo = isComboProduct(p);
                 rows.push(`
                     <tr id="inv-row-${p.id}" class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 font-mono font-bold text-purple-600">${p.sku}</td>
@@ -4077,7 +4170,7 @@
             if (document.getElementById('prod-id')) document.getElementById('prod-id').value = '';
             if (document.getElementById('prod-sku')) document.getElementById('prod-sku').value = generateAutoSKU();
             if (document.getElementById('prod-name')) document.getElementById('prod-name').value = '';
-            if (document.getElementById('prod-category')) document.getElementById('prod-category').value = 'Dama';
+            if (document.getElementById('prod-category')) document.getElementById('prod-category').value = 'Árabe';
             if (document.getElementById('prod-stock')) document.getElementById('prod-stock').value = '10';
             if (document.getElementById('prod-cost')) document.getElementById('prod-cost').value = '45000';
             if (document.getElementById('prod-price')) document.getElementById('prod-price').value = '115000';
@@ -4114,7 +4207,7 @@
             let sku = document.getElementById('prod-sku')?.value.trim();
             if (!sku) sku = generateAutoSKU();
             const name = document.getElementById('prod-name')?.value || '';
-            const category = document.getElementById('prod-category')?.value || 'Dama';
+            const category = document.getElementById('prod-category')?.value || 'Árabe';
             const stock = parseInt(document.getElementById('prod-stock')?.value) || 0;
             const cost = parseFloat(document.getElementById('prod-cost')?.value) || 0;
             const price = parseFloat(document.getElementById('prod-price')?.value) || 0;
@@ -4201,7 +4294,7 @@
             const div = document.createElement('div');
             div.className = "flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200";
             let optionsHtml = '';
-            products.filter(p => !['Combos', 'Promociones'].includes(p.category)).forEach(prod => {
+            products.filter(p => !isComboProduct(p)).forEach(prod => {
                 optionsHtml += `<option value="${prod.id}">${prod.name} (${prod.category})</option>`;
             });
             div.innerHTML = `
@@ -4723,7 +4816,7 @@
                 rows.push(`
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-4 text-slate-500 font-mono">${exp.date}</td>
-                        <td class="p-4 font-bold text-slate-800">${exp.desc}</td>
+                        <td class="p-4 font-bold text-slate-800">${exp.desc}${exp.expType && exp.expType !== 'Otro' ? `<span class="block text-[10px] font-bold ${isTransportExpense(exp) ? 'text-sky-600' : 'text-slate-400'}">${exp.expType}</span>` : ''}</td>
                         <td class="p-4 text-slate-500 whitespace-normal max-w-xs">${exp.notes || ''}</td>
                         <td class="p-4 font-black text-rose-600">$${amountVal.toLocaleString('es-CO')}</td>
                         <td class="p-4 text-center">
@@ -4735,8 +4828,9 @@
             tbody.innerHTML = rows.join('');
         }
 
-        function openExpenseModal() {
-            if (document.getElementById('exp-desc')) document.getElementById('exp-desc').value = '';
+        function openExpenseModal(type) {
+            const et = document.getElementById('exp-type'); if (et) et.value = typeof type === 'string' ? type : 'Otro';
+            if (document.getElementById('exp-desc')) document.getElementById('exp-desc').value = typeof type === 'string' && type !== 'Otro' ? type : '';
             if (document.getElementById('exp-amount')) document.getElementById('exp-amount').value = '';
             if (document.getElementById('exp-notes')) document.getElementById('exp-notes').value = '';
             const m = document.getElementById('expense-modal');
@@ -5065,8 +5159,10 @@
         // Reglas: nunca se modifica un producto que ya existe en el POS (su stock, costo y precio mandan).
         // Los perfumes nuevos de la web se crean con SKU del sistema, nombre en mayúsculas, la categoría equivalente,
         // el precio de la web, stock 0 (o el "stock web" si se puso) y marcados para poner el COSTO.
+        const STORE_CATEGORIES = ['Árabe', 'Diseñador', 'Nicho', 'Body Spray', 'Kits', 'Promociones', 'Emprendedores'];
+        const WEB_CATEGORY_MAP_V2 = { 'árabe': 'Árabe', 'arabe': 'Árabe', 'árabes': 'Árabe', 'arabes': 'Árabe', 'diseñador': 'Diseñador', 'disenador': 'Diseñador', 'nicho': 'Nicho', 'body spray': 'Body Spray', 'kits': 'Kits', 'kids': 'Kits', 'promociones': 'Promociones', 'emprendedores': 'Emprendedores' };
         const WEB_CATEGORY_MAP = { 'árabe': 'Árabes', 'arabe': 'Árabes', 'árabes': 'Árabes', 'arabes': 'Árabes', 'diseñador': 'Diseñador', 'disenador': 'Diseñador', 'nicho': 'Nicho', 'body spray': 'Body Spray', 'kits': 'Kits', 'kids': 'Kits', 'dama': 'Dama', 'caballero': 'Caballero' };
-        const WEB_SKIP_CATEGORIES = ['emprendedores', 'promociones', 'combos', 'por mayor'];
+        const WEB_SKIP_CATEGORIES = ['combos', 'por mayor'];
 
         function normProdName(n) {
             return String(n || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s*-\s*POR MAYOR$/, '').replace(/[^A-Z0-9]+/g, ' ').trim();
@@ -5078,7 +5174,7 @@
             const id = String(w.id);
             const nm = normProdName(webProductName(w));
             return products.some(p => String(p.id) === id || String(p.webId || '') === id
-                || (!isWholesaleCategory(p.category) && !isPackageCategory(p.category) && nm && normProdName(p.name) === nm));
+                || (!isWholesaleCategory(p.category) && !isComboProduct(p) && nm && normProdName(p.name) === nm));
         }
 
         function webSyncCandidates(manual) {
@@ -5089,7 +5185,7 @@
                 if (w.isActive === false && !manual) return false;
                 if (WEB_SKIP_CATEGORIES.includes(String(w.category || '').toLowerCase().trim())) return false;
                 if (deleted.has(String(w.id))) return false;
-                if (!manual && skipped.has(String(w.id))) return false;
+                void skipped; // ahora se traen todos los productos de la página
                 return !isWebProductInPos(w);
             });
         }
@@ -5114,6 +5210,7 @@
                 return;
             }
             if (pending.length) addWebProductsToPos(pending, false);
+            try { syncCategoriesWithWeb(); } catch (err) {}
         }
 
         async function addWebProductsToPos(list, manual) {
@@ -5135,7 +5232,7 @@
                         id,
                         sku: generateAutoSKU(),
                         name: webProductName(w).toUpperCase(),
-                        category: WEB_CATEGORY_MAP[catKey] || 'Árabes',
+                        category: WEB_CATEGORY_MAP_V2[catKey] || 'Árabe',
                         cost: 0,
                         price: parseFloat(w.price) || 0,
                         stock: (webStock === null || webStock === undefined || webStock === '' || isNaN(parseInt(webStock))) ? 0 : Math.max(0, parseInt(webStock)),
@@ -5464,7 +5561,7 @@
             if (d > 0) {
                 const p = products.find(x => String(x.id) === String(id));
                 const stock = p ? (parseInt(p.stock) || 0) : 0;
-                if (p && !isPackageCategory(p.category) && (it.qty + 1 > stock || cartQtyForOwner(stockOwner(p)) + 1 > (parseInt(stockOwner(p).stock) || 0))) return showToast('Excede el stock disponible', 'error');
+                if (p && !isComboProduct(p) && (it.qty + 1 > stock || cartQtyForOwner(stockOwner(p)) + 1 > (parseInt(stockOwner(p).stock) || 0))) return showToast('Excede el stock disponible', 'error');
             }
             it.qty += d;
             if (it.qty <= 0) cart = cart.filter(x => x !== it);
@@ -5837,7 +5934,7 @@
                     <input type="number" min="0" max="${it.qty}" value="0" data-ret="${i}" oninput="updateReturnSummary()" class="w-14 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 font-bold text-center">
                 </div>`).join('');
             const sel = document.getElementById('ret-add-product');
-            if (sel) sel.innerHTML = '<option value="">Elegir producto de cambio...</option>' + products.filter(p => !isWholesaleCategory(p.category) && (isPackageCategory(p.category) || (parseInt(p.stock) || 0) > 0)).sort((a, b) => a.name.localeCompare(b.name)).map(p => `<option value="${p.id}">${p.name} · ${moneySigned(parseFloat(p.price) || 0)} (stock ${parseInt(p.stock) || 0})</option>`).join('');
+            if (sel) sel.innerHTML = '<option value="">Elegir producto de cambio...</option>' + products.filter(p => !isWholesaleCategory(p.category) && (isComboProduct(p) || (parseInt(p.stock) || 0) > 0)).sort((a, b) => a.name.localeCompare(b.name)).map(p => `<option value="${p.id}">${p.name} · ${moneySigned(parseFloat(p.price) || 0)} (stock ${parseInt(p.stock) || 0})</option>`).join('');
             fillPayMethodSelects();
             renderReturnAdds(); updateReturnSummary();
             document.getElementById('return-modal')?.classList.remove('hidden');
@@ -5882,13 +5979,13 @@
         function saveReturn() {
             const plan = computeReturnPlan(); if (!plan) return;
             if (!plan.back.length && !returnAdds.length) return showToast('Indica qué devuelve o qué se lleva de cambio', 'error');
-            for (const a of returnAdds) { const p = products.find(x => String(x.id) === String(a.id)); if (p && !isPackageCategory(p.category) && (parseInt(p.stock) || 0) < a.qty) return showToast(`No hay stock suficiente de ${p.name}`, 'error'); }
+            for (const a of returnAdds) { const p = products.find(x => String(x.id) === String(a.id)); if (p && !isComboProduct(p) && (parseInt(p.stock) || 0) < a.qty) return showToast(`No hay stock suficiente de ${p.name}`, 'error'); }
             const s = plan.s;
             const now = new Date();
             const log = { date: now.toLocaleDateString('es-CO') + ' ' + now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }), rawDate: now.toISOString(), returned: [], added: [], refund: 0 };
             plan.back.forEach(b => {
                 const it = s.items[b.i];
-                const subs = isPackageCategory(it.category) && Array.isArray(it.items) && it.items.length ? it.items : null;
+                const subs = isComboProduct(it) && Array.isArray(it.items) && it.items.length ? it.items : null;
                 if (subs) subs.forEach(sub => { const p = products.find(x => String(x.id) === String(sub.prodId)); if (p) { restoreStockCost(p, (parseInt(sub.qty) || 1) * b.qty); pushProductStock(p); } });
                 else { const p = products.find(x => String(x.id) === String(it.id)); if (p) { restoreStockCost(p, b.qty, it.cost); pushProductStock(p); } }
                 log.returned.push({ name: it.name, qty: b.qty, price: parseFloat(it.price) || 0 });
@@ -5898,7 +5995,7 @@
             returnAdds.forEach(a => {
                 const p = products.find(x => String(x.id) === String(a.id)); if (!p) return;
                 let unitCost = parseFloat(p.cost) || 0;
-                if (isPackageCategory(p.category) && Array.isArray(p.items)) {
+                if (isComboProduct(p) && Array.isArray(p.items)) {
                     let c = 0; p.items.forEach(sub => { const sp = products.find(x => String(x.id) === String(sub.prodId)); if (sp) { c += consumeStockCost(sp, (parseInt(sub.qty) || 1) * a.qty); pushProductStock(sp); } }); unitCost = a.qty ? c / a.qty : 0;
                 } else { unitCost = a.qty ? consumeStockCost(p, a.qty) / a.qty : 0; pushProductStock(p); }
                 s.items.push({ ...p, qty: a.qty, price: a.price, cost: unitCost, listPrice: parseFloat(p.price) || 0 });
@@ -5934,7 +6031,7 @@
                 });
             });
             const limit = Date.now() - days * 86400000;
-            const list = products.filter(p => !isPackageCategory(p.category) && !isWholesaleCategory(p.category) && (parseInt(p.stock) || 0) > 0)
+            const list = products.filter(p => !isComboProduct(p) && !isWholesaleCategory(p.category) && (parseInt(p.stock) || 0) > 0)
                 .map(p => {
                     const t = lastSale[String(p.id)] || 0;
                     const capital = costLayers(p).reduce((a, l) => a + l.qty * l.cost, 0);
@@ -5988,7 +6085,7 @@
         function webOrderPosProduct(it) {
             const wid = String(it.productId || it.webId || String(it.id || '').split('::')[0]);
             return products.find(p => String(p.webId || '') === wid) || products.find(p => String(p.id) === wid)
-                || products.find(p => !isWholesaleCategory(p.category) && !isPackageCategory(p.category) && normProdName(p.name) === normProdName(it.baseTitle || it.title)) || null;
+                || products.find(p => !isWholesaleCategory(p.category) && !isComboProduct(p) && normProdName(p.name) === normProdName(it.baseTitle || it.title)) || null;
         }
 
         function renderWebOrders() {
@@ -6039,6 +6136,15 @@
             (o.items || []).forEach(it => {
                 const p = webOrderPosProduct(it);
                 if (!p) { missing.push(it.title); return; }
+                const dm = String(it.id || '').match(/DECANT\s*([\d.]+)\s*ML/i) || String(it.title || '').match(/DECANT\s*([\d.]+)\s*ML/i);
+                if (dm) {
+                    const ml = parseFloat(dm[1]);
+                    const d = productDecants(p).find(x => Math.abs(x.ml - ml) < 0.01) || { size: '', ml, price: it.price };
+                    const di = makeDecantItem(p, d); di.price = it.price; di.listPrice = d.price; di.qty = it.qty;
+                    const exd = cart.find(x => x.id === di.id);
+                    if (exd) exd.qty += it.qty; else cart.push(di);
+                    return;
+                }
                 const ex = cart.find(x => String(x.id) === String(p.id));
                 if (ex) ex.qty += it.qty; else cart.push({ ...p, qty: it.qty, price: it.price, listPrice: parseFloat(p.price) || 0 });
             });
@@ -6623,12 +6729,214 @@
         }
 
         function initV4() {
-            wrapProcessSale(); wrapSaveDebtPayment(); wrapDeletes(); wrapShowPrintPreview(); wrapLogout(); wrapOpenAdminModal(); wrapSaleEdit(); wrapPayMethodSaves(); wrapMarginCheck(); wrapSavePayableDue();
+            wrapProcessSale(); wrapSaveDebtPayment(); wrapDeletes(); wrapShowPrintPreview(); wrapLogout(); wrapOpenAdminModal(); wrapSaleEdit(); wrapPayMethodSaves(); wrapMarginCheck(); wrapSavePayableDue(); wrapExpenseType();
             fillPayMethodSelects(); fillPosClients(); renderUserBadge();
             ['pos-payment-status', 'pos-abono-amount', 'pos-shipping-cost', 'pos-discount-amount'].forEach(id => document.getElementById(id)?.addEventListener('input', updatePosFeeNote));
             document.getElementById('pos-payment-status')?.addEventListener('change', updatePosFeeNote);
         }
         initV4();
+
+        // =====================================================================
+        // ===================== DECANTS: FRASCO COMPLETO O DECANT ==============
+        // =====================================================================
+        // Los decants se configuran por perfume (pequeño, mediano, grande) y se venden en ml del frasco abierto.
+        const DECANT_SIZES_SIS = [['S', 'Pequeño', 5], ['M', 'Mediano', 10], ['L', 'Grande', 30]];
+        const DECANT_NAMES = { S: 'Decant pequeño', M: 'Decant mediano', L: 'Decant grande' };
+        function linkedWebProduct(p) {
+            if (!p) return null;
+            return webProducts.find(w => String(w.id) === String(p.webId || '')) || webProducts.find(w => String(w.id) === String(p.id)) || null;
+        }
+        function productDecants(p) {
+            if (!p || isComboProduct(p) || isWholesaleCategory(p.category)) return [];
+            const w = linkedWebProduct(p);
+            const src = w ? (Array.isArray(w.variants) ? w.variants : []) : (Array.isArray(p.decants) ? p.decants : []);
+            return src.filter(v => v && (w ? v.decant === true : true) && (parseFloat(v.ml) || 0) > 0 && (parseFloat(v.price) || 0) > 0)
+                .map(v => ({ size: v.size || '', ml: parseFloat(v.ml), price: parseFloat(v.price) }))
+                .sort((a, b) => a.ml - b.ml);
+        }
+        function bottleMlOf(p) {
+            const o = stockOwner(p) || p;
+            if (parseFloat(o.bottleMl) > 0) return parseFloat(o.bottleMl);
+            const w = linkedWebProduct(o);
+            const txt = [w && w.size, w && w.name, o.name].filter(Boolean).join(' ');
+            const m = txt.match(/(\d{2,3})\s*ml/i);
+            return m ? parseFloat(m[1]) : 100;
+        }
+        function decantBottleSvg(size) {
+            const h = { S: 22, M: 30, L: 38, full: 42 }[size] || 30;
+            if (size === 'full') return `<svg width="30" height="${h}" viewBox="0 0 24 34" aria-hidden="true"><rect x="8.5" y="1" width="7" height="5" rx="1.2" fill="#7c3aed"/><rect x="10.5" y="6" width="3" height="3" fill="#7c3aed"/><rect x="2" y="9" width="20" height="24" rx="5" fill="none" stroke="#7c3aed" stroke-width="2"/><rect x="5" y="17" width="14" height="13" rx="3" fill="#7c3aed" opacity=".3"/></svg>`;
+            return `<svg width="${Math.round(h * 0.42)}" height="${h}" viewBox="0 0 12 30" preserveAspectRatio="none" aria-hidden="true"><rect x="3.5" y="0.5" width="5" height="4" rx="1" fill="#d97706"/><rect x="2" y="4.5" width="8" height="24.5" rx="2.5" fill="none" stroke="#d97706" stroke-width="1.5"/><rect x="3.5" y="${size === 'S' ? 20 : size === 'M' ? 15 : 10}" width="5" height="${size === 'S' ? 7.5 : size === 'M' ? 12.5 : 17.5}" rx="1.5" fill="#d97706" opacity=".45"/></svg>`;
+        }
+        // ml que quedan: frasco abierto + frascos cerrados
+        function decantMlAvailable(p) {
+            const o = stockOwner(p);
+            const fullInCart = cartQtyForOwner(o);
+            return (parseFloat(o.openMl) || 0) + Math.max(0, (parseInt(o.stock) || 0) - fullInCart) * bottleMlOf(o);
+        }
+        function decantMlInCart(p, exceptId) {
+            const o = stockOwner(p);
+            return cart.filter(it => it.decant && it.id !== exceptId).reduce((a, it) => { const bp = products.find(x => String(x.id) === String(it.baseId)); return a + (bp && stockOwner(bp) === o ? (parseFloat(it.decantMl) || 0) * (parseInt(it.qty) || 0) : 0); }, 0);
+        }
+        function decantUnitCostEstimate(p, ml) {
+            const o = stockOwner(p); const bm = bottleMlOf(o);
+            const open = parseFloat(o.openMl) || 0;
+            const openPerMl = parseFloat(o.openMlCost) || ((parseFloat(o.cost) || 0) / bm);
+            const fromOpen = Math.min(open, ml);
+            return fromOpen * openPerMl + (ml - fromOpen) * ((parseFloat(o.cost) || 0) / bm);
+        }
+        function makeDecantItem(p, d) {
+            return {
+                id: `${p.id}::D${d.ml}`, baseId: String(p.id), webId: p.webId || '', sku: p.sku, category: p.category,
+                name: `${p.name} (DECANT ${d.ml} ML)`, decant: true, decantMl: d.ml, decantSize: d.size || '',
+                price: d.price, listPrice: d.price, qty: 1, cost: decantUnitCostEstimate(p, d.ml)
+            };
+        }
+        function addDecantToCart(id, ml) {
+            const p = products.find(x => String(x.id) === String(id)); if (!p) return;
+            const d = productDecants(p).find(x => Math.abs(x.ml - ml) < 0.01); if (!d) return;
+            const key = `${p.id}::D${d.ml}`;
+            if (decantMlInCart(p) + d.ml > decantMlAvailable(p) + 0.001) { closeDecantPick(); return showToast(`No queda perfume suficiente para un decant de ${d.ml} ml`, 'error'); }
+            const ex = cart.find(x => x.id === key);
+            if (ex) ex.qty++; else cart.push(makeDecantItem(p, d));
+            closeDecantPick();
+            renderCart();
+        }
+        function openDecantPick(id) {
+            const p = products.find(x => String(x.id) === String(id)); if (!p) return;
+            const ds = productDecants(p);
+            const o = stockOwner(p); const bm = bottleMlOf(p);
+            const stock = parseInt(o.stock) || 0; const open = parseFloat(o.openMl) || 0;
+            const left = decantMlAvailable(p) - decantMlInCart(p);
+            document.getElementById('decant-pick-title').innerText = p.name;
+            const btn = (onclick, icon, top, title, price, sub, disabled) => `<button ${disabled ? 'disabled' : `onclick="${onclick}"`} class="w-full flex items-center gap-3 p-2.5 rounded-2xl border ${disabled ? 'border-slate-100 opacity-40 cursor-not-allowed' : 'border-slate-200 hover:border-purple-400 hover:bg-purple-50/40'} text-left transition"><span class="w-10 h-11 flex items-end justify-center shrink-0">${icon}</span><span class="flex-1 min-w-0"><span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">${top}</span><span class="block text-xs font-black text-slate-800">${title}</span><span class="block text-[10px] text-slate-500">${sub}</span></span><span class="font-black text-emerald-600 text-xs">${moneySigned(price)}</span></button>`;
+            const sid = String(p.id).replace(/'/g, "\\'");
+            document.getElementById('decant-pick-options').innerHTML =
+                btn(`closeDecantPick();addToCartFull('${sid}')`, decantBottleSvg('full'), 'Frasco completo', `${bm} ml`, parseFloat(p.price) || 0, `Stock: ${stock} frasco(s)`, stock - cartQtyForOwner(o) <= 0)
+                + ds.map(d => btn(`addDecantToCart('${sid}', ${d.ml})`, decantBottleSvg(d.size || 'M'), DECANT_NAMES[d.size] || 'Decant', `${d.ml} ml`, d.price, `Quedan ~${Math.floor(Math.max(0, left) / d.ml)} decant(s) de este tamaño`, left + 0.001 < d.ml)).join('')
+                + `<p class="text-[10px] text-slate-400 text-center pt-1">${open > 0 ? `Frasco abierto: ${Math.round(open * 10) / 10} ml · ` : ''}Al vender decants se abre un frasco cuando hace falta.</p>`;
+            document.getElementById('decant-pick-modal').classList.remove('hidden');
+        }
+        function closeDecantPick() { document.getElementById('decant-pick-modal')?.classList.add('hidden'); }
+        let addToCartFull = null;
+        function wrapAddToCartDecants() {
+            const orig = window.addToCart;
+            if (typeof orig !== 'function' || orig._dec) return;
+            addToCartFull = orig;
+            const w = function (id) {
+                const p = products.find(x => String(x.id) === String(id));
+                if (p && productDecants(p).length) return openDecantPick(id);
+                return orig.apply(this, arguments);
+            };
+            w._dec = true; window.addToCart = w;
+            const oq = window.changeCartQty;
+            if (typeof oq === 'function' && !oq._dec) {
+                const q = function (id, d) {
+                    const it = cart.find(x => String(x.id) === String(id));
+                    if (it && it.decant && d > 0) {
+                        const bp = products.find(x => String(x.id) === String(it.baseId));
+                        if (bp && decantMlInCart(bp) + (parseFloat(it.decantMl) || 0) > decantMlAvailable(bp) + 0.001) return showToast('No queda perfume suficiente para otro decant', 'error');
+                    }
+                    return oq.apply(this, arguments);
+                };
+                q._dec = true; window.changeCartQty = q;
+            }
+        }
+        // Saca ml del frasco abierto; si no alcanza, abre uno nuevo (descuenta 1 del stock). Devuelve el costo.
+        function consumeDecantMl(p, ml) {
+            const o = stockOwner(p); const bm = bottleMlOf(o);
+            let open = parseFloat(o.openMl) || 0;
+            let perMl = parseFloat(o.openMlCost) || ((parseFloat(o.cost) || 0) / bm);
+            let rem = ml, cost = 0, guard = 0;
+            while (rem > 0.0001 && guard++ < 1000) {
+                if (open <= 0.0001) {
+                    const bottleCost = consumeStockCost(o, 1);
+                    open = bm; perMl = bottleCost / bm;
+                }
+                const take = Math.min(open, rem);
+                cost += take * perMl; open -= take; rem -= take;
+            }
+            o.openMl = Math.round(open * 100) / 100; o.openMlCost = perMl;
+            pushProductStock(o);
+            if (isFirebaseConnected && db) db.collection("pos_products").doc(String(o.id)).set({ openMl: o.openMl, openMlCost: o.openMlCost }, { merge: true });
+            return cost;
+        }
+        function restoreDecantMl(p, ml, unitCost) {
+            const o = stockOwner(p); const bm = bottleMlOf(o);
+            o.openMl = (parseFloat(o.openMl) || 0) + ml;
+            while (o.openMl >= bm - 0.0001) { restoreStockCost(o, 1, (parseFloat(o.openMlCost) || (parseFloat(o.cost) || 0) / bm) * bm); o.openMl -= bm; }
+            o.openMl = Math.round(Math.max(0, o.openMl) * 100) / 100;
+            pushProductStock(o);
+            if (isFirebaseConnected && db) db.collection("pos_products").doc(String(o.id)).set({ openMl: o.openMl }, { merge: true });
+        }
+        // ---- Formulario: editar si el perfume tiene decants ----
+        function renderProdDecantRows(p) {
+            const box = document.getElementById('prod-decant-rows'); if (!box) return;
+            const cur = p ? productDecants(p) : [];
+            const bySize = {}; cur.forEach((d, i) => { bySize[d.size || DECANT_SIZES_SIS[Math.min(i, 2)][0]] = d; });
+            box.innerHTML = DECANT_SIZES_SIS.map(([k, name, defMl]) => {
+                const d = bySize[k];
+                return `<div class="grid grid-cols-12 gap-1.5 items-center">
+                    <label class="col-span-5 flex items-center gap-1.5 font-bold text-slate-700"><input type="checkbox" id="pdec-${k}-on" ${d ? 'checked' : ''}><span class="inline-flex items-end h-8 w-4 justify-center">${decantBottleSvg(k)}</span>${name}</label>
+                    <div class="col-span-3 flex items-center gap-0.5"><input id="pdec-${k}-ml" type="number" min="1" value="${d ? d.ml : defMl}" class="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-center"><span class="text-[10px] text-slate-500">ml</span></div>
+                    <input id="pdec-${k}-price" type="number" min="0" value="${d ? d.price : ''}" placeholder="Precio" class="col-span-4 bg-white border border-slate-200 rounded-lg px-1.5 py-1">
+                </div>`;
+            }).join('');
+            const bm = document.getElementById('prod-bottle-ml'); if (bm) bm.value = p ? bottleMlOf(p) : '';
+            const note = document.getElementById('prod-decant-note');
+            if (note) {
+                const o = p ? stockOwner(p) : null;
+                note.innerText = (p && linkedWebProduct(p) ? 'Estos decants también se muestran en la página web. ' : '') + (o && parseFloat(o.openMl) > 0 ? `Frasco abierto: ${o.openMl} ml.` : 'Desmarca todos si este perfume no tiene decants.');
+            }
+            document.getElementById('prod-decant-box')?.classList.toggle('hidden', !!(p && (isComboProduct(p) || isWholesaleCategory(p.category))));
+        }
+        function collectProdDecants() {
+            return DECANT_SIZES_SIS.map(([k]) => {
+                if (!document.getElementById(`pdec-${k}-on`)?.checked) return null;
+                const ml = parseFloat(document.getElementById(`pdec-${k}-ml`)?.value) || 0;
+                const price = parseFloat(document.getElementById(`pdec-${k}-price`)?.value) || 0;
+                if (ml <= 0 || price <= 0) return null;
+                return { size: k, ml, price };
+            }).filter(Boolean);
+        }
+        function saveProdDecants(p) {
+            if (!p || isComboProduct(p) || isWholesaleCategory(p.category)) return;
+            const list = collectProdDecants();
+            const bmVal = parseFloat(document.getElementById('prod-bottle-ml')?.value) || 0;
+            const upd = { decants: list };
+            if (bmVal > 0) { p.bottleMl = bmVal; upd.bottleMl = bmVal; }
+            p.decants = list;
+            if (isFirebaseConnected && db) db.collection("pos_products").doc(String(p.id)).set(upd, { merge: true });
+            const w = linkedWebProduct(p);
+            if (w && isAdmin) {
+                const old = Array.isArray(w.variants) ? w.variants : [];
+                const before = JSON.stringify(old.filter(v => v && v.decant).map(v => [v.size, +v.ml, +v.price]));
+                const after = JSON.stringify(list.map(d => [d.size, d.ml, d.price]));
+                if (before !== after) {
+                    const prevBy = {}; old.filter(v => v && v.decant).forEach(v => prevBy[v.size] = v);
+                    const variants = list.map(d => ({ label: `DECANT ${d.ml} ML`, price: d.price, oldPrice: (prevBy[d.size] && prevBy[d.size].oldPrice) || null, size: d.size, ml: d.ml, decant: true }))
+                        .concat(old.filter(v => v && !v.decant));
+                    w.variants = variants;
+                    if (isFirebaseConnected && db) db.collection("products").doc(String(w.id)).set({ variants }, { merge: true });
+                }
+            }
+        }
+        function wrapProductDecants() {
+            const oe = window.editProduct, oo = window.openProductModal, os = window.saveProduct;
+            if (typeof oe === 'function' && !oe._dec) { const w = function (id) { const r = oe.apply(this, arguments); renderProdDecantRows(products.find(x => String(x.id) === String(id))); return r; }; w._dec = true; window.editProduct = w; }
+            if (typeof oo === 'function' && !oo._dec) { const w = function () { const r = oo.apply(this, arguments); renderProdDecantRows(null); return r; }; w._dec = true; window.openProductModal = w; }
+            if (typeof os === 'function' && !os._dec) {
+                const w = function (e) {
+                    const editId = document.getElementById('prod-id')?.value;
+                    const before = new Set(products.map(x => String(x.id)));
+                    const r = os.apply(this, arguments);
+                    const p = editId ? products.find(x => String(x.id) === String(editId)) : products.find(x => !before.has(String(x.id)));
+                    try { saveProdDecants(p); renderPosProducts(); } catch (err) { console.error('decants', err); }
+                    return r;
+                };
+                w._dec = true; window.saveProduct = w;
+            }
+        }
+        wrapAddToCartDecants(); wrapProductDecants();
 
 
         // =====================================================================
@@ -6661,7 +6969,7 @@
         function ensureWholesaleCopies() {
             if (!isAdmin || !posProductsLoaded) return;
             const created = [];
-            products.filter(p => !isWholesaleCategory(p.category) && !isPackageCategory(p.category) && (p.name || '').trim()).forEach(p => {
+            products.filter(p => !isWholesaleCategory(p.category) && !isComboProduct(p) && (p.name || '').trim()).forEach(p => {
                 if (findWholesaleCopy(p)) return;
                 const id = products.some(x => String(x.id) === `PM-${p.id}`) ? `PM-${p.id}-${Date.now()}` : `PM-${p.id}`;
                 const w = { id, baseId: String(p.id), sku: uniqueWholesaleSku(p), name: `${p.name} - Por Mayor`, category: 'Por Mayor', cost: parseFloat(p.cost) || 0, price: Math.round((parseFloat(p.price) || 0) * 0.75), stock: parseInt(p.stock) || 0, sharedStock: true, autoCreated: true };
@@ -7027,6 +7335,51 @@
             for (const fid of list) { const data = await loadOrderPhoto(fid); const img = box.querySelector(`[data-ph="${fid}"]`); if (img && data) img.src = data; }
         }
 
+        // ===================== GASTOS: TIPO Y TRANSPORTE =====================
+        function isTransportExpense(e) { return e && (e.expType === 'Viaje a bodega' || e.expType === 'Domicilio desde bodega'); }
+        function onExpTypeChange() {
+            const t = document.getElementById('exp-type')?.value; const d = document.getElementById('exp-desc');
+            if (d && (!d.value || ['Viaje a bodega', 'Domicilio desde bodega', 'Envío a cliente', 'Arriendo', 'Servicios', 'Publicidad', 'Empaques'].includes(d.value)) && t !== 'Otro') d.value = t;
+        }
+        function wrapExpenseType() {
+            const orig = window.saveExpense;
+            if (typeof orig !== 'function' || orig._v14) return;
+            const w = function () {
+                const t = document.getElementById('exp-type')?.value || 'Otro';
+                const before = new Set(expenses.map(x => x.id));
+                const r = orig.apply(this, arguments);
+                expenses.filter(x => !before.has(x.id)).forEach(x => { x.expType = t; if (isFirebaseConnected && db) db.collection("expenses").doc(String(x.id)).set({ expType: t }, { merge: true }); });
+                saveDataLocalOnly(); renderExpensesTable(); renderTransportReport();
+                return r;
+            };
+            w._v14 = true; window.saveExpense = w;
+        }
+        function renderTransportReport() {
+            const tb = document.getElementById('transport-body'); if (!tb) return;
+            const byM = {};
+            expenses.forEach(e => {
+                const d = parseEsDateTime(e.date) || parseEsDate(e.date); if (!d) return;
+                const k = getMonthKey(d);
+                const m = byM[k] = byM[k] || { trips: 0, tripsAmt: 0, dom: 0, domAmt: 0, all: 0 };
+                const a = parseFloat(e.amount) || 0;
+                if (!isSupplierPaymentExpense(e)) m.all += a;
+                if (e.expType === 'Viaje a bodega') { m.trips++; m.tripsAmt += a; }
+                if (e.expType === 'Domicilio desde bodega') { m.dom++; m.domAmt += a; }
+            });
+            const months = Object.keys(byM).filter(k => byM[k].trips || byM[k].dom).sort().reverse().slice(0, 12);
+            const cur = byM[getMonthKey(new Date())];
+            const tot = document.getElementById('transport-month-total');
+            if (tot) tot.innerText = cur && (cur.trips || cur.dom) ? `Este mes: ${moneySigned(cur.tripsAmt + cur.domAmt)} (${cur.trips} viaje(s) · ${cur.dom} domicilio(s))` : 'Este mes: $0';
+            const name = k => { const [y, mm] = k.split('-').map(Number); return new Date(y, mm - 1, 1).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }); };
+            tb.innerHTML = months.length ? months.map(k => { const m = byM[k]; const t = m.tripsAmt + m.domAmt; return `<tr class="border-t border-slate-100">
+                <td class="p-2 font-bold capitalize">${name(k)}</td>
+                <td class="p-2">${m.trips} · ${moneySigned(m.tripsAmt)}${m.trips ? `<span class="block text-[10px] text-slate-400">promedio ${moneySigned(m.tripsAmt / m.trips)}</span>` : ''}</td>
+                <td class="p-2">${m.dom} · ${moneySigned(m.domAmt)}${m.dom ? `<span class="block text-[10px] text-slate-400">promedio ${moneySigned(m.domAmt / m.dom)}</span>` : ''}</td>
+                <td class="p-2 font-black text-sky-700">${moneySigned(t)}</td>
+                <td class="p-2 font-bold text-slate-500">${m.all > 0 ? Math.round(t / m.all * 100) + '%' : '—'}</td>
+            </tr>`; }).join('') : '<tr><td colspan="5" class="p-4 text-center text-slate-400 font-bold">Aún no hay viajes ni domicilios registrados</td></tr>';
+        }
+
         function toggleBlock(id, btn) {
             const el = document.getElementById(id); if (!el) return;
             const open = el.classList.toggle('hidden') === false;
@@ -7160,7 +7513,7 @@
             const wAll = p => withdrawals.filter(x => x.partner === p).reduce((a, x) => a + (parseFloat(x.amount) || 0), 0);
             const cartera = sales.reduce((a, s) => a + salePending(s), 0);
             const porPagar = payables.reduce((a, p) => a + Math.max(0, (parseFloat(p.total) || 0) - (parseFloat(p.paid) || 0)), 0);
-            const stockCost = products.filter(p => !isPackageCategory(p.category) && !isWholesaleCategory(p.category)).reduce((a, p) => a + costLayers(p).reduce((x, l) => x + l.qty * l.cost, 0), 0);
+            const stockCost = products.filter(p => !isComboProduct(p) && !isWholesaleCategory(p.category)).reduce((a, p) => a + costLayers(p).reduce((x, l) => x + l.qty * l.cost, 0), 0);
             let top = [];
             try { const agg = {}; sales.filter(s => inM(new Date(s.rawDate || 0))).forEach(s => (s.items || []).forEach(it => { const k = it.name; if (!agg[k]) agg[k] = { name: k, qty: 0, total: 0 }; agg[k].qty += parseInt(it.qty) || 0; agg[k].total += (parseFloat(it.price) || 0) * (parseInt(it.qty) || 0); })); top = Object.values(agg).sort((a, b) => b.qty - a.qty).slice(0, 5); } catch (err) {}
             const delta = stPrev.total > 0 ? Math.round((st.total - stPrev.total) / stPrev.total * 100) : null;
@@ -7288,7 +7641,7 @@
             const p = products.find(x => String(x.id) === String(item.id));
             if (!p) return parseFloat(item.cost) || 0;
             const qty = Math.max(1, parseInt(item.qty) || 1);
-            if (isPackageCategory(p.category) && Array.isArray(p.items) && p.items.length) {
+            if (isComboProduct(p) && Array.isArray(p.items) && p.items.length) {
                 let c = 0, ok = true;
                 p.items.forEach(sub => { const sp = products.find(x => String(x.id) === String(sub.prodId)); if (sp) c += estimateStockCost(sp, (parseInt(sub.qty) || 1) * qty); else ok = false; });
                 return ok && c > 0 ? c / qty : (parseFloat(p.cost) || 0);
@@ -7358,7 +7711,7 @@
         function storeUrl() { try { return new URL('index.html', location.href).href; } catch (err) { return ''; } }
         function waitPosProduct(w) {
             return products.find(p => String(p.webId || '') === String(w.productId)) || products.find(p => String(p.id) === String(w.productId))
-                || products.find(p => !isWholesaleCategory(p.category) && !isPackageCategory(p.category) && normProdName(p.name) === normProdName(w.title)) || null;
+                || products.find(p => !isWholesaleCategory(p.category) && !isComboProduct(p) && normProdName(p.name) === normProdName(w.title)) || null;
         }
         function waitlistGroups() {
             const groups = {};
@@ -7463,7 +7816,7 @@
         // =====================================================================
         function priceRows() {
             const q = (document.getElementById('price-search')?.value || '').toLowerCase().trim();
-            return products.filter(p => !isPackageCategory(p.category) && (!q || (p.name || '').toLowerCase().includes(q) || String(p.sku || '').toLowerCase().includes(q)))
+            return products.filter(p => !isComboProduct(p) && (!q || (p.name || '').toLowerCase().includes(q) || String(p.sku || '').toLowerCase().includes(q)))
                 .map(p => { const cost = parseFloat(stockOwner(p).cost) || 0; const price = parseFloat(p.price) || 0; return { p, cost, price, profit: price - cost, pct: price > 0 ? (price - cost) / price * 100 : -100 }; })
                 .sort((a, b) => a.pct - b.pct);
         }
@@ -7544,7 +7897,7 @@
             clearTimeout(saveInvCount._t);
             saveInvCount._t = setTimeout(() => { if (isFirebaseConnected && db && invCount) db.collection("inventory_counts").doc(invCount.id).set(invCount); }, 800);
         }
-        function countProducts() { return products.filter(p => !isPackageCategory(p.category) && !isWholesaleCategory(p.category)).sort((a, b) => (a.name || '').localeCompare(b.name || '')); }
+        function countProducts() { return products.filter(p => !isComboProduct(p) && !isWholesaleCategory(p.category)).sort((a, b) => (a.name || '').localeCompare(b.name || '')); }
         function openInvCount() {
             if (invCount && invCount.status === 'POR_REVISAR') {
                 if (!isAdmin) return alert('Hay un conteo enviado esperando que el administrador lo revise. Cuando lo revise podrás empezar otro.');
@@ -8039,7 +8392,7 @@
         }
 
         function orderProducts() {
-            return products.filter(p => !isPackageCategory(p.category) && !isWholesaleCategory(p.category));
+            return products.filter(p => !isComboProduct(p) && !isWholesaleCategory(p.category));
         }
 
         function renderOrderSim() {
@@ -8524,7 +8877,7 @@
         function fillLossProducts() {
             const sel = document.getElementById('loss-product'); if (!sel) return;
             const q = (document.getElementById('loss-search')?.value || '').toLowerCase().trim();
-            const list = products.filter(p => !isPackageCategory(p.category) && !isWholesaleCategory(p.category) && (!q || (p.name || '').toLowerCase().includes(q) || String(p.sku || '').toLowerCase().includes(q)))
+            const list = products.filter(p => !isComboProduct(p) && !isWholesaleCategory(p.category) && (!q || (p.name || '').toLowerCase().includes(q) || String(p.sku || '').toLowerCase().includes(q)))
                 .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             sel.innerHTML = list.map(p => `<option value="${p.id}">${p.name} · ${p.sku || ''} (stock ${parseInt(p.stock) || 0})</option>`).join('') || '<option value="">Sin resultados</option>';
             updateLossPreview();
@@ -8932,7 +9285,7 @@
             const lowStockList = document.getElementById('dash-low-stock-list');
             if (lowStockList) {
                 lowStockList.innerHTML = '';
-                const lowItems = products.filter(p => !['Combos', 'Promociones'].includes(p.category) && (isNaN(parseInt(p.stock)) || parseInt(p.stock) <= 3));
+                const lowItems = products.filter(p => !isComboProduct(p) && (isNaN(parseInt(p.stock)) || parseInt(p.stock) <= 3));
                 if (lowItems.length === 0) {
                     lowStockList.innerHTML = `<p class="text-xs text-slate-400 italic">Todo el stock en niveles óptimos</p>`;
                 } else {
