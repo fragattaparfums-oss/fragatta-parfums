@@ -304,6 +304,7 @@
 
                     <!-- PANEL MORADO COMPLETO DE CONTROL FINANCIERO Y SOCIOS -->
                     <div id="goal-card" class="bg-white rounded-3xl border border-rose-200 shadow-sm p-5 space-y-3"></div>
+                    <div id="month-compare" class="admin-only hidden"></div>
                     <div class="admin-only hidden bg-gradient-to-r from-slate-900 to-purple-950 text-white rounded-3xl p-6 shadow-xl space-y-6">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                             <div class="flex items-center gap-3">
@@ -932,8 +933,28 @@
                     <!-- MÁS VENDIDOS & SUGERENCIA DE COMPRA -->
                     <div class="flex flex-wrap gap-2">
                         <button onclick="toggleBlock('top-sellers-card', this)" class="bg-white hover:bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2.5 rounded-2xl font-bold text-xs shadow-sm"><i class="fa-solid fa-ranking-star"></i> Más vendidos y sugerencia de compra</button>
+                        <button onclick="toggleBlock('profit-card', this); renderProfitRanking()" class="admin-only hidden bg-white hover:bg-purple-50 border border-purple-200 text-purple-800 px-4 py-2.5 rounded-2xl font-bold text-xs shadow-sm"><i class="fa-solid fa-sack-dollar"></i> Ganancia por perfume</button>
                         <button onclick="toggleBlock('price-card', this)" class="admin-only hidden bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-2.5 rounded-2xl font-bold text-xs shadow-sm"><i class="fa-solid fa-tags"></i> Precios y ganancia</button>
                         <button onclick="openInvCount()" class="bg-white hover:bg-sky-50 border border-sky-200 text-sky-800 px-4 py-2.5 rounded-2xl font-bold text-xs shadow-sm"><i class="fa-solid fa-clipboard-check"></i> Conteo físico de inventario</button>
+                    </div>
+                    <div id="profit-card" class="hidden bg-white p-5 rounded-3xl border border-purple-200 shadow-sm space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <h3 class="font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-sack-dollar text-purple-600"></i> ¿Qué perfumes te dejan más plata?</h3>
+                                <p id="profit-info" class="text-[11px] text-slate-500"></p>
+                            </div>
+                            <select id="profit-period" onchange="renderProfitRanking()" class="bg-slate-50 border border-slate-200 text-slate-700 font-bold rounded-xl px-3 py-2 text-xs">
+                                <option value="30">Últimos 30 días</option>
+                                <option value="90" selected>Últimos 90 días</option>
+                                <option value="365">Último año</option>
+                                <option value="all">Todo</option>
+                            </select>
+                        </div>
+                        <p class="text-[11px] text-slate-500">Ordenados por la <strong>ganancia total</strong> que dejaron (precio vendido − costo real del lote). Un perfume puede venderse mucho y dejar poco, o venderse poco y dejar mucho.</p>
+                        <div class="overflow-x-auto max-h-[60vh] overflow-y-auto"><table class="w-full text-left text-xs whitespace-nowrap">
+                            <thead class="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase sticky top-0"><tr><th class="p-2">#</th><th class="p-2">Perfume</th><th class="p-2">Vendidos</th><th class="p-2">Ventas</th><th class="p-2">Ganancia</th><th class="p-2">% ganancia</th><th class="p-2">Por unidad</th></tr></thead>
+                            <tbody id="profit-body"></tbody>
+                        </table></div>
                     </div>
                     <div id="price-card" class="hidden bg-white p-5 rounded-3xl border border-emerald-200 shadow-sm space-y-3">
                         <div class="flex flex-wrap items-center justify-between gap-2">
@@ -1690,13 +1711,14 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-bold text-slate-600 mb-1">Precio Compra Costo ($):</label>
-                        <input type="number" id="prod-cost" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                        <input type="number" id="prod-cost" min="0" required oninput="renderPriceHint()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                     </div>
                     <div>
                         <label class="block font-bold text-slate-600 mb-1">Precio Venta Público ($):</label>
-                        <input type="number" id="prod-price" min="0" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
+                        <input type="number" id="prod-price" min="0" required oninput="renderPriceHint()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none">
                     </div>
                 </div>
+                <div id="price-hint" class="hidden p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] text-emerald-900"></div>
                 <div id="prod-decant-box" class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl space-y-1.5">
                     <div class="flex items-center justify-between gap-2">
                         <label class="font-bold text-slate-700">💧 Decants <span class="font-normal text-slate-500">(marca los que vendes)</span></label>
@@ -3485,6 +3507,7 @@
             const tableGan = document.getElementById('table-ganancias-monthly');
             if (tableGan) tableGan.innerHTML = gHTML;
             try { renderMonthlyCharts(monthsMap); } catch (err) { console.error('Error en gráficas mensuales', err); }
+            try { renderMonthCompare(monthsMap); } catch (err) {}
         }
 
         function generateSalesTableRows(salesArr) {
@@ -4022,6 +4045,72 @@
                 </tr>
             `).join('');
         }
+
+        // ===================== GANANCIA POR PERFUME =====================
+        function renderProfitRanking() {
+            const tb = document.getElementById('profit-body'); if (!tb || !isAdmin) return;
+            const period = document.getElementById('profit-period')?.value || '90';
+            const rows = computeTopSellers(period).filter(r => r.qty > 0).sort((a, b) => b.profit - a.profit);
+            const tot = rows.reduce((a, r) => ({ rev: a.rev + r.revenue, pro: a.pro + r.profit }), { rev: 0, pro: 0 });
+            const info = document.getElementById('profit-info');
+            if (info) info.innerHTML = rows.length ? `Ganancia total: <strong class="text-purple-700">${moneySigned(tot.pro)}</strong> de ${moneySigned(tot.rev)} vendidos · Los 5 primeros dejan el <strong>${tot.pro > 0 ? Math.round(rows.slice(0, 5).reduce((a, r) => a + r.profit, 0) / tot.pro * 100) : 0}%</strong> de la ganancia` : '';
+            if (!rows.length) { tb.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">No hay ventas en este periodo.</td></tr>'; return; }
+            tb.innerHTML = rows.slice(0, 100).map((r, i) => {
+                const pct = r.revenue > 0 ? r.profit / r.revenue * 100 : 0;
+                return `<tr class="border-t border-slate-100 ${r.profit < 0 ? 'bg-rose-50' : ''}">
+                    <td class="p-2 font-black ${i < 3 ? 'text-amber-500' : 'text-slate-400'}">${i + 1}</td>
+                    <td class="p-2 font-bold text-slate-800">${r.name}</td>
+                    <td class="p-2 font-bold">${r.qty}</td>
+                    <td class="p-2 text-emerald-700 font-bold">${moneySigned(r.revenue)}</td>
+                    <td class="p-2 font-black ${r.profit < 0 ? 'text-rose-600' : 'text-purple-700'}">${moneySigned(r.profit)}</td>
+                    <td class="p-2 font-black ${pct < 0 ? 'text-rose-600' : pct < minMarginPct ? 'text-amber-600' : 'text-emerald-600'}">${Math.round(pct)}%</td>
+                    <td class="p-2 text-slate-600">${moneySigned(r.qty ? r.profit / r.qty : 0)}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // ===================== ESTE MES VS EL ANTERIOR =====================
+        function renderMonthCompare(monthsMap) {
+            const box = document.getElementById('month-compare'); if (!box) return;
+            if (!isAdmin) { box.classList.add('hidden'); return; }
+            const now = new Date();
+            const k = getMonthKey(now); const pk = getMonthKey(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+            const cur = monthsMap[k] || { ventas: 0, ganancia: 0 }; const prev = monthsMap[pk] || { ventas: 0, ganancia: 0 };
+            // Para que sea justo: el mes pasado se compara hasta el mismo día
+            const day = now.getDate();
+            const prevSameDay = sales.filter(s => { const d = new Date(s.rawDate); return getMonthKey(d) === pk && d.getDate() <= day; }).reduce((a, s) => a + (parseFloat(s.total) || 0), 0);
+            const diff = (a, b) => b > 0 ? Math.round((a - b) / b * 100) : null;
+            const chip = (v) => v === null ? '<span class="text-slate-400">—</span>' : `<span class="font-black ${v >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${v >= 0 ? '▲' : '▼'} ${Math.abs(v)}%</span>`;
+            const names = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+            const pName = names[(now.getMonth() + 11) % 12];
+            box.className = 'admin-only bg-white rounded-3xl border border-slate-200 shadow-sm p-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs';
+            box.innerHTML = `
+                <div><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ventas de ${names[now.getMonth()]}</p><p class="text-lg font-black text-slate-900">${moneySigned(cur.ventas)}</p><p>${chip(diff(cur.ventas, prevSameDay))} <span class="text-slate-500">vs ${pName} al día ${day} (${moneySigned(prevSameDay)})</span></p></div>
+                <div><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${pName} completo</p><p class="text-lg font-black text-slate-700">${moneySigned(prev.ventas)}</p><p class="text-slate-500">Ganancia ${moneySigned(prev.ganancia)}</p></div>
+                <div><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ganancia de ${names[now.getMonth()]}</p><p class="text-lg font-black text-purple-700">${moneySigned(cur.ganancia)}</p><p>${chip(diff(cur.ganancia, prev.ganancia))} <span class="text-slate-500">vs todo ${pName}</span></p></div>`;
+        }
+
+        // ===================== PRECIO SUGERIDO (solo referencia: el precio lo pones tú) =====================
+        function renderPriceHint() {
+            const box = document.getElementById('price-hint'); if (!box) return;
+            const cost = parseFloat(document.getElementById('prod-cost')?.value) || 0;
+            const price = parseFloat(document.getElementById('prod-price')?.value) || 0;
+            if (!isAdmin || cost <= 0) { box.classList.add('hidden'); return; }
+            const sug = pct => Math.ceil(cost / (1 - pct / 100) / 1000) * 1000;
+            const targets = [...new Set([minMarginPct, 40, 50].filter(x => x > 0 && x < 95))].sort((a, b) => a - b);
+            const cur = price > 0 ? (price - cost) / price * 100 : null;
+            box.classList.remove('hidden');
+            box.innerHTML = `<p class="font-bold mb-1"><i class="fa-solid fa-lightbulb text-amber-500"></i> Precios sugeridos <span class="font-normal text-emerald-700">(solo referencia, tú decides el precio)</span></p>
+                <div class="flex flex-wrap gap-1.5">${targets.map(t => `<span class="bg-white border border-emerald-200 rounded-lg px-2 py-1">Ganar ${t}%${t === minMarginPct ? ' (tu mínimo)' : ''}: <strong>${moneySigned(sug(t))}</strong></span>`).join('')}</div>
+                ${cur !== null ? `<p class="mt-1.5">Con el precio que pusiste ganas <strong class="${cur < 0 ? 'text-rose-600' : cur < minMarginPct ? 'text-amber-600' : 'text-emerald-700'}">${moneySigned(price - cost)} (${Math.round(cur)}%)</strong>.</p>` : ''}`;
+        }
+        (function wrapPriceHint() {
+            ['editProduct', 'openProductModal'].forEach(fn => {
+                const o = window[fn]; if (typeof o !== 'function' || o._hint) return;
+                const w = function () { const r = o.apply(this, arguments); try { renderPriceHint(); } catch (e) {} return r; };
+                w._hint = true; Object.keys(o).forEach(k => w[k] = o[k]); window[fn] = w;
+            });
+        })();
 
         function autoFitColumns(ws, rows) {
             if (!rows || rows.length === 0) return;
