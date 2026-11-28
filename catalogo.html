@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -433,6 +430,7 @@
         const WHATSAPP_NUMBER = "573105390115";
 
         window.addEventListener('DOMContentLoaded', () => {
+            startSafeProductsLoad();
             startSlowLoadWatch();
             const checkFirebase = setInterval(() => {
                 if (window.db) {
@@ -445,9 +443,102 @@
             updateCartUI();
         });
 
+
+        // ===================== CARGA SEGURA DE PERFUMES =====================
+        // 1) Muestra al instante los perfumes guardados en este dispositivo.
+        // 2) Si Firebase tarda, los pide por un camino más liviano (REST) y reintenta solo.
+        // 3) Apenas llega la conexión en vivo, manda ella.
+        const PROD_CACHE_KEY = 'fragatta_products_cache_v1';
+        let productsFromLive = false, restLoading = false, restTries = 0;
+        function fsValue(v) {
+            if (!v || typeof v !== 'object') return null;
+            if ('stringValue' in v) return v.stringValue;
+            if ('integerValue' in v) return Number(v.integerValue);
+            if ('doubleValue' in v) return Number(v.doubleValue);
+            if ('booleanValue' in v) return v.booleanValue;
+            if ('timestampValue' in v) return v.timestampValue;
+            if ('arrayValue' in v) return (v.arrayValue.values || []).map(fsValue);
+            if ('mapValue' in v) return fsFields(v.mapValue.fields || {});
+            return null;
+        }
+        function fsFields(f) { const o = {}; Object.keys(f || {}).forEach(k => o[k] = fsValue(f[k])); return o; }
+        function fakeSnap(list) { return { docs: list.map(x => ({ id: x.id, data: () => x.data })) }; }
+        function saveProductsCache(list) {
+            const light = list.map(x => {
+                const d = { ...x.data };
+                if (typeof d.image === 'string' && d.image.length > 45000) delete d.image;
+                if (Array.isArray(d.images)) d.images = d.images.filter(u => typeof u === 'string' && u.length <= 45000).slice(0, 1);
+                return { id: x.id, data: d };
+            });
+            try { localStorage.setItem(PROD_CACHE_KEY, JSON.stringify({ t: Date.now(), list: light })); }
+            catch (e) {
+                try { localStorage.setItem(PROD_CACHE_KEY, JSON.stringify({ t: Date.now(), list: light.map(x => { const d = { ...x.data }; if (String(d.image || '').startsWith('data:')) delete d.image; d.images = (d.images || []).filter(u => !String(u).startsWith('data:')); return { id: x.id, data: d }; }) })); } catch (e2) {}
+            }
+        }
+        function loadProductsFromCache() {
+            try {
+                const c = JSON.parse(localStorage.getItem(PROD_CACHE_KEY) || 'null');
+                if (c && Array.isArray(c.list) && c.list.length && !productsFromLive) handleProductsSnap(fakeSnap(c.list), 'cache');
+            } catch (e) {}
+        }
+        async function loadProductsByRest() {
+            if (productsFromLive || restLoading) return;
+            restLoading = true; restTries++;
+            try {
+                const all = []; let token = '';
+                for (let page = 0; page < 10; page++) {
+                    const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 25000);
+                    const url = `https://firestore.googleapis.com/v1/projects/fragattaweb/databases/(default)/documents/products?pageSize=300&key=AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0${token ? '&pageToken=' + encodeURIComponent(token) : ''}`;
+                    const r = await fetch(url, { signal: ctl.signal }); clearTimeout(tm);
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    const j = await r.json();
+                    (j.documents || []).forEach(d => all.push({ id: d.name.split('/').pop(), data: fsFields(d.fields) }));
+                    if (!j.nextPageToken) break; token = j.nextPageToken;
+                }
+                if (all.length && !productsFromLive) { handleProductsSnap(fakeSnap(all), 'rest'); saveProductsCache(all); }
+            } catch (e) {
+                console.warn('Carga alterna de perfumes falló', e);
+                if (!productsFromLive && restTries < 4) setTimeout(() => { restLoading = false; loadProductsByRest(); }, 4000 * restTries);
+                return;
+            }
+            restLoading = false;
+        }
+        function startSafeProductsLoad() {
+            loadProductsFromCache();
+            setTimeout(() => { if (!productsFromLive) loadProductsByRest(); }, 3500);
+        }
+        function retryProductsLoad() {
+            const grid = document.getElementById('product-grid');
+            if (grid) grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500 text-sm"><i class="fas fa-spinner fa-spin text-luxury-gold text-2xl mb-2"></i><p>Cargando productos...</p></div>';
+            restTries = 0; restLoading = false; loadProductsByRest();
+            startSlowLoadWatch();
+        }
+
         function initFirebaseListener() {
             const productsRef = window.collection(window.db, "products");
             window.onSnapshot(productsRef, (snapshot) => {
+                // La caché del teléfono puede llegar vacía antes que el servidor: no la tomamos como "sin perfumes"
+                if (!snapshot.docs.length && snapshot.metadata && snapshot.metadata.fromCache) return;
+                productsFromLive = true;
+                handleProductsSnap(snapshot, 'live');
+                try { saveProductsCache(snapshot.docs.map(d => ({ id: d.id, data: d.data() }))); } catch (e) {}
+            }, (error) => {
+                console.error('Error cargando productos', error);
+                if (products.length) return;
+                loadProductsByRest(); if (restTries < 4) return;
+                const grid = document.getElementById('product-grid');
+                if (grid) grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-gray-600 text-sm">
+                        <i class="fas fa-exclamation-triangle text-rose-500 text-2xl mb-2"></i>
+                        <p class="font-bold">No se pudieron cargar los productos.</p>
+                        <p class="text-xs text-gray-400 mt-1">Revisa tu conexión a internet y vuelve a intentarlo.</p>
+                        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Reintentar</button>
+                    </div>`;
+            });
+        }
+        function handleProductsSnap(snapshot, src) {
+            if (src !== 'live' && productsFromLive) return;
+            {
                 products = snapshot.docs.map(docSnap => {
                     const data = docSnap.data();
                     return {
@@ -473,17 +564,7 @@
                 updateFavBadge();
                 openProductFromHash();
                 if (currentDetailId && !document.getElementById('detail-modal').classList.contains('hidden')) renderDetail(currentDetailId, true);
-            }, (error) => {
-                console.error('Error cargando productos', error);
-                const grid = document.getElementById('product-grid');
-                if (grid) grid.innerHTML = `
-                    <div class="col-span-full text-center py-12 text-gray-600 text-sm">
-                        <i class="fas fa-exclamation-triangle text-rose-500 text-2xl mb-2"></i>
-                        <p class="font-bold">No se pudieron cargar los productos.</p>
-                        <p class="text-xs text-gray-400 mt-1">Revisa tu conexión a internet y vuelve a intentarlo.</p>
-                        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Reintentar</button>
-                    </div>`;
-            });
+            }
         }
 
         function interleaveProducts(items) {
@@ -652,8 +733,9 @@
                     <i class="fas fa-wifi text-amber-500 text-2xl mb-2"></i>
                     <p class="font-bold">La conexión está lenta. Seguimos cargando los perfumes...</p>
                     <p class="text-xs text-gray-400 mt-1">Aparecerán solos apenas lleguen. Si tarda mucho, vuelve a intentarlo.</p>
-                    <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Reintentar</button>
+                    <button onclick="retryProductsLoad()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Reintentar</button>
                 </div>`;
+                if (!productsFromLive) loadProductsByRest();
             }, 9000);
         }
 
