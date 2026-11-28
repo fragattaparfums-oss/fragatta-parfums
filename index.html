@@ -15,7 +15,12 @@
     <meta property="og:locale" content="es_CO">
     <meta name="twitter:card" content="summary_large_image">
     <link id="favicon" rel="icon" href="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg">
-    <link rel="apple-touch-icon" href="https://i.ibb.co/hRwNKM6L/Gemini-Generated-Image-w3fx9cw3fx9cw3fx.jpg">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Fragatta">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
@@ -192,7 +197,71 @@
         #brand-marquee:hover .brand-track { animation-play-state: paused; }
         @keyframes brandScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         @media (prefers-reduced-motion: reduce) { .brand-track { animation: none; } }
+        /* ===== Modo oscuro (se activa con el botón 🌙; por defecto la tienda es clara) ===== */
+        html.dk { color-scheme: dark; }
+        html.dk body,
+        html.dk .bg-\[\#f6f7f9\],
+        html.dk .hero-banner { background-color:#0e0f11 !important; }
+        html.dk .bg-white,
+        html.dk input,
+        html.dk select,
+        html.dk textarea { background-color:#1a1c20 !important; }
+        html.dk .bg-white\/90,
+        html.dk .bg-white\/95 { background-color:rgba(26,28,32,.94) !important; }
+        html.dk .bg-gray-50,
+        html.dk .bg-slate-50,
+        html.dk .bg-\[\#faf8f5\] { background-color:#16181b !important; }
+        html.dk .bg-gray-100 { background-color:#24272c !important; }
+        html.dk .bg-gray-200,
+        html.dk .bg-gray-300 { background-color:#2e3238 !important; }
+        html.dk .bg-luxury-gold-light,
+        html.dk .bg-luxury-gold-light\/60,
+        html.dk .bg-\[\#f6f1e7\],
+        html.dk .bg-\[\#efe8da\],
+        html.dk .bg-amber-50,
+        html.dk .bg-amber-50\/50 { background-color:#241f14 !important; }
+        html.dk .text-gray-900,
+        html.dk .text-gray-800,
+        html.dk .text-slate-900,
+        html.dk h1,
+        html.dk h2,
+        html.dk h3,
+        html.dk input,
+        html.dk select,
+        html.dk textarea { color:#f3f4f6; }
+        html.dk .text-gray-700,
+        html.dk .text-gray-600,
+        html.dk .text-slate-700 { color:#d1d5db !important; }
+        html.dk .text-gray-500 { color:#a1a6ae !important; }
+        html.dk .text-gray-400 { color:#8b9099 !important; }
+        html.dk .border-gray-100,
+        html.dk .border-gray-200,
+        html.dk .border-gray-300,
+        html.dk .divide-gray-100 > * + * { border-color:#2e3238 !important; }
+        html.dk .text-luxury-gold-dark { color:#e0bf55 !important; }
+        html.dk .cat-circle .cat-ring { background:#2e3238; }
+        html.dk .cat-circle .cat-face { background:#1a1c20; color:#f3f4f6; }
+        html.dk .cat-circle .cat-label { color:#d1d5db; }
+        html.dk .cat-circle.active .cat-label { color:#f3d77a; }
+        html.dk .seg.active,
+        html.dk .filter-chip.active,
+        html.dk .size-opt.active,
+        html.dk .quiz-opt.selected { background:#d4af37 !important; color:#111315 !important; border-color:#d4af37 !important; }
+        html.dk .shadow-sm,
+        html.dk .shadow,
+        html.dk .shadow-md { box-shadow:0 1px 3px rgba(0,0,0,.5) !important; }
+        html.dk ::placeholder { color:#7b8089; }
+        html.dk .product-img-box,
+        html.dk .aspect-square.bg-gray-50 { background-color:#f3f4f6 !important; }
+        #voice-btn.listening { background:#e11d48; color:#fff; animation: waPulse 1.4s infinite; }
     </style>
+    <script>
+        // Tema antes de pintar la página (evita un destello blanco)
+        (function () {
+            let pref = 'light'; try { pref = localStorage.getItem('fragatta_theme') || 'light'; } catch (e) {}
+            document.documentElement.classList.toggle('dk', pref === 'dark');
+        })();
+    </script>
 </head>
 <body class="min-h-screen flex flex-col antialiased bg-[#f6f7f9]">
 
@@ -252,6 +321,7 @@
 
             <!-- CONTENEDOR SUPERIOR DERECHA: FAVORITOS Y CARRITO -->
             <div class="flex items-center gap-1.5">
+                <button id="theme-btn" onclick="cycleTheme()" class="w-9 h-9 rounded-full bg-white border border-gray-200 text-gray-600 flex items-center justify-center shadow-sm transition" title="Pasar a modo oscuro"><i class="fas fa-moon text-xs"></i></button>
                 <button onclick="openFavorites()" class="relative w-9 h-9 rounded-full bg-white border border-luxury-gold text-rose-600 flex items-center justify-center shadow-sm hover:bg-rose-50 transition" title="Mis favoritos">
                     <i class="far fa-heart"></i>
                     <span id="fav-badge" class="hidden absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[9px] min-w-[18px] h-[18px] px-1 rounded-full font-bold flex items-center justify-center">0</span>
@@ -293,29 +363,30 @@
             </div>
         </section>
 
-        <!-- ICONOS DE CONFIANZA (compactos) -->
-        <section class="bg-[#f6f1e7] border border-luxury-gold/20 rounded-2xl mb-2.5 sm:mb-4 grid grid-cols-4 divide-x divide-luxury-gold/15">
-            <div onclick="openPoliciesModal()" role="button" title="Envío a toda Colombia" class="flex items-center justify-center gap-1.5 py-2 px-1"><svg class="w-5 h-5 shrink-0 text-luxury-gold-dark" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg><span class="text-[9.5px] sm:text-[11px] font-bold tracking-[0.12em] uppercase text-gray-800 leading-tight">Envío<br class="sm:hidden"> nacional</span></div>
-            <div onclick="openPoliciesModal()" role="button" class="flex items-center justify-center gap-1.5 py-2 px-1"><svg class="w-5 h-5 shrink-0 text-luxury-gold-dark" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg><span class="text-[9.5px] sm:text-[11px] font-bold tracking-[0.12em] uppercase text-gray-800 leading-tight">Contra<br class="sm:hidden">entrega</span></div>
-            <div  class="flex items-center justify-center gap-1.5 py-2 px-1"><svg class="w-5 h-5 shrink-0 text-luxury-gold-dark" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="9" width="17" height="11" rx="1.5"/><path d="M3 9h18M12 9v11"/><path d="M12 9c-1.5-3-5-3.5-5-1.2C7 9 9.5 9 12 9zM12 9c1.5-3 5-3.5 5-1.2C17 9 14.5 9 12 9z"/></svg><span class="text-[9.5px] sm:text-[11px] font-bold tracking-[0.12em] uppercase text-gray-800 leading-tight">Para<br class="sm:hidden"> regalo</span></div>
-            <a href="https://wa.me/573105390115" target="_blank" rel="noopener" id="trust-whatsapp" class="flex items-center justify-center gap-1.5 py-2 px-1"><svg class="w-5 h-5 shrink-0 text-luxury-gold-dark" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18.5V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H8z"/><path d="M9 10h.01M12 10h.01M15 10h.01"/></svg><span class="text-[9.5px] sm:text-[11px] font-bold tracking-[0.12em] uppercase text-gray-800 leading-tight">Asesoría</span></a>
-            <span id="trust-ship-sub" class="hidden"></span>
+        <!-- INSTALAR LA APP -->
+        <div id="install-bar" class="hidden mb-2.5 flex items-center gap-2.5 bg-luxury-dark text-white rounded-2xl px-3 py-2 border border-luxury-gold/40">
+            <img src="icon-192.png" alt="" class="w-8 h-8 rounded-lg shrink-0">
+            <p class="flex-1 text-[12px] leading-tight"><strong class="text-luxury-gold">Instala la tienda</strong><br><span class="text-gray-300">Ábrela como app desde tu celular</span></p>
+            <button onclick="installApp()" class="bg-luxury-gold text-luxury-dark font-bold text-xs px-3 py-1.5 rounded-full">Instalar</button>
+            <button onclick="dismissInstall()" class="text-gray-400 w-6 h-6" aria-label="Cerrar">✕</button>
+        </div>
+
+        <!-- PERFUME DEL MES -->
+        <section id="month-pick-section" class="hidden mb-3 sm:mb-4"></section>
+
+        <!-- ICONOS DE CONFIANZA (una sola línea que se desliza) -->
+        <section class="mb-3 sm:mb-4 -mx-3 sm:mx-0">
+            <div class="flex gap-2 overflow-x-auto hide-scrollbar px-3 sm:px-0 py-0.5 snap-x">
+                <button type="button" onclick="openPoliciesModal()" class="snap-start shrink-0 flex items-center gap-2 text-left bg-white rounded-full border border-luxury-gold/40 pl-1 pr-3.5 py-1"><span class="w-8 h-8 rounded-full bg-luxury-gold-light flex items-center justify-center shrink-0"><svg class="w-[18px] h-[18px] text-luxury-gold-dark" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></span><span class="whitespace-nowrap"><span class="block text-[12px] font-semibold text-gray-800 leading-tight">Envío nacional</span><span class="block text-[10.5px] text-gray-400 leading-tight"><span id="trust-ship-sub">A toda Colombia, con guía</span></span></span></button>
+                <button type="button" onclick="openPoliciesModal()" class="snap-start shrink-0 flex items-center gap-2 text-left bg-white rounded-full border border-luxury-gold/40 pl-1 pr-3.5 py-1"><span class="w-8 h-8 rounded-full bg-luxury-gold-light flex items-center justify-center shrink-0"><svg class="w-[18px] h-[18px] text-luxury-gold-dark" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg></span><span class="whitespace-nowrap"><span class="block text-[12px] font-semibold text-gray-800 leading-tight">Contraentrega</span><span class="block text-[10.5px] text-gray-400 leading-tight">Pagas al recibir</span></span></button>
+                <div  class="snap-start shrink-0 flex items-center gap-2 text-left bg-white rounded-full border border-luxury-gold/40 pl-1 pr-3.5 py-1"><span class="w-8 h-8 rounded-full bg-luxury-gold-light flex items-center justify-center shrink-0"><svg class="w-[18px] h-[18px] text-luxury-gold-dark" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="9" width="17" height="11" rx="1.5"/><path d="M3 9h18M12 9v11"/><path d="M12 9c-1.5-3-5-3.5-5-1.2C7 9 9.5 9 12 9zM12 9c1.5-3 5-3.5 5-1.2C17 9 14.5 9 12 9z"/></svg></span><span class="whitespace-nowrap"><span class="block text-[12px] font-semibold text-gray-800 leading-tight">Listo para regalar</span><span class="block text-[10.5px] text-gray-400 leading-tight">Empaque cuidado</span></span></div>
+                <a href="https://wa.me/573105390115" target="_blank" rel="noopener" id="trust-whatsapp" class="snap-start shrink-0 flex items-center gap-2 text-left bg-white rounded-full border border-luxury-gold/40 pl-1 pr-3.5 py-1"><span class="w-8 h-8 rounded-full bg-luxury-gold-light flex items-center justify-center shrink-0"><svg class="w-[18px] h-[18px] text-luxury-gold-dark" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18.5V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H8z"/><path d="M9 10h.01M12 10h.01M15 10h.01"/></svg></span><span class="whitespace-nowrap"><span class="block text-[12px] font-semibold text-gray-800 leading-tight">Asesoría</span><span class="block text-[10.5px] text-gray-400 leading-tight">Te ayudamos por WhatsApp</span></span></a>
+            </div>
         </section>
 
         <!-- MARCAS EN MOVIMIENTO -->
         <section id="brand-marquee" class="hidden bg-luxury-dark -mx-3 sm:mx-0 sm:rounded-2xl overflow-hidden mb-2.5 sm:mb-4 py-2 sm:py-3">
             <div id="brand-track" class="brand-track flex gap-8 sm:gap-12 whitespace-nowrap w-max"></div>
-        </section>
-
-        <!-- GUÍA DE REGALOS POR PRECIO (compacta) -->
-        <section class="mb-3 sm:mb-5">
-            <p class="text-[10px] font-bold tracking-[0.25em] uppercase text-luxury-gold-dark mb-1.5">🎁 Guía de regalos</p>
-            <div class="flex gap-2 overflow-x-auto hide-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0 snap-x">
-                <button onclick="giftGuide('0-100000')" class="snap-start shrink-0 text-left bg-white border border-luxury-gold/30 text-gray-900 rounded-xl px-3 py-2 hover:shadow-md transition"><span class="block text-[9px] font-bold tracking-[0.18em] uppercase opacity-80">Hasta $100 mil</span><span class="block font-cinzel text-[13px] sm:text-sm font-bold leading-tight whitespace-nowrap">Detalles →</span></button>
-                <button onclick="giftGuide('100000-200000')" class="snap-start shrink-0 text-left bg-[#efe8da] border border-luxury-gold/30 text-gray-900 rounded-xl px-3 py-2 hover:shadow-md transition"><span class="block text-[9px] font-bold tracking-[0.18em] uppercase opacity-80">$100 – $200 mil</span><span class="block font-cinzel text-[13px] sm:text-sm font-bold leading-tight whitespace-nowrap">Nunca fallan →</span></button>
-                <button onclick="giftGuide('200000-999999999')" class="snap-start shrink-0 text-left bg-luxury-dark border border-luxury-gold/40 text-luxury-gold rounded-xl px-3 py-2 hover:shadow-md transition"><span class="block text-[9px] font-bold tracking-[0.18em] uppercase opacity-80">Más de $200 mil</span><span class="block font-cinzel text-[13px] sm:text-sm font-bold leading-tight whitespace-nowrap">Para impresionar →</span></button>
-                <button onclick="giftGuide('decants')" class="snap-start shrink-0 text-left bg-white border border-luxury-gold/30 text-gray-900 rounded-xl px-3 py-2 hover:shadow-md transition"><span class="block text-[9px] font-bold tracking-[0.18em] uppercase opacity-80">Decants</span><span class="block font-cinzel text-[13px] sm:text-sm font-bold leading-tight whitespace-nowrap">Pruébalo primero →</span></button>
-            </div>
         </section>
 
         <!-- TEST: ENCUENTRA TU PERFUME IDEAL -->
@@ -411,7 +482,8 @@
         <section id="shop-bar" class="mb-4 space-y-3">
             <div class="relative">
                 <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                <input type="search" id="search-input" oninput="onSearchInput()" placeholder="Buscar perfume, marca, nota o &quot;similar a&quot;..." class="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-full text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-luxury-gold transition">
+                <button id="voice-btn" type="button" onclick="startVoiceSearch()" class="hidden absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center z-10" title="Buscar hablando"><i class="fas fa-microphone text-sm"></i></button>
+                <input type="search" id="search-input" oninput="onSearchInput()" placeholder="Buscar perfume, marca, nota o &quot;similar a&quot;..." class="w-full pl-11 pr-12 py-3 bg-white border border-gray-200 rounded-full text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-luxury-gold transition">
             </div>
 
             <div class="flex gap-2 sm:gap-3 overflow-x-auto hide-scrollbar pb-1 lg:justify-center">
@@ -1234,6 +1306,14 @@
                     <input type="text" id="prod-similar" placeholder="Perfume de diseñador al que se parece" class="w-full p-2 border rounded-lg">
                 </div>
 
+                <div class="p-3 bg-amber-50 border border-amber-300 rounded-xl space-y-2">
+                    <label class="font-bold text-gray-800 flex items-center gap-2"><input type="checkbox" id="prod-month-on"> ⭐ Perfume del mes <span class="font-normal text-gray-500">(sale destacado arriba con precio especial)</span></label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="prod-month-price" min="0" placeholder="Precio especial" class="w-full p-2 border rounded-lg">
+                        <label class="flex items-center gap-1 text-[11px] text-gray-500">Hasta <input type="date" id="prod-month-until" class="flex-1 p-2 border rounded-lg"></label>
+                    </div>
+                </div>
+
                 <div class="p-3 bg-luxury-gold-light/60 border border-luxury-gold/50 rounded-xl space-y-2">
                     <label class="font-bold text-gray-800 block">💧 Decants <span class="font-normal text-gray-500">(activa los que vendes y escribe los ml y el precio)</span></label>
                     <div id="decant-rows" class="space-y-1.5"></div>
@@ -1516,6 +1596,7 @@
         const WOMPI_INTEGRITY_SECRET = "prod_integrity_9QPykHUQT2g8dTwNJzrKraJAABsNGReM"; 
 
         window.addEventListener('DOMContentLoaded', () => {
+            startSafeProductsLoad();
             startSlowLoadWatch();
             const checkFirebase = setInterval(() => {
                 if (window.db) {
@@ -1542,9 +1623,90 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
+
+        // ===================== CARGA SEGURA DE PERFUMES =====================
+        // 1) Muestra al instante los perfumes guardados en este dispositivo.
+        // 2) Si Firebase tarda, los pide por un camino más liviano (REST) y reintenta solo.
+        // 3) Apenas llega la conexión en vivo, manda ella.
+        const PROD_CACHE_KEY = 'fragatta_products_cache_v1';
+        let productsFromLive = false, restLoading = false, restTries = 0;
+        function fsValue(v) {
+            if (!v || typeof v !== 'object') return null;
+            if ('stringValue' in v) return v.stringValue;
+            if ('integerValue' in v) return Number(v.integerValue);
+            if ('doubleValue' in v) return Number(v.doubleValue);
+            if ('booleanValue' in v) return v.booleanValue;
+            if ('timestampValue' in v) return v.timestampValue;
+            if ('arrayValue' in v) return (v.arrayValue.values || []).map(fsValue);
+            if ('mapValue' in v) return fsFields(v.mapValue.fields || {});
+            return null;
+        }
+        function fsFields(f) { const o = {}; Object.keys(f || {}).forEach(k => o[k] = fsValue(f[k])); return o; }
+        function fakeSnap(list) { return { docs: list.map(x => ({ id: x.id, data: () => x.data })) }; }
+        function saveProductsCache(list) {
+            const light = list.map(x => {
+                const d = { ...x.data };
+                if (typeof d.image === 'string' && d.image.length > 45000) delete d.image;
+                if (Array.isArray(d.images)) d.images = d.images.filter(u => typeof u === 'string' && u.length <= 45000).slice(0, 1);
+                return { id: x.id, data: d };
+            });
+            try { localStorage.setItem(PROD_CACHE_KEY, JSON.stringify({ t: Date.now(), list: light })); }
+            catch (e) {
+                try { localStorage.setItem(PROD_CACHE_KEY, JSON.stringify({ t: Date.now(), list: light.map(x => { const d = { ...x.data }; if (String(d.image || '').startsWith('data:')) delete d.image; d.images = (d.images || []).filter(u => !String(u).startsWith('data:')); return { id: x.id, data: d }; }) })); } catch (e2) {}
+            }
+        }
+        function loadProductsFromCache() {
+            try {
+                const c = JSON.parse(localStorage.getItem(PROD_CACHE_KEY) || 'null');
+                if (c && Array.isArray(c.list) && c.list.length && !productsFromLive) handleProductsSnap(fakeSnap(c.list), 'cache');
+            } catch (e) {}
+        }
+        async function loadProductsByRest() {
+            if (productsFromLive || restLoading) return;
+            restLoading = true; restTries++;
+            try {
+                const all = []; let token = '';
+                for (let page = 0; page < 10; page++) {
+                    const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 25000);
+                    const url = `https://firestore.googleapis.com/v1/projects/fragattaweb/databases/(default)/documents/products?pageSize=300&key=AIzaSyBod9P6gjzM2_gKlO7Q5_c8INLVmmw5Qu0${token ? '&pageToken=' + encodeURIComponent(token) : ''}`;
+                    const r = await fetch(url, { signal: ctl.signal }); clearTimeout(tm);
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    const j = await r.json();
+                    (j.documents || []).forEach(d => all.push({ id: d.name.split('/').pop(), data: fsFields(d.fields) }));
+                    if (!j.nextPageToken) break; token = j.nextPageToken;
+                }
+                if (all.length && !productsFromLive) { handleProductsSnap(fakeSnap(all), 'rest'); saveProductsCache(all); }
+            } catch (e) {
+                console.warn('Carga alterna de perfumes falló', e);
+                if (!productsFromLive && restTries < 4) setTimeout(() => { restLoading = false; loadProductsByRest(); }, 4000 * restTries);
+                return;
+            }
+            restLoading = false;
+        }
+        function startSafeProductsLoad() {
+            loadProductsFromCache();
+            setTimeout(() => { if (!productsFromLive) loadProductsByRest(); }, 3500);
+        }
+        function retryProductsLoad() {
+            const grid = document.getElementById('product-grid');
+            if (grid) grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500 text-sm"><i class="fas fa-spinner fa-spin text-luxury-gold text-2xl mb-2"></i><p>Cargando productos...</p></div>';
+            restTries = 0; restLoading = false; loadProductsByRest();
+            startSlowLoadWatch();
+        }
+
         function initFirebaseListener() {
             const productsRef = window.collection(window.db, "products");
             window.onSnapshot(productsRef, (snapshot) => {
+                // La caché del teléfono puede llegar vacía antes que el servidor: no la tomamos como "sin perfumes"
+                if (!snapshot.docs.length && snapshot.metadata && snapshot.metadata.fromCache) return;
+                productsFromLive = true;
+                handleProductsSnap(snapshot, 'live');
+                try { saveProductsCache(snapshot.docs.map(d => ({ id: d.id, data: d.data() }))); } catch (e) {}
+            }, (error) => { if (!products.length) loadProductsByRest(); showProductsLoadError(error); });
+        }
+        function handleProductsSnap(snapshot, src) {
+            if (src !== 'live' && productsFromLive) return;
+            {
                 products = snapshot.docs.map(docSnap => {
                     const data = docSnap.data();
                     return {
@@ -1579,7 +1741,7 @@
                 if (currentDetailId && !document.getElementById('detail-modal').classList.contains('hidden')) {
                     renderDetail(currentDetailId, true);
                 }
-            }, showProductsLoadError);
+            }
         }
 
         function initAppConfigListener() {
@@ -1797,6 +1959,7 @@
         }
 
         function renderProducts() {
+            applyMonthPick();
             const grid = document.getElementById('product-grid');
             const emptyState = document.getElementById('empty-state');
             const searchVal = document.getElementById('search-input').value;
@@ -2188,20 +2351,22 @@
                     <i class="fas fa-wifi text-amber-500 text-2xl mb-2"></i>
                     <p class="font-bold">La conexión está lenta. Seguimos cargando los perfumes...</p>
                     <p class="text-xs text-gray-400 mt-1">Aparecerán solos apenas lleguen. Si tarda mucho, vuelve a intentarlo.</p>
-                    <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Reintentar</button>
+                    <button onclick="retryProductsLoad()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Reintentar</button>
                 </div>`;
+                if (!productsFromLive) loadProductsByRest();
             }, 9000);
         }
 
         function showProductsLoadError(error) {
             console.error('Error cargando productos', error);
             if (Array.isArray(products) && products.length) return;
+            if (restLoading || restTries < 4) return; // el camino alterno sigue intentando
             const grid = document.getElementById('product-grid');
             if (grid) grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-600 text-sm">
                 <i class="fas fa-exclamation-triangle text-rose-500 text-2xl mb-2"></i>
                 <p class="font-bold">No se pudieron cargar los perfumes.</p>
                 <p class="text-xs text-gray-400 mt-1">Revisa tu conexión a internet y vuelve a intentarlo.</p>
-                <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Reintentar</button>
+                <button onclick="retryProductsLoad()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Reintentar</button>
             </div>`;
         }
 
@@ -2345,6 +2510,7 @@
             editingVariants = [];
             renderVariantRows();
             renderDecantRows([]);
+            fillMonthPickFields('');
             document.getElementById('admin-modal').classList.remove('hidden');
         }
 
@@ -2360,8 +2526,9 @@
             document.getElementById('prod-title').value = p.title;
             document.getElementById('prod-gender').value = p.gender || 'Unisex';
             document.getElementById('prod-category').value = p.category;
-            document.getElementById('prod-old-price').value = p.oldPrice || '';
-            document.getElementById('prod-price').value = p.price;
+            document.getElementById('prod-old-price').value = (p.basePrice !== undefined ? p.baseOldPrice : p.oldPrice) || '';
+            document.getElementById('prod-price').value = p.basePrice !== undefined ? p.basePrice : p.price;
+            fillMonthPickFields(p.id);
             document.getElementById('prod-priority').value = p.priority === 'TOP VIRAL' ? 'TOP VIRAL' : (p.priority || 'NINGUNA');
             document.getElementById('prod-notes').value = p.notes || '';
             document.getElementById('prod-desc').value = p.description || '';
@@ -2619,6 +2786,7 @@
             try {
                 const full = payload.__full; delete payload.__full;
                 const docId = id || window.doc(window.collection(window.db, "products")).id;
+                try { await saveMonthPickFor(docId); } catch (err) { console.warn('Perfume del mes', err); }
                 if (full) { await window.setDoc(window.doc(window.db, "product_images", docId), { images: full, savedAt: new Date().toISOString() }); fullImagesCache[docId] = full; }
                 if (id) {
                     await window.updateDoc(window.doc(window.db, "products", id), payload);
@@ -2840,6 +3008,7 @@
             if (data.freeShippingMin !== undefined && !isNaN(Number(data.freeShippingMin))) out.freeShippingMin = Number(data.freeShippingMin);
             if (typeof data.giftTitle === 'string' && data.giftTitle.trim()) out.giftTitle = data.giftTitle;
             if (typeof data.announcements === 'string' && data.announcements.trim()) out.announcements = data.announcements;
+            if (data.monthPick !== undefined) out.monthPick = data.monthPick && data.monthPick.id ? data.monthPick : null;
             return out;
         }
 
@@ -3314,8 +3483,9 @@
 
         function refreshHomeExtras() {
             try { renderBrandMarquee(); } catch (err) {}
+            try { applyMonthPick(); renderMonthPick(); } catch (err) {}
             const tss = document.getElementById('trust-ship-sub');
-            if (tss) tss.innerText = freeShipItems() > 0 ? `A toda Colombia. Gratis llevando ${freeShipItems()} o más perfumes.` : 'A toda Colombia, con guía de rastreo.';
+            if (tss) tss.innerText = freeShipItems() > 0 ? `Gratis llevando ${freeShipItems()} o más` : 'A toda Colombia, con guía';
             const visible = products.filter(p => p.isActive);
             let best = visible.filter(p => p.bestSeller);
             if (best.length === 0) best = visible.filter(p => p.priority === 'TOP VIRAL');
@@ -4087,6 +4257,153 @@
             if (terms.length > 1 && hits >= Math.ceil(terms.length / 2)) return total * 0.5;
             return 0;
         }
+
+        // ===================== PERFUME DEL MES =====================
+        function monthPickActive() {
+            const mp = storeSettings && storeSettings.monthPick;
+            if (!mp || !mp.id || !(Number(mp.price) > 0)) return null;
+            const end = mp.until ? new Date(mp.until + 'T23:59:59') : null;
+            if (end && end.getTime() < Date.now()) return null;
+            return { ...mp, end };
+        }
+        function applyMonthPick() {
+            const mp = monthPickActive();
+            products.forEach(p => {
+                if (p.basePrice === undefined) { p.basePrice = p.price; p.baseOldPrice = p.oldPrice; }
+                if (mp && p.id === mp.id) {
+                    p.price = Number(mp.price);
+                    const ref = Math.max(Number(p.baseOldPrice) || 0, Number(p.basePrice) || 0);
+                    p.oldPrice = ref > p.price ? ref : null;
+                    p.isMonthPick = true;
+                } else { p.price = p.basePrice; p.oldPrice = p.baseOldPrice; p.isMonthPick = false; }
+            });
+        }
+        let monthPickTimer = null;
+        function renderMonthPick() {
+            const box = document.getElementById('month-pick-section'); if (!box) return;
+            const mp = monthPickActive();
+            const p = mp && products.find(x => x.id === mp.id && x.isActive);
+            clearInterval(monthPickTimer);
+            if (!p) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+            const pct = p.oldPrice ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
+            box.classList.remove('hidden');
+            box.innerHTML = `<div onclick="openDetailModal('${p.id}')" class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-luxury-dark via-[#2a2416] to-luxury-dark border border-luxury-gold/50 p-2.5 sm:p-3 flex items-center gap-3 cursor-pointer shadow-md">
+                <img src="${getImages(p)[0]}" alt="${esc(p.title)}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover bg-white shrink-0">
+                <div class="flex-1 min-w-0">
+                    <p class="text-[10px] font-bold tracking-[0.22em] uppercase text-luxury-gold">⭐ Perfume del mes</p>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wider truncate mt-0.5">${esc(p.brand)}</p>
+                    <h3 class="font-cinzel text-white text-sm sm:text-base font-bold truncate leading-tight">${esc(p.title)}</h3>
+                    <div class="flex items-baseline gap-2 mt-0.5">${p.oldPrice ? `<span class="text-gray-400 line-through text-[11px]">${formatPrice(p.oldPrice)}</span>` : ''}<span class="text-luxury-gold font-black text-base">${formatPrice(p.price)}</span>${pct > 0 ? `<span class="bg-rose-600 text-white text-[10px] font-bold px-1.5 rounded">-${pct}%</span>` : ''}</div>
+                    ${mp.end ? `<p class="text-[10px] text-gray-300 mt-0.5"><i class="far fa-clock text-luxury-gold"></i> Termina en <span id="mp-count" class="font-bold text-white"></span></p>` : ''}
+                </div>
+                <button onclick="event.stopPropagation(); addToCart('${p.id}')" class="bg-luxury-gold hover:bg-amber-400 text-luxury-dark font-bold text-xs px-3 py-2 rounded-full shrink-0">Lo quiero</button>
+            </div>`;
+            if (mp.end) {
+                const tick = () => {
+                    const el = document.getElementById('mp-count'); if (!el) return clearInterval(monthPickTimer);
+                    let d = Math.max(0, mp.end.getTime() - Date.now()) / 1000;
+                    if (d <= 0) { clearInterval(monthPickTimer); renderProducts(); renderMonthPick(); return; }
+                    const days = Math.floor(d / 86400); d -= days * 86400; const h = Math.floor(d / 3600); d -= h * 3600; const m = Math.floor(d / 60); const sec = Math.floor(d - m * 60);
+                    el.innerText = days > 0 ? `${days}d ${h}h ${m}m` : `${h}h ${m}m ${sec}s`;
+                };
+                tick(); monthPickTimer = setInterval(tick, 1000);
+            }
+        }
+        function fillMonthPickFields(id) {
+            const mp = storeSettings && storeSettings.monthPick;
+            const on = !!(id && mp && mp.id === id);
+            const set = (k, v) => { const el = document.getElementById(k); if (el) { if (el.type === 'checkbox') el.checked = v; else el.value = v; } };
+            set('prod-month-on', on);
+            set('prod-month-price', on ? mp.price : '');
+            const d = new Date(); d.setDate(d.getDate() + 30);
+            set('prod-month-until', on && mp.until ? mp.until : d.toISOString().slice(0, 10));
+        }
+        async function saveMonthPickFor(docId) {
+            const on = document.getElementById('prod-month-on')?.checked;
+            const cur = storeSettings && storeSettings.monthPick;
+            const ref = window.doc(window.db, "settings", "app_config");
+            if (on) {
+                const price = Number(document.getElementById('prod-month-price')?.value) || 0;
+                const until = document.getElementById('prod-month-until')?.value || '';
+                if (price <= 0) { showToast('Pon el precio especial del perfume del mes'); return; }
+                const mp = { id: docId, price, until };
+                storeSettings.monthPick = mp;
+                await window.setDoc(ref, { monthPick: mp }, { merge: true });
+            } else if (cur && cur.id === docId) {
+                storeSettings.monthPick = null;
+                await window.setDoc(ref, { monthPick: null }, { merge: true });
+            }
+        }
+
+        // ===================== BÚSQUEDA POR VOZ =====================
+        const VOICE_STOP = new Set('algo un una unos unas perfume perfumes fragancia fragancias para de del que sea quiero busco buscame muestrame me gustaria gusta muy olor olores con el la los las y o en por favor tipo estilo bien rico rica regalo'.split(' '));
+        function applyVoiceQuery(text) {
+            const t = normalizeTxt(text);
+            let gender = null;
+            if (/\b(mujer|mujeres|dama|damas|femenin\w*|ella|novia|mama|esposa)\b/.test(t)) gender = 'Mujer';
+            else if (/\b(hombre|hombres|caballero|caballeros|masculin\w*|el novio|papa|esposo|novio)\b/.test(t)) gender = 'Hombre';
+            else if (/\bunisex\b/.test(t)) gender = 'Unisex';
+            const words = t.split(/[^a-z0-9ñ]+/).filter(w => w && !VOICE_STOP.has(w) && !/^(mujer|mujeres|dama|damas|femenin\w*|hombre|hombres|caballero|caballeros|masculin\w*|unisex|ella|novia|novio|mama|papa|esposa|esposo)$/.test(w));
+            const input = document.getElementById('search-input');
+            input.value = words.join(' ');
+            if (gender) setGenderFilter(gender); else renderProducts();
+            document.getElementById('shop-bar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            showToast(`🎤 "${text}"`);
+        }
+        let voiceRec = null;
+        function startVoiceSearch() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return showToast('Tu navegador no permite buscar por voz');
+            const btn = document.getElementById('voice-btn');
+            if (voiceRec) { try { voiceRec.stop(); } catch (e) {} return; }
+            voiceRec = new SR(); voiceRec.lang = 'es-CO'; voiceRec.interimResults = false; voiceRec.maxAlternatives = 1;
+            voiceRec.onresult = ev => { const txt = ev.results[0][0].transcript || ''; if (txt.trim()) applyVoiceQuery(txt); };
+            voiceRec.onerror = ev => { if (ev.error === 'not-allowed') showToast('Permite el micrófono para buscar por voz'); };
+            voiceRec.onend = () => { btn.classList.remove('listening'); voiceRec = null; };
+            btn.classList.add('listening');
+            showToast('🎤 Te escucho... di el perfume, la marca o "algo dulce para mujer"');
+            try { voiceRec.start(); } catch (e) { btn.classList.remove('listening'); voiceRec = null; }
+        }
+        if (window.SpeechRecognition || window.webkitSpeechRecognition) document.addEventListener('DOMContentLoaded', () => document.getElementById('voice-btn')?.classList.remove('hidden'));
+
+        // ===================== MODO OSCURO =====================
+        // La tienda abre en modo claro; cada persona puede pasarla a oscuro con el botón (y se recuerda en su celular)
+        function themePref() { try { return localStorage.getItem('fragatta_theme') === 'dark' ? 'dark' : 'light'; } catch (e) { return 'light'; } }
+        function applyTheme() {
+            const dark = themePref() === 'dark';
+            document.documentElement.classList.toggle('dk', dark);
+            const b = document.getElementById('theme-btn');
+            if (b) { b.innerHTML = `<i class="fas ${dark ? 'fa-sun' : 'fa-moon'} text-xs"></i>`; b.title = dark ? 'Pasar a modo claro' : 'Pasar a modo oscuro'; }
+            const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = '#111315';
+        }
+        function cycleTheme() {
+            const next = themePref() === 'dark' ? 'light' : 'dark';
+            try { localStorage.setItem('fragatta_theme', next); } catch (e) {}
+            applyTheme();
+            showToast(next === 'dark' ? '🌙 Modo oscuro' : '☀️ Modo claro');
+        }
+        document.addEventListener('DOMContentLoaded', applyTheme);
+
+        // ===================== APP INSTALABLE =====================
+        let installPrompt = null;
+        const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+        const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        function installDismissed() { try { return Date.now() - Number(localStorage.getItem('fragatta_install_dismissed') || 0) < 14 * 86400000; } catch (e) { return false; } }
+        function showInstallBar() { if (!isStandalone() && !installDismissed()) document.getElementById('install-bar')?.classList.remove('hidden'); }
+        function dismissInstall() { try { localStorage.setItem('fragatta_install_dismissed', String(Date.now())); } catch (e) {} document.getElementById('install-bar')?.classList.add('hidden'); }
+        async function installApp() {
+            if (installPrompt) {
+                installPrompt.prompt();
+                try { const r = await installPrompt.userChoice; if (r && r.outcome === 'accepted') document.getElementById('install-bar')?.classList.add('hidden'); } catch (e) {}
+                installPrompt = null; return;
+            }
+            if (isIOS()) return alert('Para instalar la tienda en tu iPhone:\n\n1. Toca el botón Compartir (el cuadro con la flecha ↑) abajo en Safari.\n2. Elige "Agregar a inicio".\n3. Toca "Agregar".\n\nListo: te queda el ícono de Fragatta en tu pantalla.');
+            alert('Abre el menú del navegador (⋮) y elige "Instalar app" o "Agregar a la pantalla principal".');
+        }
+        window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; showInstallBar(); });
+        window.addEventListener('appinstalled', () => document.getElementById('install-bar')?.classList.add('hidden'));
+        document.addEventListener('DOMContentLoaded', () => { if (isIOS() && !isStandalone()) setTimeout(showInstallBar, 4000); });
+        if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 
         let searchTimer = null;
         function onSearchInput() {
