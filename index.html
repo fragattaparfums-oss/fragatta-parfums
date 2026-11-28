@@ -32,7 +32,8 @@
     <!-- Firebase SDK (Solo Base Nueva FRAGATTAWEB) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, onSnapshot, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getStorage, ref as storageRef, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         // CONEXIÓN ÚNICA A LA NUEVA BASE DE DATOS (FRAGATTAWEB)
@@ -47,7 +48,17 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // Caché en el dispositivo + conexión estable con señal débil: la tienda abre rápido aunque el internet esté lento
+        let db;
+        try {
+            db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }), experimentalAutoDetectLongPolling: true });
+        } catch (err) {
+            console.warn('Caché no disponible, se usa la conexión normal', err);
+            db = getFirestore(app);
+        }
+        const auth = getAuth(app);
+        window.fbSignIn = (email, pass) => signInWithEmailAndPassword(auth, email, pass);
+        window.fbSignOut = () => signOut(auth).catch(() => {});
 
         window.db = db;
         window.collection = collection;
@@ -277,7 +288,7 @@
         <section class="flex sm:grid sm:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4 overflow-x-auto hide-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0">
             <div class="shrink-0 bg-white border border-gray-100 rounded-full sm:rounded-2xl pl-1 pr-3 py-1 sm:p-3 flex items-center gap-1.5 sm:gap-2.5 shadow-sm">
                 <span class="w-7 h-7 sm:w-9 sm:h-9 shrink-0 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center text-[11px] sm:text-base"><i class="fas fa-truck-fast"></i></span>
-                <div class="leading-tight whitespace-nowrap sm:whitespace-normal"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Envíos a toda Colombia</p><p class="hidden sm:block text-[10px] text-gray-500">Seguimiento por WhatsApp</p></div>
+                <div class="leading-tight whitespace-nowrap sm:whitespace-normal"><p class="text-[11px] sm:text-xs font-bold text-gray-900">Envíos a toda Colombia</p><p id="trust-ship-sub" class="hidden sm:block text-[10px] text-gray-500">Gratis llevando 2 o más perfumes</p></div>
             </div>
             <div class="shrink-0 bg-white border border-gray-100 rounded-full sm:rounded-2xl pl-1 pr-3 py-1 sm:p-3 flex items-center gap-1.5 sm:gap-2.5 shadow-sm">
                 <span class="w-7 h-7 sm:w-9 sm:h-9 shrink-0 rounded-full bg-luxury-dark text-luxury-gold flex items-center justify-center text-[11px] sm:text-base"><i class="fas fa-hand-holding-usd"></i></span>
@@ -1030,6 +1041,10 @@
                         <input type="number" id="set-free-ship" min="0" class="w-full p-2 border rounded-lg">
                     </div>
                     <div>
+                        <label class="block font-semibold mb-1">Envío GRATIS llevando (perfumes) <span class="font-normal text-gray-500">(0 = desactivado)</span></label>
+                        <input type="number" id="set-free-ship-items" min="0" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
                         <label class="block font-semibold mb-1">Título sección de regalos</label>
                         <input type="text" id="set-gift-title" placeholder="Ideas para regalar en Navidad" class="w-full p-2 border rounded-lg">
                     </div>
@@ -1452,13 +1467,41 @@
 
         let calculatedShippingCost = 0;
 
-        const ADMIN_PASSWORD = "J.p12022013";
+        // La contraseña no está escrita: solo su huella (SHA-256)
+        const ADMIN_PASSWORD_HASH = "b985e493779a497d63b5e36edf745025e1a5e73bccbd1b12c123c76453efe6e5";
+        // Huella SHA-256: la contraseña no queda escrita en el código, solo su huella
+        function passHash(text) {
+            const msg = unescape(encodeURIComponent('k9#Lw2|' + String(text || '')));
+            const K = [], H = [];
+            let n = 2, c = 0;
+            const frac = x => ((x - Math.floor(x)) * 4294967296) | 0;
+            while (c < 64) { let prime = true; for (let d = 2; d * d <= n; d++) if (n % d === 0) { prime = false; break; } if (prime) { if (c < 8) H[c] = frac(Math.pow(n, 1 / 2)); K[c] = frac(Math.pow(n, 1 / 3)); c++; } n++; }
+            const bytes = []; for (let i = 0; i < msg.length; i++) bytes.push(msg.charCodeAt(i));
+            const bitLen = bytes.length * 8;
+            bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
+            for (let i = 7; i >= 0; i--) bytes.push(i >= 4 ? 0 : (bitLen >>> (i * 8)) & 0xff);
+            const rotr = (x, r) => (x >>> r) | (x << (32 - r));
+            for (let off = 0; off < bytes.length; off += 64) {
+                const w = new Array(64);
+                for (let i = 0; i < 16; i++) w[i] = (bytes[off + i * 4] << 24) | (bytes[off + i * 4 + 1] << 16) | (bytes[off + i * 4 + 2] << 8) | bytes[off + i * 4 + 3];
+                for (let i = 16; i < 64; i++) { const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3); const s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10); w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0; }
+                let [a, b, cc, d, e, f, g, h] = H;
+                for (let i = 0; i < 64; i++) {
+                    const t1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + w[i]) | 0;
+                    const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & cc) ^ (b & cc))) | 0;
+                    h = g; g = f; f = e; e = (d + t1) | 0; d = cc; cc = b; b = a; a = (t1 + t2) | 0;
+                }
+                H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + cc) | 0; H[3] = (H[3] + d) | 0; H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+            }
+            return H.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+        }
         let WHATSAPP_NUMBER = "573105390115";
         
         const WOMPI_PUB_KEY = "pub_prod_V8YaQR30zSYwPw5VP27yidk0s1ULSHh6";
         const WOMPI_INTEGRITY_SECRET = "prod_integrity_9QPykHUQT2g8dTwNJzrKraJAABsNGReM"; 
 
         window.addEventListener('DOMContentLoaded', () => {
+            startSlowLoadWatch();
             const checkFirebase = setInterval(() => {
                 if (window.db) {
                     clearInterval(checkFirebase);
@@ -1520,7 +1563,7 @@
                 if (currentDetailId && !document.getElementById('detail-modal').classList.contains('hidden')) {
                     renderDetail(currentDetailId, true);
                 }
-            });
+            }, showProductsLoadError);
         }
 
         function initAppConfigListener() {
@@ -1906,6 +1949,7 @@
             document.getElementById('step1-final-subtotal').innerText = formatPrice(finalSubtotal);
             const fs = document.getElementById('cart-free-ship');
             if (fs) fs.innerHTML = freeShipBarHTML(finalSubtotal);
+            try { if (document.getElementById('final-grand-total')) updatePaymentCalculations(); } catch (err) {}
         }
 
         function updateCartQuantity(id, change) {
@@ -2025,7 +2069,8 @@
             const disc = couponDiscount(subtotal, preTotal);
             const grandTotal = Math.max(0, preTotal - disc);
 
-            let msg = `*NUEVO PEDIDO - FRAGATTAPARFUMS*\n\n`;
+            const orderNumber = 'W' + Date.now().toString(36).toUpperCase().slice(-6);
+            let msg = `*NUEVO PEDIDO #${orderNumber} - FRAGATTAPARFUMS*\n\n`;
             msg += `*DATOS DE ENVÍO:*\n`;
             msg += `• Nombre: ${name}\n• Cédula: ${doc}\n• Teléfono: ${phone}\n• Ciudad: ${city}\n• Dirección: ${address}\n\n`;
             msg += `*PRODUCTOS SOLICITADOS:*\n`;
@@ -2038,6 +2083,16 @@
             msg += `*TOTAL:* ${formatPrice(grandTotal)}\n\n`;
             msg += `*MÉTODO DE PAGO:* ${method === 'wompi' ? 'Wompi En Línea' : (method === 'cod' ? 'Pago Contra Entrega' : 'Transferencia Bancaria')}`;
 
+            try {
+                const order = {
+                    number: orderNumber, createdAt: new Date().toISOString(), status: 'POR_CONFIRMAR', paid: false, paymentMethod: method, source: 'web',
+                    customer: { name, phone, doc, city, address, medellin: !!isMedellin },
+                    items: cart.map(i => ({ id: String(i.id), productId: String(i.productId || i.id).split('::')[0], title: String(i.title || ''), baseTitle: String(i.title || '').replace(/\s*\([^)]*\)$/, ''), brand: String(i.brand || ''), price: Number(i.price) || 0, qty: Number(i.quantity) || 1 })),
+                    subtotal, shipping: effectiveShipping(subtotal), codFee, discount: disc, coupon: appliedCoupon ? String(appliedCoupon.code || '') : '', total: grandTotal
+                };
+                window.setDoc(window.doc(window.db, "web_orders", orderNumber), order).catch(err => console.warn('No se pudo guardar el pedido en el sistema', err));
+            } catch (err) { console.warn('No se pudo preparar el pedido', err); }
+
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
             await registerCouponUse(disc);
             toggleCartModal();
@@ -2047,9 +2102,78 @@
         function openPoliciesModal() { document.getElementById('policies-modal').classList.remove('hidden'); }
         function closePoliciesModal() { document.getElementById('policies-modal').classList.add('hidden'); }
 
-        function handleAdminToggle() {
+        // Acceso de administrador con la CONTRASEÑA de siempre (sin correo). Por detrás entra a la cuenta interna de la empresa en Firebase.
+        const ADMIN_MASTER_HASH = "659cd4f04d93f3765ae3fba8e0e687fc8747ad16b70503a7656073de9542599b";
+        const STORE_ACCTS = { caja: 'caja@pos-sistema.example.com', admin: 'admin@pos-sistema.example.com' };
+        function askAdminLogin() {
+            return new Promise(resolve => {
+                const old = document.getElementById('adm-login-modal'); if (old) old.remove();
+                const wrap = document.createElement('div');
+                wrap.id = 'adm-login-modal';
+                wrap.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(17,19,21,.6);display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit';
+                wrap.innerHTML = `<form style="background:#fff;border-radius:20px;padding:22px;width:100%;max-width:340px;box-shadow:0 20px 50px rgba(0,0,0,.3)">
+                    <p style="font-weight:800;font-size:16px;margin:0 0 12px;color:#111">Acceso de administrador</p>
+                    <input id="adm-pass" type="password" autocomplete="current-password" placeholder="Contraseña" required style="width:100%;box-sizing:border-box;border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;font-size:14px">
+                    <p id="adm-err" style="display:none;color:#e11d48;font-size:12px;font-weight:700;margin:8px 0 0"></p>
+                    <div style="display:flex;gap:8px;margin-top:14px">
+                        <button type="button" id="adm-cancel" style="flex:1;border:0;border-radius:12px;padding:10px;background:#f3f4f6;font-weight:700;cursor:pointer">Cancelar</button>
+                        <button type="submit" id="adm-ok" style="flex:1;border:0;border-radius:12px;padding:10px;background:#111315;color:#fff;font-weight:700;cursor:pointer">Entrar</button>
+                    </div></form>`;
+                document.body.appendChild(wrap);
+                const close = ok => { wrap.remove(); resolve(ok); };
+                wrap.querySelector('#adm-cancel').onclick = () => close(false);
+                setTimeout(() => wrap.querySelector('#adm-pass').focus(), 50);
+                wrap.querySelector('form').onsubmit = async ev => {
+                    ev.preventDefault();
+                    const pass = wrap.querySelector('#adm-pass').value.trim();
+                    const err = wrap.querySelector('#adm-err');
+                    const btn = wrap.querySelector('#adm-ok'); btn.disabled = true; btn.innerText = 'Entrando...';
+                    const h = passHash(pass);
+                    const order = h === ADMIN_PASSWORD_HASH ? ['caja'] : h === ADMIN_MASTER_HASH ? ['admin'] : ['caja', 'admin'];
+                    let signed = false;
+                    if (typeof window.fbSignIn === 'function') {
+                        for (const k of order) {
+                            try { await Promise.race([window.fbSignIn(STORE_ACCTS[k], pass), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 9000))]); signed = true; break; } catch (e) {}
+                        }
+                    }
+                    // Mientras no se active la seguridad en Firebase, funciona como siempre con la contraseña
+                    if (signed || h === ADMIN_PASSWORD_HASH || h === ADMIN_MASTER_HASH) return close(true);
+                    err.innerText = 'Contraseña incorrecta.'; err.style.display = 'block'; btn.disabled = false; btn.innerText = 'Entrar';
+                };
+            });
+        }
+
+        // Aviso cuando la conexión está lenta (en vez de quedarse "Cargando" para siempre)
+        function startSlowLoadWatch() {
+            setTimeout(() => {
+                if (Array.isArray(products) && products.length) return;
+                const grid = document.getElementById('product-grid');
+                if (!grid || !/Cargando productos/.test(grid.innerText)) return;
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-600 text-sm">
+                    <i class="fas fa-wifi text-amber-500 text-2xl mb-2"></i>
+                    <p class="font-bold">La conexión está lenta. Seguimos cargando los perfumes...</p>
+                    <p class="text-xs text-gray-400 mt-1">Aparecerán solos apenas lleguen. Si tarda mucho, vuelve a intentarlo.</p>
+                    <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Reintentar</button>
+                </div>`;
+            }, 9000);
+        }
+
+        function showProductsLoadError(error) {
+            console.error('Error cargando productos', error);
+            if (Array.isArray(products) && products.length) return;
+            const grid = document.getElementById('product-grid');
+            if (grid) grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-600 text-sm">
+                <i class="fas fa-exclamation-triangle text-rose-500 text-2xl mb-2"></i>
+                <p class="font-bold">No se pudieron cargar los perfumes.</p>
+                <p class="text-xs text-gray-400 mt-1">Revisa tu conexión a internet y vuelve a intentarlo.</p>
+                <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-luxury-dark text-white rounded-lg text-xs font-medium">Reintentar</button>
+            </div>`;
+        }
+
+        async function handleAdminToggle() {
             if (isAdmin) {
                 isAdmin = false;
+                if (window.fbSignOut) window.fbSignOut();
                 document.getElementById('admin-toolbar').classList.add('hidden');
                 document.getElementById('btn-view-inactive').classList.add('hidden');
                 document.getElementById('admin-social-btn').classList.add('hidden');
@@ -2061,8 +2185,7 @@
                 showInactive = false;
                 showToast("Sesión cerrada");
             } else {
-                const pass = prompt("Ingrese contraseña de Administrador:");
-                if (pass === ADMIN_PASSWORD) {
+                if (await askAdminLogin()) {
                     isAdmin = true;
                     document.getElementById('admin-toolbar').classList.remove('hidden');
                     document.getElementById('btn-view-inactive').classList.remove('hidden');
@@ -2630,6 +2753,7 @@
             returnsInfo: 'Todos nuestros perfumes se entregan sellados.\nAceptamos cambios dentro de los 5 días siguientes a la entrega si el producto llega averiado o no corresponde a tu pedido, siempre que esté sellado y en su empaque original.\nEscríbenos por WhatsApp para gestionarlo.',
             trustText: 'Envíos a toda Colombia · Pago seguro con Wompi',
             freeShippingMin: 0,
+            freeShippingMinItems: 2,
             giftTitle: 'Ideas para regalar',
             announcements: '✨ Envíos a toda Colombia ✨\n💵 Paga contraentrega al recibir tu pedido\n💬 Te asesoramos por WhatsApp'
         };
@@ -2639,6 +2763,7 @@
             if (data.shipMedellin !== undefined && !isNaN(Number(data.shipMedellin))) out.shipMedellin = Number(data.shipMedellin);
             if (data.shipNational !== undefined && !isNaN(Number(data.shipNational))) out.shipNational = Number(data.shipNational);
             if (data.codFeePct !== undefined && !isNaN(Number(data.codFeePct))) out.codFeePct = Number(data.codFeePct);
+            if (data.freeShippingMinItems !== undefined && !isNaN(Number(data.freeShippingMinItems))) out.freeShippingMinItems = Number(data.freeShippingMinItems);
             if (typeof data.shippingInfo === 'string' && data.shippingInfo.trim()) out.shippingInfo = data.shippingInfo;
             if (typeof data.returnsInfo === 'string' && data.returnsInfo.trim()) out.returnsInfo = data.returnsInfo;
             if (typeof data.trustText === 'string' && data.trustText.trim()) out.trustText = data.trustText;
@@ -2657,6 +2782,7 @@
             document.getElementById('set-returns-info').value = storeSettings.returnsInfo;
             document.getElementById('set-trust-text').value = storeSettings.trustText;
             document.getElementById('set-free-ship').value = storeSettings.freeShippingMin;
+            document.getElementById('set-free-ship-items').value = storeSettings.freeShippingMinItems;
             document.getElementById('set-gift-title').value = storeSettings.giftTitle;
             document.getElementById('set-announcements').value = storeSettings.announcements;
             document.getElementById('store-settings-modal').classList.remove('hidden');
@@ -2674,6 +2800,7 @@
                 returnsInfo: document.getElementById('set-returns-info').value.trim(),
                 trustText: document.getElementById('set-trust-text').value.trim(),
                 freeShippingMin: Number(document.getElementById('set-free-ship').value) || 0,
+                freeShippingMinItems: Math.max(0, parseInt(document.getElementById('set-free-ship-items').value) || 0),
                 giftTitle: document.getElementById('set-gift-title').value.trim(),
                 announcements: document.getElementById('set-announcements').value.trim()
             };
@@ -2946,14 +3073,31 @@
         }
 
         // ===================== ENVÍO GRATIS =====================
+        // Envío gratis: con 1 perfume el envío se cobra; llevando 2 o más (configurable) sale GRATIS
+        function cartUnits() { return cart.reduce((a, i) => a + (Number(i.quantity) || 0), 0); }
+        function freeShipItems() { return Math.max(0, parseInt(storeSettings.freeShippingMinItems) || 0); }
         function isFreeShipping(subtotal) {
             const min = Number(storeSettings.freeShippingMin) || 0;
-            return min > 0 && subtotal >= min;
+            const items = freeShipItems();
+            return (min > 0 && subtotal >= min) || (items > 0 && cartUnits() >= items);
         }
+        function freeShipPromoText() { const n = freeShipItems(); return n > 0 ? `🚚 Envío GRATIS llevando ${n} o más perfumes` : ''; }
         function effectiveShipping(subtotal) {
             return isFreeShipping(subtotal) ? 0 : calculatedShippingCost;
         }
         function freeShipBarHTML(subtotal) {
+            const items = freeShipItems();
+            if (items > 0) {
+                const units = cartUnits();
+                const missingItems = Math.max(0, items - units);
+                const pctI = Math.min(100, Math.round((units / items) * 100));
+                return `
+                <div class="bg-luxury-gold-light border border-luxury-gold/60 rounded-xl p-3 text-xs">
+                    <p class="font-bold text-luxury-dark mb-1.5">${missingItems > 0 ? `<i class="fas fa-truck text-luxury-gold-dark mr-1"></i> ${units === 0 ? `Lleva ${items} perfumes y el envío es <span class="underline">GRATIS</span>` : `Agrega <span class="text-rose-600">${missingItems} perfume${missingItems > 1 ? 's' : ''} más</span> y tu envío sale <span class="underline">GRATIS</span>`}` : '<i class="fas fa-check-circle text-emerald-600 mr-1"></i> ¡Tu pedido tiene ENVÍO GRATIS!'}</p>
+                    ${missingItems > 0 ? `<p class="text-[10px] text-gray-500 mb-1.5">Con 1 solo perfume el envío se cobra.</p>` : ''}
+                    <div class="w-full h-2 bg-white rounded-full overflow-hidden border border-luxury-gold/40"><div class="h-full rounded-full ${missingItems > 0 ? 'bg-luxury-gold' : 'bg-emerald-500'}" style="width:${pctI}%"></div></div>
+                </div>`;
+            }
             const min = Number(storeSettings.freeShippingMin) || 0;
             if (min <= 0) return '';
             const pct = Math.min(100, Math.round((subtotal / min) * 100));
@@ -2971,7 +3115,7 @@
         function startAnnouncements() {
             const el = document.getElementById('announce-text');
             if (!el) return;
-            const msgs = () => String(storeSettings.announcements || '').split('\n').map(x => x.trim()).filter(Boolean);
+            const msgs = () => { const l = String(storeSettings.announcements || '').split('\n').map(x => x.trim()).filter(Boolean); const promo = freeShipPromoText(); return promo && !l.some(x => /env[ií]o gratis/i.test(x)) ? [promo, ...l] : l; };
             const show = () => {
                 const list = msgs();
                 const bar = document.getElementById('announce-bar');
@@ -3020,6 +3164,8 @@
         }
 
         function refreshHomeExtras() {
+            const tss = document.getElementById('trust-ship-sub');
+            if (tss) tss.innerText = freeShipItems() > 0 ? `Gratis llevando ${freeShipItems()} o más perfumes` : 'Seguimiento por WhatsApp';
             const visible = products.filter(p => p.isActive);
             let best = visible.filter(p => p.bestSeller);
             if (best.length === 0) best = visible.filter(p => p.priority === 'TOP VIRAL');
