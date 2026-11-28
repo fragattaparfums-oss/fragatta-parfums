@@ -1542,7 +1542,8 @@
                         oldPrice: data.originalPrice ? Number(data.originalPrice) : (data.oldPrice ? Number(data.oldPrice) : null),
                         priority: data.featured ? 'TOP VIRAL' : (data.priority || 'NINGUNA'),
                         image: data.image || (Array.isArray(data.images) && data.images[0]) || 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS',
-                        images: Array.isArray(data.images) && data.images.length ? data.images.filter(Boolean) : (data.image ? [data.image] : []),
+                        images: fullImagesCache[docSnap.id] || (Array.isArray(data.images) && data.images.length ? data.images.filter(Boolean) : (data.image ? [data.image] : [])),
+                        hasFullImages: data.hasFullImages === true,
                         notes: data.notes || '',
                         description: data.description || '',
                         size: data.size || '',
@@ -1854,7 +1855,7 @@
                     </div>
 
                     <div class="space-y-1.5 pt-2 border-t border-gray-100">
-                        ${isSoldOut(p) ? `<a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, ¿cuándo vuelve a llegar ' + p.brand + ' ' + p.title + '?')}" target="_blank" rel="noopener" class="block text-center w-full bg-gray-100 text-gray-500 text-xs font-semibold py-2 rounded-xl">Agotado · Avísame</a>` : `<button onclick="addToCart('${p.id}')" class="w-full bg-luxury-dark hover:bg-black text-white text-xs font-semibold py-2 rounded-xl transition"><i class="fas fa-cart-plus text-luxury-gold mr-1"></i> Añadir</button>`}
+                        ${isSoldOut(p) ? `<a href="javascript:void(0)" onclick="openWaitlist('${p.id}')" class="block text-center w-full bg-gray-100 text-gray-500 text-xs font-semibold py-2 rounded-xl"><i class="fas fa-bell mr-1"></i>Agotado · Avísame cuando llegue</a>` : `<button onclick="addToCart('${p.id}')" class="w-full bg-luxury-dark hover:bg-black text-white text-xs font-semibold py-2 rounded-xl transition"><i class="fas fa-cart-plus text-luxury-gold mr-1"></i> Añadir</button>`}
 
                         ${isAdmin ? `
                         <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-gray-100">
@@ -2334,6 +2335,14 @@
             document.getElementById('prod-longevity').value = p.longevity || '';
             editingImages = getImages(p).slice();
             renderImagesEditor();
+            if (p.hasFullImages && !fullImagesCache[p.id]) {
+                editingImagesLoading = true;
+                document.getElementById('upload-status').innerText = 'Cargando fotos en calidad original...';
+                ensureFullImages(p).finally(() => {
+                    editingImagesLoading = false;
+                    if (document.getElementById('prod-id').value === p.id) { editingImages = getImages(p).slice(); renderImagesEditor(); document.getElementById('upload-status').innerText = ''; }
+                });
+            }
             document.getElementById('prod-stock').value = (p.stock === null || p.stock === undefined) ? '' : p.stock;
             document.getElementById('prod-bestseller').checked = !!p.bestSeller;
             document.getElementById('prod-gift').checked = !!p.isGift;
@@ -2346,6 +2355,22 @@
 
         // ===== FOTOS MÚLTIPLES DEL PRODUCTO =====
         let editingImages = [];
+        let editingImagesLoading = false;
+        // Miniatura liviana (420 px) para la lista de la tienda
+        function makeStoreThumb(src) {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => {
+                    const sc = Math.min(1, 420 / Math.max(img.naturalWidth, img.naturalHeight));
+                    const c = document.createElement('canvas');
+                    c.width = Math.max(1, Math.round(img.naturalWidth * sc)); c.height = Math.max(1, Math.round(img.naturalHeight * sc));
+                    const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+                    try { resolve(c.toDataURL('image/jpeg', 0.78)); } catch (err) { resolve(null); }
+                };
+                img.onerror = () => resolve(null);
+                img.src = src;
+            });
+        }
         const MAX_DOC_IMAGES_BYTES = 850000; // Firebase permite ~1 MB por producto
 
         function imagesBytes(list) {
@@ -2499,6 +2524,7 @@
         async function handleProductSubmit(e) {
             e.preventDefault();
             const id = document.getElementById('prod-id').value;
+            if (editingImagesLoading) return alert('Espera un momento: se están cargando las fotos en calidad original.');
             const btnSave = document.getElementById('btn-save-prod');
             btnSave.innerText = "Guardando...";
             btnSave.disabled = true;
@@ -2538,9 +2564,14 @@
                 editingImages = ready.images;
                 renderImagesEditor();
                 payload.images = ready.images;
-                // La foto principal NO se repite si está guardada dentro del producto (antes ocupaba el doble)
                 const first = ready.images[0];
                 payload.image = !first ? 'https://placehold.co/400x400/111315/d4af37?text=PARFUMS' : (String(first).startsWith('data:') ? null : first);
+                payload.hasFullImages = false;
+                // Fotos dentro del producto: se guardan aparte en calidad original y el producto queda con una miniatura liviana
+                if (ready.images.some(x => String(x).startsWith('data:'))) {
+                    const thumb = await makeStoreThumb(ready.images.find(x => String(x).startsWith('data:')));
+                    if (thumb) { payload.__full = ready.images; payload.images = [thumb]; payload.image = thumb; payload.hasFullImages = true; payload.imageCount = ready.images.length; }
+                }
                 if (ready.reduced) showToast('Algunas fotos se ajustaron para caber en Firebase');
                 btnSave.innerText = "Guardando...";
             } catch (err) {
@@ -2550,12 +2581,15 @@
             }
 
             try {
+                const full = payload.__full; delete payload.__full;
+                const docId = id || window.doc(window.collection(window.db, "products")).id;
+                if (full) { await window.setDoc(window.doc(window.db, "product_images", docId), { images: full, savedAt: new Date().toISOString() }); fullImagesCache[docId] = full; }
                 if (id) {
                     await window.updateDoc(window.doc(window.db, "products", id), payload);
                     showToast("Producto editado exitosamente");
                 } else {
                     payload.isActive = true;
-                    await window.addDoc(window.collection(window.db, "products"), payload);
+                    await window.setDoc(window.doc(window.db, "products", docId), payload);
                     showToast("Nuevo producto agregado");
                 }
                 closeAdminModal();
@@ -2829,6 +2863,20 @@
             return p.oldPrice && p.oldPrice > p.price ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
         }
 
+
+        // ===== FOTOS LIVIANAS: la lista usa una miniatura; la foto original se trae al abrir el producto =====
+        const fullImagesCache = {};
+        async function ensureFullImages(p) {
+            if (!p || !p.hasFullImages) return false;
+            if (fullImagesCache[p.id]) { p.images = fullImagesCache[p.id]; return false; }
+            try {
+                const snap = await window.getDoc(window.doc(window.db, "product_images", p.id));
+                const d = snap && snap.exists() ? snap.data() : null;
+                if (d && Array.isArray(d.images) && d.images.length) { fullImagesCache[p.id] = d.images.filter(Boolean); p.images = fullImagesCache[p.id]; return true; }
+            } catch (err) { console.warn('No se pudo cargar la foto completa', err); }
+            return false;
+        }
+
         // ===================== PÁGINA DE PRODUCTO =====================
         let currentDetailId = null;
         let detailImgIndex = 0;
@@ -2844,6 +2892,7 @@
             detailQty = 1;
             detailVariant = 0;
             renderDetail(id);
+            ensureFullImages(p).then(changed => { if (changed && currentDetailId === id) renderDetail(id, true); });
             document.getElementById('detail-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             document.title = `${p.brand} ${p.title} | FRAGATTAPARFUMS`;
@@ -2950,7 +2999,7 @@
                             <a href="https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}" target="_blank" rel="noopener" class="flex-1 h-11 border-2 border-emerald-500 text-emerald-700 rounded-full font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-50"><i class="fab fa-whatsapp text-base"></i> ¿Dudas? Escríbenos</a>
                         </div>
 
-                        ${isSoldOut(p) ? `<a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, ¿cuándo vuelve a llegar ' + p.brand + ' ' + p.title + '?')}" target="_blank" rel="noopener" class="block w-full text-center bg-gray-100 border border-gray-300 text-gray-700 font-bold py-3.5 rounded-full">Agotado · Avísame cuando llegue</a>` : ''}
+                        ${isSoldOut(p) ? `<a href="javascript:void(0)" onclick="openWaitlist('${p.id}')" class="block w-full text-center bg-gray-100 border border-gray-300 text-gray-700 font-bold py-3.5 rounded-full">Agotado · Avísame cuando llegue</a>` : ''}
                         <div class="space-y-2.5 ${isSoldOut(p) ? 'hidden' : ''}">
                             <button onclick="addDetailToCart()" class="w-full bg-luxury-gold-light hover:bg-amber-100 border border-luxury-gold text-luxury-dark font-bold py-3.5 rounded-full transition tracking-wide text-sm">
                                 <i class="fas fa-shopping-bag mr-1.5"></i> AÑADIR AL CARRITO
@@ -3070,6 +3119,47 @@
             saveCart();
             updateCartUI();
             showToast(`${detailQty} unidad(es) añadidas al carrito`);
+        }
+
+
+        // ===================== AVÍSAME CUANDO LLEGUE (lista de espera) =====================
+        function openWaitlist(id) {
+            const prod = products.find(x => x.id === id); if (!prod) return;
+            const old = document.getElementById('waitlist-modal'); if (old) old.remove();
+            let saved = {}; try { saved = JSON.parse(localStorage.getItem('waitlist_contact') || '{}') || {}; } catch (err) {}
+            const wrap = document.createElement('div');
+            wrap.id = 'waitlist-modal';
+            wrap.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(17,19,21,.6);display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit';
+            wrap.innerHTML = `<form style="background:#fff;border-radius:20px;padding:22px;width:100%;max-width:360px;box-shadow:0 20px 50px rgba(0,0,0,.3)">
+                <p style="font-weight:800;font-size:16px;margin:0 0 4px;color:#111">🔔 Te avisamos cuando llegue</p>
+                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">${String(prod.brand || '')} ${String(prod.title || '')}. Déjanos tu nombre y WhatsApp y te escribimos apenas tengamos unidades.</p>
+                <input id="wl-name" required placeholder="Tu nombre" value="${String(saved.name || '').replace(/"/g, '&quot;')}" style="width:100%;box-sizing:border-box;border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:8px">
+                <input id="wl-phone" required inputmode="tel" placeholder="WhatsApp (ej: 3001234567)" value="${String(saved.phone || '').replace(/"/g, '&quot;')}" style="width:100%;box-sizing:border-box;border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;font-size:14px">
+                <p id="wl-msg" style="display:none;font-size:12px;font-weight:700;margin:10px 0 0"></p>
+                <div style="display:flex;gap:8px;margin-top:14px">
+                    <button type="button" id="wl-cancel" style="flex:1;border:0;border-radius:12px;padding:10px;background:#f3f4f6;font-weight:700;cursor:pointer">Cerrar</button>
+                    <button type="submit" id="wl-ok" style="flex:1;border:0;border-radius:12px;padding:10px;background:#111315;color:#fff;font-weight:700;cursor:pointer">Avísame</button>
+                </div></form>`;
+            document.body.appendChild(wrap);
+            wrap.querySelector('#wl-cancel').onclick = () => wrap.remove();
+            wrap.querySelector('form').onsubmit = async ev => {
+                ev.preventDefault();
+                const name = wrap.querySelector('#wl-name').value.trim();
+                const phone = wrap.querySelector('#wl-phone').value.replace(/[^\d+]/g, '');
+                const msg = wrap.querySelector('#wl-msg');
+                if (!name || phone.replace(/\D/g, '').length < 7) { msg.style.display = 'block'; msg.style.color = '#e11d48'; msg.innerText = 'Escribe tu nombre y un WhatsApp válido.'; return; }
+                try { localStorage.setItem('waitlist_contact', JSON.stringify({ name, phone })); } catch (err) {}
+                const btn = wrap.querySelector('#wl-ok'); btn.disabled = true; btn.innerText = 'Guardando...';
+                try {
+                    await window.addDoc(window.collection(window.db, "waitlist"), { productId: prod.id, title: String(prod.title || ''), brand: String(prod.brand || ''), name, phone, status: 'ESPERANDO', createdAt: new Date().toISOString() });
+                    msg.style.display = 'block'; msg.style.color = '#059669'; msg.innerText = '¡Listo! Te escribiremos por WhatsApp apenas llegue. 💛';
+                    btn.style.display = 'none';
+                    setTimeout(() => wrap.remove(), 2500);
+                } catch (err) {
+                    btn.disabled = false; btn.innerText = 'Avísame';
+                    msg.style.display = 'block'; msg.style.color = '#e11d48'; msg.innerText = 'No se pudo guardar. Escríbenos por WhatsApp.';
+                }
+            };
         }
 
         // ===================== ENVÍO GRATIS =====================
